@@ -1,0 +1,1016 @@
+# Turkish (Turkey) translation for AntiSpam Wizard.
+# Copyright (C) 2026 AntiSpam Wizard
+# This file is distributed under the same license as the AntiSpam Wizard package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: AntiSpam Wizard 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 02:45+0400\n"
+"PO-Revision-Date: 2026-04-09 00:00+0000\n"
+"Last-Translator: AntiSpam Wizard Team\n"
+"Language-Team: Turkish <tr@li.org>\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: admin/views/settings-general.php:307
+msgid ""
+"A comment the plugin flags as spam stays visible to the person who wrote it, "
+"marked as awaiting moderation, so a real visitor caught by mistake does not "
+"post it again. Nobody else sees it."
+msgstr "Eklentinin spam olarak işaretlediği bir yorum, onu yazan kişiye onay bekliyor olarak görünmeye devam eder; böylece yanlışlıkla yakalanan gerçek bir ziyaretçi yorumu yeniden göndermez. Başka kimse görmez."
+
+#: admin/views/settings-general.php:126
+msgid "Abnormal Spacing"
+msgstr "Anormal Boşluk"
+
+#: admin/views/settings-stop-words.php:17
+msgid "Add New Word"
+msgstr "Yeni Kelime Ekle"
+
+#: admin/views/settings-excluded-tokens.php:17
+#: admin/views/settings-excluded-tokens.php:21
+msgid "Add Token"
+msgstr "Jeton Ekle"
+
+#: admin/views/settings-stop-words.php:21
+msgid "Add Word"
+msgstr "Kelime Ekle"
+
+#: admin/views/settings-excluded-tokens.php:20
+msgid "Add a token to exclude..."
+msgstr "Hariç tutulacak bir jeton ekleyin…"
+
+#: admin/views/settings-general.php:49
+msgid ""
+"Adds a hidden decoy field to the comment form. Real users cannot see it, but "
+"automated bots that fill in all fields will trip it and be blocked."
+msgstr ""
+"Yorum formuna gizli bir tuzak alanı ekler. Gerçek kullanıcılar göremez, "
+"ancak tüm alanları dolduran otomatik botlar tuzağa düşer ve engellenir."
+
+#: admin/views/settings-general.php:326
+msgid ""
+"All enabled checks run on Contact Form 7 submissions and flagged submissions "
+"are blocked through Contact Form 7's own spam mechanism."
+msgstr ""
+"Etkin tüm kontroller Contact Form 7 gönderimlerinde çalışır ve işaretlenen "
+"gönderimler Contact Form 7'nin kendi spam mekanizması aracılığıyla "
+"engellenir."
+
+#: admin/class-admin-page.php:140
+msgid "An error occurred."
+msgstr "Bir hata oluştu."
+
+#: admin/class-admin-page.php:71 admin/class-admin-page.php:72
+#: includes/class-privacy.php:65 includes/class-privacy.php:79
+#: includes/class-privacy.php:333 includes/class-privacy.php:375
+#: includes/class-privacy.php:423 includes/class-privacy.php:571
+msgid "AntiSpam Wizard"
+msgstr "AntiSpam Wizard"
+
+#. translators: %s: Submenu page label.
+#: admin/class-admin-page.php:97
+#, php-format
+msgid "AntiSpam Wizard - %s"
+msgstr "AntiSpam Wizard – %s"
+
+#: admin/class-admin-page.php:183
+msgid "AntiSpam Wizard Settings"
+msgstr "AntiSpam Wizard Ayarları"
+
+#: includes/class-privacy.php:565
+msgid ""
+"AntiSpam Wizard analyzes comments and contact-form submissions to detect "
+"spam. When a comment is flagged, either by one of the plugin's checks or by "
+"a spam decision you make while moderating, the plugin stores a short "
+"fragment of the comment text, a SHA-256 hash of the commenter's IP address "
+"(the raw IP is never stored), and the reason the comment was flagged. When a "
+"contact-form submission is flagged, the plugin stores a short fragment of "
+"the submitted text, a SHA-256 hash of the submitter's IP address, and a "
+"SHA-256 hash of the submitter's email address (raw values are never stored). "
+"When a comment is used to train the spam filter, either from the plugin's "
+"Spam Log or by any Spam / Not Spam moderation decision made elsewhere in "
+"WordPress, the full text of that comment is stored as a training sample, "
+"together with a SHA-256 hash of the commenter's email address, until it is "
+"erased through a personal-data erasure request or the plugin is uninstalled, "
+"and it is included in personal-data exports. This data is used solely for "
+"spam detection and statistics. It is removed in response to a personal-data "
+"erasure request and when the plugin is uninstalled."
+msgstr ""
+"AntiSpam Wizard, spam'i tespit etmek için yorumları ve iletişim formu "
+"gönderimlerini analiz eder. Bir yorum işaretlendiğinde, ister eklentinin "
+"denetimlerinden biri tarafından ister moderasyon sırasında sizin spam olarak "
+"işaretlemeniz nedeniyle olsun, eklenti, yorum metninin kısa bir parçasını, "
+"yorumcunun IP adresinin SHA-256 karmasını (ham IP asla saklanmaz) ve yorumun "
+"işaretlenme nedenini saklar. Bir iletişim formu gönderimi işaretlendiğinde "
+"eklenti, gönderilen metnin kısa bir parçasını, göndericinin IP adresinin "
+"SHA-256 karmasını ve göndericinin e-posta adresinin SHA-256 karmasını saklar "
+"(ham değerler asla saklanmaz). Bir yorum spam filtresini eğitmek için "
+"kullanıldığında, ister eklentinin spam günlüğünden ister WordPress'in başka "
+"bir yerinde verilen herhangi bir Spam / Spam değil moderasyon kararıyla "
+"olsun, o yorumun tam metni, yorumcunun e-posta adresinin SHA-256 karmasıyla "
+"birlikte bir eğitim örneği olarak saklanır; bu örnek, kişisel verilerin "
+"silinmesi talebiyle silinene veya eklenti kaldırılana kadar saklanır ve "
+"kişisel veri dışa aktarımlarına dahil edilir. Bu veriler yalnızca spam "
+"tespiti ve istatistikler için kullanılır. Kişisel verilerin silinmesi "
+"talebine yanıt olarak ve eklenti kaldırıldığında silinirler."
+
+#: admin/views/settings-main.php:22
+msgid ""
+"AntiSpam Wizard is ready to protect your site out of the box. Fine-tune "
+"individual checks and thresholds on the other settings pages."
+msgstr ""
+"AntiSpam Wizard, sitenizi kurulumdan hemen sonra korumaya hazırdır. Diğer "
+"ayar sayfalarından kontrolleri ve eşik değerlerini ayarlayabilirsiniz."
+
+#: includes/class-privacy.php:541
+msgid ""
+"AntiSpam Wizard spam-log entries, flagging reasons, form submissions, and "
+"training samples were removed."
+msgstr ""
+"AntiSpam Wizard spam günlüğü girişleri, işaretleme nedenleri, form "
+"gönderimleri ve eğitim örnekleri kaldırıldı."
+
+#: includes/class-privacy.php:544
+msgid ""
+"AntiSpam Wizard training samples could not be removed because of a database "
+"error. Please retry this erasure request."
+msgstr ""
+"Veritabanı hatası nedeniyle AntiSpam Wizard eğitim örnekleri kaldırılamadı. "
+"Lütfen bu silme talebini yeniden deneyin."
+
+#: admin/views/settings-general.php:203 admin/views/settings-log.php:27
+#: admin/views/settings-stats.php:23
+msgid "Bayesian"
+msgstr "Bayes"
+
+#: admin/views/settings-general.php:204
+msgid "Bayesian Filter"
+msgstr "Bayes Filtresi"
+
+#: admin/views/settings-stop-words.php:27
+msgid "Blocked Words"
+msgstr "Engellenen Kelimeler"
+
+#: admin/views/settings-general.php:86
+msgid ""
+"Blocks comments containing words from your blacklist. Supports exact match "
+"(prefix \"=\") and substring modes. Configure the list on the Stop Words tab."
+msgstr ""
+"Kara listenizdeki kelimeleri içeren yorumları engeller. Tam eşleşme (\"=\" "
+"öneki) ve alt dize modlarını destekler. Listeyi Engelleme Kelimeleri "
+"sekmesinde yapılandırın."
+
+#: admin/views/settings-general.php:176
+msgid ""
+"Blocks repeated identical comments from the same IP within a time window. "
+"Threshold sets how many duplicates are allowed, TTL sets the window duration."
+msgstr ""
+"Bir zaman aralığında aynı IP'den gelen tekrarlanan özdeş yorumları engeller. "
+"Eşik, kaç tekrara izin verildiğini belirler, TTL aralık süresini belirler."
+
+#: admin/views/settings-general.php:39
+msgid "Bot Checks"
+msgstr "Bot Kontrolleri"
+
+#: admin/views/settings-general.php:112
+msgid ""
+"Catches comments overloaded with emoji, a common pattern in automated spam."
+msgstr ""
+"Otomatik spam'da yaygın bir kalıp olan aşırı emoji içeren yorumları yakalar."
+
+#: admin/views/settings-general.php:296
+msgid "Characters"
+msgstr "Karakter"
+
+#: admin/views/settings-general.php:206
+msgid ""
+"Classifies comments using a Naive Bayes model trained on your spam/ham "
+"samples. Higher threshold means stricter filtering (fewer false positives "
+"but may miss some spam)."
+msgstr ""
+"Yorumları spam/ham örneklerinizle eğitilmiş bir Naive Bayes modeli "
+"kullanarak sınıflandırır. Daha yüksek eşik, daha katı filtreleme anlamına "
+"gelir (daha az yanlış pozitif ancak bazı spam'ları kaçırabilir)."
+
+#: admin/views/settings-log.php:40
+msgid "Clear Log"
+msgstr "Günlüğü Temizle"
+
+#: includes/class-privacy.php:307
+msgid "Comment fragment"
+msgstr "Yorum parçası"
+
+#. translators: %s: Training category the comment was saved as (spam or ham).
+#: admin/class-admin-page.php:710
+#, php-format
+msgid "Comment marked as %s. Training data updated."
+msgstr "Yorum %s olarak işaretlendi. Eğitim verileri güncellendi."
+
+#: admin/class-admin-page.php:564
+msgid "Comment not found in spam log. It may have been removed."
+msgstr "Yorum spam günlüğünde bulunamadı. Kaldırılmış olabilir."
+
+#: admin/class-admin-page.php:477 includes/class-moderation.php:508
+msgid "Comment not found."
+msgstr "Yorum bulunamadı."
+
+#: admin/class-admin-page.php:688
+msgid ""
+"Comment status could not be changed and rollback failed. Please check "
+"training data manually."
+msgstr ""
+"Yorum durumu değiştirilemedi ve geri alma başarısız oldu. Lütfen eğitim "
+"verilerini manuel olarak kontrol edin."
+
+#: admin/class-admin-page.php:681 includes/class-moderation.php:517
+msgid "Comment status could not be changed. Please try again."
+msgstr "Yorum durumu değiştirilemedi. Lütfen tekrar deneyin."
+
+#: admin/views/settings-general.php:293
+msgid ""
+"Comments shorter than this skip the heavier Bayesian and Similarity checks, "
+"since very short messages rarely provide enough signal for statistical "
+"analysis."
+msgstr ""
+"Bundan kısa yorumlar, çok kısa mesajlar istatistiksel analiz için nadiren "
+"yeterli sinyal sağladığından, daha ağır Bayes ve Benzerlik kontrollerini "
+"atlar."
+
+#: admin/views/settings-general.php:225
+msgid ""
+"Compares each comment against known spam samples using cosine similarity on "
+"tokenized text. Higher threshold means the comment must be more similar to "
+"known spam to be blocked."
+msgstr ""
+"Her yorumu, tokenize edilmiş metin üzerinde kosinüs benzerliği kullanarak "
+"bilinen spam örnekleriyle karşılaştırır. Daha yüksek eşik, yorumun "
+"engellenmesi için bilinen spam'a daha benzer olması gerektiği anlamına gelir."
+
+#: admin/views/settings-general.php:323 admin/views/settings-general.php:324
+msgid "Contact Form 7"
+msgstr "Contact Form 7"
+
+#: includes/class-privacy.php:395
+msgid "Date added to training data"
+msgstr "Eğitim verilerine eklenme tarihi"
+
+#: includes/class-privacy.php:301 includes/class-privacy.php:350
+msgid "Date flagged"
+msgstr "İşaretlenme tarihi"
+
+#: admin/views/settings-general.php:128
+msgid ""
+"Detects obfuscated text where characters are separated by spaces (e.g. \"h e "
+"l l o w o r l d\") to bypass word-based filters. Parameters control "
+"sensitivity: min words count sets how long a comment must be before this "
+"check applies, short word length/ratio detect single-character \"words\", "
+"space ratio catches excessive whitespace."
+msgstr ""
+"Kelime tabanlı filtreleri atlatmak için karakterlerin boşluklarla ayrıldığı "
+"gizlenmiş metinleri algılar (ör. \"h e l l o\"). Parametreler hassasiyeti "
+"kontrol eder: minimum kelime sayısı bu kontrolün uygulanması için yorumun ne "
+"kadar uzun olması gerektiğini belirler, kısa kelime uzunluğu/oranı tek "
+"karakterli \"kelimeleri\" algılar, boşluk oranı aşırı boşlukları yakalar."
+
+#: admin/views/settings-log.php:26
+msgid "Duplicate"
+msgstr "Tekrar"
+
+#: admin/views/settings-general.php:174
+msgid "Duplicate Detector"
+msgstr "Tekrar Dedektörü"
+
+#: admin/views/settings-general.php:173 admin/views/settings-stats.php:22
+msgid "Duplicates"
+msgstr "Tekrarlar"
+
+#: admin/views/settings-stats.php:69
+msgid ""
+"Each blocked comment can trigger multiple checks. These counts show "
+"individual check matches, so the sum may exceed Total Blocked."
+msgstr ""
+"Engellenen her yorum birden fazla kontrolü tetikleyebilir. Bu sayılar "
+"bireysel kontrol eşleşmelerini gösterir, bu nedenle toplam, Toplam "
+"Engellenen değerini aşabilir."
+
+#: admin/views/settings-general.php:109 admin/views/settings-log.php:23
+#: admin/views/settings-stats.php:19
+msgid "Emoji"
+msgstr "Emoji"
+
+#: admin/views/settings-general.php:110
+msgid "Emoji Limiter"
+msgstr "Emoji Sınırlayıcı"
+
+#: admin/views/settings-main.php:32
+msgid ""
+"Enable or disable all spam checks globally. When disabled, all comments pass "
+"through without filtering."
+msgstr ""
+"Tüm spam kontrollerini genel olarak etkinleştirin veya devre dışı bırakın. "
+"Devre dışı bırakıldığında tüm yorumlar filtrelenmeden geçer."
+
+#: admin/class-admin-page.php:327
+msgid "Exact-match phrase cannot be empty."
+msgstr "Tam eşleşme ifadesi boş olamaz."
+
+#: admin/class-admin-page.php:331
+msgid "Exact-match phrase must contain only letters, numbers, and spaces."
+msgstr "Tam eşleşme ifadesi yalnızca harf, rakam ve boşluk içermelidir."
+
+#: admin/class-admin-page.php:88
+msgid "Excluded Tokens"
+msgstr "Hariç Tutulan Jetonlar"
+
+#: admin/views/settings-excluded-tokens.php:66
+#: admin/views/settings-stop-words.php:67
+msgid "Export as Text File"
+msgstr "Metin Dosyası Olarak Dışa Aktar"
+
+#: admin/class-admin-page.php:558 admin/class-admin-page.php:699
+msgid "Failed to save training data."
+msgstr "Eğitim verileri kaydedilemedi."
+
+#: admin/views/settings-general.php:96
+msgid ""
+"Flags comments with too many URLs. Spammers often stuff comments with links "
+"to boost SEO. Adjust the max to match your site's typical comment style."
+msgstr ""
+"Çok fazla URL içeren yorumları işaretler. Spam gönderenler genellikle SEO'yu "
+"artırmak için yorumları bağlantılarla doldurur. Maksimum değeri sitenizin "
+"tipik yorum tarzına göre ayarlayın."
+
+#: admin/views/settings-general.php:160
+msgid ""
+"Flags words that mix characters from different Unicode scripts (e.g. Latin + "
+"Cyrillic) in a single word, a technique used to visually mimic legitimate "
+"text. Threshold sets how many such words trigger blocking."
+msgstr ""
+"Tek bir kelimede farklı Unicode yazı sistemlerinden karakterleri karıştıran "
+"kelimeleri işaretler (ör. Latin + Kiril), bu meşru metni görsel olarak "
+"taklit etmek için kullanılan bir tekniktir. Eşik, kaç tane böyle kelimenin "
+"engellemeyi tetikleyeceğini belirler."
+
+#: admin/views/settings-log.php:79
+msgid "Form"
+msgstr "Form"
+
+#: admin/views/settings-general.php:318
+msgid "Form Integrations"
+msgstr "Form Entegrasyonları"
+
+#: admin/views/settings-general.php:143
+msgid ""
+"Fraction of short words (0.1–1.0) that triggers the check. Example: 0.6 "
+"means the comment is flagged when 60% or more of its words are short."
+msgstr ""
+"Kontrolü tetikleyen kısa kelime oranı (0.1–1.0). Örnek: 0.6, kelimelerin %60 "
+"veya daha fazlası kısa olduğunda yorumun işaretleneceği anlamına gelir."
+
+#: admin/views/settings-general.php:148
+msgid ""
+"Fraction of whitespace characters relative to total length (0.1–1.0) that "
+"triggers the check. Example: 0.4 means the comment is flagged when 40% or "
+"more of its characters are spaces."
+msgstr ""
+"Toplam uzunluğa göre boşluk karakterlerinin oranı (0.1–1.0) kontrolü "
+"tetikler. Örnek: 0.4, karakterlerin %40 veya daha fazlası boşluk olduğunda "
+"yorumun işaretleneceği anlamına gelir."
+
+#: admin/class-admin-page.php:86
+msgid "General"
+msgstr "Genel"
+
+#: admin/views/settings-general.php:285
+msgid "Global Settings"
+msgstr "Genel Ayarlar"
+
+#: admin/views/settings-log.php:91 includes/class-privacy.php:409
+msgid "Ham"
+msgstr "Ham"
+
+#: admin/views/settings-general.php:260
+msgid "Ham Samples"
+msgstr "Ham Örnekleri"
+
+#: admin/views/settings-general.php:46 admin/views/settings-general.php:47
+#: admin/views/settings-log.php:19 admin/views/settings-stats.php:15
+msgid "Honeypot"
+msgstr "Bal Küpü (Honeypot)"
+
+#: includes/class-privacy.php:313 includes/class-privacy.php:362
+msgid "IP address (SHA-256 hash)"
+msgstr "IP adresi (SHA-256 karması)"
+
+#: admin/views/settings-excluded-tokens.php:60
+#: admin/views/settings-stop-words.php:61
+msgid "Import"
+msgstr "İçe Aktar"
+
+#: admin/views/settings-excluded-tokens.php:45
+#: admin/views/settings-stop-words.php:46
+msgid "Import / Export"
+msgstr "İçe Aktar / Dışa Aktar"
+
+#: admin/views/settings-excluded-tokens.php:52
+msgid "Import from file (one token per line):"
+msgstr "Dosyadan içe aktar (satır başına bir jeton):"
+
+#: admin/views/settings-stop-words.php:53
+msgid "Import from file (one word per line):"
+msgstr "Dosyadan içe aktar (satır başına bir kelime):"
+
+#. translators: %d: Maximum number of excluded-token entries kept on import.
+#: admin/class-admin-page.php:934
+#, php-format
+msgid "Import truncated: excluded tokens list capped at %d entries."
+msgstr ""
+"İçe aktarma kısaltıldı: hariç tutulan jeton listesi %d girişle sınırlı."
+
+#. translators: %d: Maximum number of stop-word entries kept on import.
+#: admin/class-admin-page.php:824
+#, php-format
+msgid "Import truncated: stop-words list capped at %d entries."
+msgstr "İçe aktarma kesildi: engelleme kelimeleri listesi %d girişle sınırlı."
+
+#: admin/class-admin-page.php:471
+msgid "Invalid category."
+msgstr "Geçersiz kategori."
+
+#: admin/class-admin-page.php:466
+msgid "Invalid comment ID."
+msgstr "Geçersiz yorum kimliği."
+
+#: admin/views/settings-stats.php:62
+msgid "Last Blocked"
+msgstr "Son Engellenen"
+
+#: includes/class-comment-form.php:73
+msgid "Leave this field empty"
+msgstr "Bu alanı boş bırakın"
+
+#: admin/class-admin-page.php:705
+msgid "Legacy"
+msgstr "Eski"
+
+#: admin/views/settings-general.php:94
+msgid "Link Counter"
+msgstr "Bağlantı Sayacı"
+
+#: admin/views/settings-general.php:93 admin/views/settings-log.php:22
+#: admin/views/settings-stats.php:18
+msgid "Links"
+msgstr "Bağlantılar"
+
+#: admin/views/settings-general.php:244
+msgid "Loaded Models"
+msgstr "Yüklü Modeller"
+
+#: admin/views/settings-general.php:196
+msgid "ML-Based Checks"
+msgstr "ML Tabanlı Kontroller"
+
+#: admin/class-admin-page.php:85
+msgid "Main"
+msgstr "Ana Sayfa"
+
+#: includes/class-moderation.php:466
+msgid "Mark as spam"
+msgstr "Spam olarak işaretle"
+
+#: admin/views/settings-log.php:29
+msgid "Marked by moderator"
+msgstr "Moderatör tarafından işaretlendi"
+
+#: admin/views/settings-general.php:115
+msgid "Max emoji"
+msgstr "Maks. emoji"
+
+#: admin/views/settings-general.php:99
+msgid "Max links"
+msgstr "Maks. bağlantı"
+
+#: admin/views/settings-general.php:138
+msgid ""
+"Maximum character length for a word to be considered \"short\" (e.g. set to "
+"1 to count only single-character tokens like \"h\", \"e\", \"l\")."
+msgstr ""
+"Bir kelimenin \"kısa\" sayılması için maksimum karakter uzunluğu (ör. "
+"yalnızca \"h\", \"e\", \"l\" gibi tek karakterli jetonları saymak için 1 "
+"olarak ayarlayın)."
+
+#: admin/views/settings-general.php:59
+msgid ""
+"Measures how long the user took to submit the form. Bots typically submit "
+"forms instantly."
+msgstr ""
+"Kullanıcının formu göndermesinin ne kadar sürdüğünü ölçer. Botlar genellikle "
+"formları anında gönderir."
+
+#: admin/views/settings-general.php:62
+msgid "Min seconds"
+msgstr "Minimum saniye"
+
+#: admin/views/settings-general.php:131
+msgid "Min words"
+msgstr "Min. kelime"
+
+#: admin/views/settings-general.php:291
+msgid "Minimum Message Length"
+msgstr "Minimum Mesaj Uzunluğu"
+
+#: admin/views/settings-general.php:133
+msgid ""
+"Minimum number of words a comment must contain before this check is applied. "
+"Shorter comments are skipped."
+msgstr ""
+"Bu kontrol uygulanmadan önce bir yorumun içermesi gereken minimum kelime "
+"sayısı. Daha kısa yorumlar atlanır."
+
+#: admin/views/settings-general.php:157 admin/views/settings-log.php:25
+#: admin/views/settings-stats.php:21
+msgid "Mixed Scripts"
+msgstr "Karışık Yazı Sistemleri"
+
+#: admin/views/settings-general.php:158
+msgid "Mixed Scripts Detector"
+msgstr "Karışık Yazı Sistemi Dedektörü"
+
+#: admin/views/settings-stats.php:58
+msgid "Never"
+msgstr "Hiçbir zaman"
+
+#: admin/views/settings-stats.php:91
+msgid "No check-level statistics recorded yet."
+msgstr "Henüz kontrol bazında istatistik kaydedilmedi."
+
+#: admin/class-admin-page.php:139 admin/views/settings-excluded-tokens.php:30
+msgid "No excluded tokens configured."
+msgstr "Yapılandırılmış hariç tutulan jeton yok."
+
+#: admin/views/settings-general.php:276
+msgid ""
+"No script-specific training data found. Mark comments as spam or ham to "
+"start building models."
+msgstr ""
+"Yazı sistemine özel eğitim verisi bulunamadı. Model oluşturmaya başlamak "
+"için yorumları spam veya ham olarak işaretleyin."
+
+#: admin/views/settings-log.php:101
+msgid "No spam has been blocked yet."
+msgstr "Henüz hiçbir spam engellenmedi."
+
+#: admin/class-admin-page.php:138 admin/views/settings-stop-words.php:30
+msgid "No stop-words configured."
+msgstr "Yapılandırılmış engelleme kelimesi yok."
+
+#: admin/views/settings-excluded-tokens.php:56
+msgid "Or paste tokens (one per line):"
+msgstr "Veya jetonları yapıştırın (satır başına bir tane):"
+
+#: admin/views/settings-stop-words.php:57
+msgid "Or paste words (one per line):"
+msgstr "Veya kelimeleri yapıştırın (satır başına bir tane):"
+
+#: admin/views/settings-general.php:64
+msgid ""
+"Pages served from cache may use stale tokens, but they fail open and allow "
+"the comment."
+msgstr ""
+"Önbellekten sunulan sayfalar eski belirteçler kullanabilir, ancak açıkta "
+"kalır ve yoruma izin verir."
+
+#: admin/views/settings-stats.php:68
+msgid "Per-Check Breakdown"
+msgstr "Kontrol Bazında Dağılım"
+
+#: admin/class-admin-page.php:308 admin/class-admin-page.php:361
+#: admin/class-admin-page.php:390 admin/class-admin-page.php:428
+#: admin/class-admin-page.php:458
+msgid "Permission denied."
+msgstr "Erişim reddedildi."
+
+#: admin/class-admin-page.php:553
+msgid "Plugin not fully initialized."
+msgstr "Eklenti tam olarak başlatılmadı."
+
+#: includes/class-privacy.php:325
+msgid "Reason flagged"
+msgstr "İşaretlenme nedeni"
+
+#: admin/views/settings-log.php:35
+msgid ""
+"Recent comments and form submissions blocked by AntiSpam Wizard (newest "
+"first, max 100)."
+msgstr ""
+"AntiSpam Wizard tarafından engellenen son yorumlar ve form gönderimleri (en "
+"yeni önce, en fazla 100)."
+
+#: admin/class-admin-page.php:137 admin/views/settings-excluded-tokens.php:35
+#: admin/views/settings-stop-words.php:36
+msgid "Remove"
+msgstr "Kaldır"
+
+#: admin/views/settings-general.php:76
+msgid "Rule-Based Checks"
+msgstr "Kural Tabanlı Kontroller"
+
+#: admin/views/settings-general.php:334 admin/views/settings-main.php:42
+msgid "Save Changes"
+msgstr "Değişiklikleri Kaydet"
+
+#. translators: %s: Human-readable name of the script model the sample was saved to.
+#: admin/class-admin-page.php:716
+#, php-format
+msgid "Saved to: %s model"
+msgstr "%s modeline kaydedildi"
+
+#: admin/views/settings-general.php:258
+msgid "Script Group"
+msgstr "Yazı Sistemi Grubu"
+
+#: admin/class-admin-page.php:303 admin/class-admin-page.php:356
+#: admin/class-admin-page.php:385 admin/class-admin-page.php:423
+#: admin/class-admin-page.php:453
+msgid "Security check failed."
+msgstr "Güvenlik kontrolü başarısız oldu."
+
+#: admin/views/settings-general.php:18 admin/views/settings-main.php:18
+msgid "Settings saved."
+msgstr "Ayarlar kaydedildi."
+
+#: admin/views/settings-general.php:136
+msgid "Short word len"
+msgstr "Kısa kelime uzunluğu"
+
+#: admin/views/settings-general.php:141
+msgid "Short word ratio"
+msgstr "Kısa kelime oranı"
+
+#: admin/views/settings-general.php:305
+msgid "Show flagged comments to their author"
+msgstr "İşaretlenen yorumları yazarına göster"
+
+#: admin/views/settings-general.php:222 admin/views/settings-log.php:28
+#: admin/views/settings-stats.php:24
+msgid "Similarity"
+msgstr "Benzerlik"
+
+#: admin/views/settings-general.php:223
+msgid "Similarity Filter"
+msgstr "Benzerlik Filtresi"
+
+#: admin/views/settings-general.php:228
+msgid "Similarity threshold"
+msgstr "Benzerlik eşiği"
+
+#: admin/views/settings-general.php:146
+msgid "Space ratio"
+msgstr "Boşluk oranı"
+
+#: admin/views/settings-general.php:125 admin/views/settings-log.php:24
+#: admin/views/settings-stats.php:20
+msgid "Spacing"
+msgstr "Boşluk"
+
+#: admin/views/settings-log.php:92 includes/class-privacy.php:404
+msgid "Spam"
+msgstr "Spam"
+
+#: admin/class-admin-page.php:89 admin/views/settings-log.php:34
+msgid "Spam Log"
+msgstr "Spam Günlüğü"
+
+#: admin/views/settings-main.php:30
+msgid "Spam Protection"
+msgstr "Spam Koruması"
+
+#: admin/views/settings-general.php:259
+msgid "Spam Samples"
+msgstr "Spam Örnekleri"
+
+#: admin/views/settings-general.php:209
+msgid "Spam probability threshold"
+msgstr "Spam olasılık eşiği"
+
+#: admin/class-admin-page.php:90
+msgid "Statistics"
+msgstr "İstatistikler"
+
+#: admin/class-admin-page.php:87 admin/views/settings-general.php:83
+#: admin/views/settings-log.php:21 admin/views/settings-stats.php:17
+msgid "Stop Words"
+msgstr "Engelleme Kelimeleri"
+
+#: admin/views/settings-general.php:84
+msgid "Stop Words Filter"
+msgstr "Engelleme Kelimeleri Filtresi"
+
+#: includes/class-privacy.php:356
+msgid "Submission fragment"
+msgstr "Gönderim parçası"
+
+#: admin/views/settings-general.php:56 admin/views/settings-general.php:57
+#: admin/views/settings-log.php:20 admin/views/settings-stats.php:16
+msgid "Submit Time"
+msgstr "Gönderim Süresi"
+
+#: admin/views/settings-general.php:183
+msgid "TTL (sec)"
+msgstr "TTL (sn)"
+
+#: admin/class-admin-page.php:563
+msgid "This comment has already been used for training."
+msgstr "Bu yorum zaten eğitim için kullanılmış."
+
+#: admin/views/settings-general.php:163 admin/views/settings-general.php:179
+msgid "Threshold"
+msgstr "Eşik"
+
+#: admin/views/settings-excluded-tokens.php:27
+msgid "Token Cloud"
+msgstr "Jeton Bulutu"
+
+#: admin/class-admin-page.php:415
+msgid "Token added."
+msgstr "Jeton eklendi."
+
+#: admin/class-admin-page.php:408
+msgid "Token already exists."
+msgstr "Jeton zaten mevcut."
+
+#: admin/class-admin-page.php:397
+msgid "Token cannot be empty."
+msgstr "Jeton boş olamaz."
+
+#: admin/class-admin-page.php:402
+msgid "Token must be a single word (letters and numbers only)."
+msgstr "Jeton tek bir kelime olmalıdır (yalnızca harf ve rakam)."
+
+#: admin/class-admin-page.php:438
+msgid "Token not found."
+msgstr "Jeton bulunamadı."
+
+#: admin/class-admin-page.php:445
+msgid "Token removed."
+msgstr "Jeton kaldırıldı."
+
+#: admin/views/settings-excluded-tokens.php:18
+msgid ""
+"Tokens listed here are excluded during tokenization for Bayesian and "
+"Similarity checks. These are typically common words (stop-words) that do not "
+"contribute to spam detection."
+msgstr ""
+"Burada listelenen jetonlar, Bayes ve Benzerlik kontrolleri için tokenizasyon "
+"sırasında hariç tutulur. Bunlar genellikle spam tespitine katkıda bulunmayan "
+"yaygın kelimelerdir (engelleme kelimeleri)."
+
+#: admin/views/settings-stats.php:47
+msgid "Total Blocked"
+msgstr "Toplam Engellenen"
+
+#: admin/class-admin-page.php:141
+msgid "Trained as "
+msgstr "Eğitildi: "
+
+#. translators: %s: Training category the entry was marked as (spam or ham).
+#: admin/views/settings-log.php:88
+#, php-format
+msgid "Trained as %s"
+msgstr "%s olarak eğitildi"
+
+#: includes/class-privacy.php:403 includes/class-privacy.php:408
+msgid "Training category"
+msgstr "Eğitim kategorisi"
+
+#: admin/views/settings-general.php:248
+msgid ""
+"Training data available per script group for Bayesian and Similarity checks. "
+"Mark comments as spam or ham in the Spam Log to grow each model."
+msgstr ""
+"Bayes ve Benzerlik kontrolleri için yazı sistemi grubuna göre eğitim "
+"verileri mevcuttur. Her modeli büyütmek için Spam Günlüğünde yorumları spam "
+"veya ham olarak işaretleyin."
+
+#: admin/class-admin-page.php:764
+msgid "Training data may be inconsistent. Please check training data manually."
+msgstr ""
+"Eğitim verileri tutarsız olabilir. Lütfen eğitim verilerini manuel olarak "
+"kontrol edin."
+
+#: includes/class-privacy.php:416
+msgid "Training sample text"
+msgstr "Eğitim örneği metni"
+
+#: includes/class-privacy.php:319 includes/class-privacy.php:368
+msgid "Triggered checks"
+msgstr "Tetiklenen kontroller"
+
+#: admin/views/settings-stop-words.php:20
+msgid "Type a word to block..."
+msgstr "Engellenecek bir kelime yazın…"
+
+#: admin/class-admin-page.php:348
+msgid "Word added."
+msgstr "Kelime eklendi."
+
+#: admin/class-admin-page.php:341
+msgid "Word already exists."
+msgstr "Kelime zaten mevcut."
+
+#: admin/class-admin-page.php:314
+msgid "Word cannot be empty."
+msgstr "Kelime boş olamaz."
+
+#: admin/class-admin-page.php:319
+msgid "Word must be 64 characters or fewer."
+msgstr "Kelime 64 karakter veya daha az olmalıdır."
+
+#: admin/class-admin-page.php:335
+msgid "Word must contain only letters and numbers."
+msgstr "Kelime yalnızca harf ve rakam içermelidir."
+
+#: admin/class-admin-page.php:370
+msgid "Word not found."
+msgstr "Kelime bulunamadı."
+
+#: admin/class-admin-page.php:377
+msgid "Word removed."
+msgstr "Kelime kaldırıldı."
+
+#: admin/views/settings-stop-words.php:18
+msgid ""
+"Words prefixed with \"=\" require an exact match. Otherwise, substring "
+"matching is used."
+msgstr ""
+"\"=\" ile başlayan kelimeler tam eşleşme gerektirir. Aksi takdirde alt dize "
+"eşleşmesi kullanılır."
+
+#: includes/class-moderation.php:498
+msgid "You do not have permission to moderate comments."
+msgstr "Yorumları denetleme izniniz yok."
+
+#. translators: 1: Whitespace-to-length ratio, 2: Percentage of short words.
+#: includes/checks/class-spacing-check.php:83
+#, php-format
+msgid "abnormal (ratio: %1$.2f, short: %2$.0f%%)"
+msgstr "anormal (oran: %1$.2f, kısa: %2$.0f%%)"
+
+#: includes/checks/class-bayesian-check.php:109
+#: includes/checks/class-duplicate-check.php:82
+#: includes/checks/class-emoji-check.php:42
+#: includes/checks/class-honeypot-check.php:41
+#: includes/checks/class-links-check.php:27
+#: includes/checks/class-multi-lang-check.php:109
+#: includes/checks/class-similarity-check.php:122
+#: includes/checks/class-spacing-check.php:27
+#: includes/checks/class-stop-words-check.php:47
+#: includes/checks/class-submit-time-check.php:54
+msgid "check disabled"
+msgstr "kontrol devre dışı"
+
+#: includes/checks/class-bayesian-check.php:127
+msgid "comment too short for bayesian"
+msgstr "bayes için yorum çok kısa"
+
+#: includes/checks/class-similarity-check.php:140
+msgid "comment too short for similarity"
+msgstr "benzerlik için yorum çok kısa"
+
+#. translators: 1: Number of identical submissions seen, 2: Configured threshold.
+#: includes/checks/class-duplicate-check.php:138
+#, php-format
+msgid "duplicate comment %1$d/%2$d"
+msgstr "tekrarlanan yorum %1$d/%2$d"
+
+#. translators: 1: Number of identical submissions seen, 2: Configured threshold.
+#: includes/checks/class-duplicate-check.php:146
+#, php-format
+msgid "duplicate count %1$d/%2$d"
+msgstr "tekrar sayısı %1$d/%2$d"
+
+#: includes/checks/class-submit-time-check.php:100
+msgid "elapsed time acceptable"
+msgstr "geçen süre kabul edilebilir"
+
+#. translators: 1: Number of emoji found, 2: Configured maximum.
+#: includes/checks/class-emoji-check.php:66
+#, php-format
+msgid "emoji %1$d/%2$d"
+msgstr "emoji %1$d/%2$d"
+
+#: includes/checks/class-bayesian-check.php:114
+#: includes/checks/class-emoji-check.php:47
+#: includes/checks/class-links-check.php:32
+#: includes/checks/class-multi-lang-check.php:114
+#: includes/checks/class-similarity-check.php:127
+#: includes/checks/class-stop-words-check.php:57
+msgid "empty comment"
+msgstr "boş yorum"
+
+#: includes/checks/class-honeypot-check.php:56
+msgid "field absent"
+msgstr "alan yok"
+
+#: includes/checks/class-honeypot-check.php:66
+msgid "field empty"
+msgstr "alan boş"
+
+#: includes/checks/class-submit-time-check.php:85
+msgid "future timestamp"
+msgstr "gelecekteki zaman damgası"
+
+#: includes/checks/class-honeypot-check.php:60
+#: includes/checks/class-honeypot-check.php:72
+msgid "honeypot filled"
+msgstr "tuzak dolu"
+
+#: includes/checks/class-bayesian-check.php:133
+msgid "insufficient training data"
+msgstr "yetersiz eğitim verisi"
+
+#. translators: 1: Number of links found, 2: Configured maximum.
+#: includes/checks/class-links-check.php:52
+#, php-format
+msgid "links %1$d/%2$d"
+msgstr "bağlantı %1$d/%2$d"
+
+#: includes/checks/class-duplicate-check.php:101
+msgid "missing data"
+msgstr "eksik veri"
+
+#. translators: 1: Number of distinct scripts detected, 2: Configured threshold.
+#: includes/checks/class-multi-lang-check.php:125
+#: includes/checks/class-multi-lang-check.php:133
+#, php-format
+msgid "mixed scripts %1$d/%2$d"
+msgstr "karışık yazı sistemleri %1$d/%2$d"
+
+#: includes/checks/class-spacing-check.php:57
+msgid "no spaces or letters"
+msgstr "boşluk veya harf yok"
+
+#: includes/checks/class-stop-words-check.php:69
+msgid "no stop words configured"
+msgstr "engelleme kelimesi yapılandırılmamış"
+
+#. translators: 1: Whitespace-to-length ratio, 2: Percentage of short words.
+#: includes/checks/class-spacing-check.php:91
+#, php-format
+msgid "normal (ratio: %1$.2f, short: %2$.0f%%)"
+msgstr "normal (oran: %1$.2f, kısa: %2$.0f%%)"
+
+#: includes/checks/class-stop-words-check.php:85
+msgid "not found"
+msgstr "bulunamadı"
+
+#: includes/checks/class-honeypot-check.php:47
+#: includes/checks/class-submit-time-check.php:59
+msgid "skipped non-comment type"
+msgstr "yorum olmayan tür atlandı"
+
+#. translators: 1: Elapsed seconds, 2: Minimum configured seconds.
+#: includes/checks/class-submit-time-check.php:96
+#, php-format
+msgid "submitted in %1$ds (min %2$ds)"
+msgstr "%1$d saniyede gönderildi (min %2$d sn)"
+
+#: includes/checks/class-submit-time-check.php:66
+msgid "token absent"
+msgstr "belirteç yok"
+
+#: includes/checks/class-submit-time-check.php:89
+msgid "token expired"
+msgstr "token expired"
+
+#: includes/checks/class-submit-time-check.php:71
+#: includes/checks/class-submit-time-check.php:79
+msgid "token malformed or tampered"
+msgstr "belirteç hatalı veya değiştirilmiş"
+
+#. translators: %d: Number of words found in the comment.
+#: includes/checks/class-spacing-check.php:48
+#, php-format
+msgid "too few words (%d)"
+msgstr "çok az kelime (%d)"
+
+#. translators: 1: Number of emoji found, 2: Configured maximum.
+#: includes/checks/class-emoji-check.php:58
+#, php-format
+msgid "too many emoji %1$d/%2$d"
+msgstr "çok fazla emoji %1$d/%2$d"
+
+#. translators: 1: Number of links found, 2: Configured maximum.
+#: includes/checks/class-links-check.php:44
+#, php-format
+msgid "too many links %1$d/%2$d"
+msgstr "çok fazla bağlantı %1$d/%2$d"
+
+#: includes/checks/class-spacing-check.php:33
+msgid "too short"
+msgstr "çok kısa"

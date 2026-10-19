@@ -1,0 +1,46 @@
+services:
+  test:
+    image: composer:2
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "composer install --quiet && vendor/bin/phpunit --configuration phpunit.xml"
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppass
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  wordpress:
+    image: wordpress:${WORDPRESS_IMAGE:-6.4-php8.1-apache}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${WP_HOST_PORT:-8080}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+    volumes:
+      - wp_data:/var/www/html
+      - ./antispam-wizard:/var/www/html/wp-content/plugins/antispam-wizard
+      # dev/bench.php is run with `wp eval-file /asw-dev/bench.php` (see dev/bench.php).
+      - ./dev:/asw-dev:ro
+
+volumes:
+  db_data:
+  wp_data:

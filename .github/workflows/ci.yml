@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    name: Unit tests (PHPUnit stubs)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run unit test suite
+        run: docker compose run --rm test
+
+  wp-smoke:
+    name: WP smoke (${{ matrix.wp }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        wp:
+          - 6.4-php8.1-apache
+          - 7.0-php8.3-apache
+          - 7.1-php8.3-apache
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run runtime smoke harness
+        run: WORDPRESS_IMAGE=${{ matrix.wp }} bash dev/smoke.sh
+
+  plugin-check:
+    name: WordPress.org Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run Plugin Check harness
+        run: bash dev/plugin-check.sh
+

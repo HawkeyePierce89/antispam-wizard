@@ -1,0 +1,13 @@
+{
+    "name": "asw/antispam-wizard-tests",
+    "description": "AntiSpam Wizard WordPress plugin test suite",
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload": {
+        "classmap": [
+            "antispam-wizard/includes/",
+            "antispam-wizard/admin/"
+        ]
+    }
+}

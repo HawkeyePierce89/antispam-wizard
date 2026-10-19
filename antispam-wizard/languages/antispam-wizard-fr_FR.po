@@ -1,0 +1,1032 @@
+# French (France) translation for AntiSpam Wizard.
+# Copyright (C) 2026 AntiSpam Wizard
+# This file is distributed under the same license as the AntiSpam Wizard package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: AntiSpam Wizard 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-08 02:45+0400\n"
+"PO-Revision-Date: 2026-04-09 00:00+0000\n"
+"Last-Translator: AntiSpam Wizard Team\n"
+"Language-Team: French <fr@li.org>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: admin/views/settings-general.php:307
+msgid ""
+"A comment the plugin flags as spam stays visible to the person who wrote it, "
+"marked as awaiting moderation, so a real visitor caught by mistake does not "
+"post it again. Nobody else sees it."
+msgstr "Un commentaire que l’extension signale comme spam reste visible pour la personne qui l’a écrit, marqué comme en attente de modération, afin qu’un vrai visiteur intercepté par erreur ne le publie pas à nouveau. Personne d’autre ne le voit."
+
+#: admin/views/settings-general.php:126
+msgid "Abnormal Spacing"
+msgstr "Espacement anormal"
+
+#: admin/views/settings-stop-words.php:17
+msgid "Add New Word"
+msgstr "Ajouter un nouveau mot"
+
+#: admin/views/settings-excluded-tokens.php:17
+#: admin/views/settings-excluded-tokens.php:21
+msgid "Add Token"
+msgstr "Ajouter un jeton"
+
+#: admin/views/settings-stop-words.php:21
+msgid "Add Word"
+msgstr "Ajouter un mot"
+
+#: admin/views/settings-excluded-tokens.php:20
+msgid "Add a token to exclude..."
+msgstr "Ajouter un jeton à exclure…"
+
+#: admin/views/settings-general.php:49
+msgid ""
+"Adds a hidden decoy field to the comment form. Real users cannot see it, but "
+"automated bots that fill in all fields will trip it and be blocked."
+msgstr ""
+"Ajoute un champ piège caché au formulaire de commentaire. Les vrais "
+"utilisateurs ne peuvent pas le voir, mais les robots automatisés qui "
+"remplissent tous les champs le déclencheront et seront bloqués."
+
+#: admin/views/settings-general.php:326
+msgid ""
+"All enabled checks run on Contact Form 7 submissions and flagged submissions "
+"are blocked through Contact Form 7's own spam mechanism."
+msgstr ""
+"Toutes les vérifications activées s'exécutent sur les soumissions Contact "
+"Form 7 et les soumissions signalées sont bloquées via le mécanisme anti-spam "
+"propre à Contact Form 7."
+
+#: admin/class-admin-page.php:140
+msgid "An error occurred."
+msgstr "Une erreur s'est produite."
+
+#: admin/class-admin-page.php:71 admin/class-admin-page.php:72
+#: includes/class-privacy.php:65 includes/class-privacy.php:79
+#: includes/class-privacy.php:333 includes/class-privacy.php:375
+#: includes/class-privacy.php:423 includes/class-privacy.php:571
+msgid "AntiSpam Wizard"
+msgstr "AntiSpam Wizard"
+
+#. translators: %s: Submenu page label.
+#: admin/class-admin-page.php:97
+#, php-format
+msgid "AntiSpam Wizard - %s"
+msgstr "AntiSpam Wizard – %s"
+
+#: admin/class-admin-page.php:183
+msgid "AntiSpam Wizard Settings"
+msgstr "Paramètres de AntiSpam Wizard"
+
+#: includes/class-privacy.php:565
+msgid ""
+"AntiSpam Wizard analyzes comments and contact-form submissions to detect "
+"spam. When a comment is flagged, either by one of the plugin's checks or by "
+"a spam decision you make while moderating, the plugin stores a short "
+"fragment of the comment text, a SHA-256 hash of the commenter's IP address "
+"(the raw IP is never stored), and the reason the comment was flagged. When a "
+"contact-form submission is flagged, the plugin stores a short fragment of "
+"the submitted text, a SHA-256 hash of the submitter's IP address, and a "
+"SHA-256 hash of the submitter's email address (raw values are never stored). "
+"When a comment is used to train the spam filter, either from the plugin's "
+"Spam Log or by any Spam / Not Spam moderation decision made elsewhere in "
+"WordPress, the full text of that comment is stored as a training sample, "
+"together with a SHA-256 hash of the commenter's email address, until it is "
+"erased through a personal-data erasure request or the plugin is uninstalled, "
+"and it is included in personal-data exports. This data is used solely for "
+"spam detection and statistics. It is removed in response to a personal-data "
+"erasure request and when the plugin is uninstalled."
+msgstr ""
+"AntiSpam Wizard analyse les commentaires et les soumissions de formulaires "
+"de contact pour détecter le spam. Lorsqu'un commentaire est signalé, soit "
+"par l'une des vérifications du plugin, soit par une décision de spam prise "
+"lors de la modération, le plugin stocke un court fragment du texte du "
+"commentaire, un hachage SHA-256 de l'adresse IP du commentateur (l'IP brute "
+"n'est jamais stockée) et la raison pour laquelle le commentaire a été "
+"signalé. Lorsqu'une soumission de formulaire de contact est signalée, le "
+"plugin stocke un court fragment du texte soumis, un hachage SHA-256 de "
+"l'adresse IP de l'expéditeur et un hachage SHA-256 de l'adresse e-mail de "
+"l'expéditeur (les valeurs brutes ne sont jamais stockées). Lorsqu'un "
+"commentaire est utilisé pour entraîner le filtre antispam, soit depuis le "
+"journal de spam du plugin, soit par toute décision de modération Spam / Non "
+"spam prise ailleurs dans WordPress, le texte intégral de ce commentaire est "
+"stocké comme échantillon d'entraînement, accompagné d'un hachage SHA-256 de "
+"l'adresse e-mail du commentateur, jusqu'à ce qu'il soit effacé à la suite "
+"d'une demande d'effacement de données personnelles ou que le plugin soit "
+"désinstallé, et il est inclus dans les exports de données personnelles. Ces "
+"données sont utilisées uniquement pour la détection du spam et les "
+"statistiques. Elles sont supprimées en réponse à une demande d'effacement de "
+"données personnelles et lors de la désinstallation du plugin."
+
+#: admin/views/settings-main.php:22
+msgid ""
+"AntiSpam Wizard is ready to protect your site out of the box. Fine-tune "
+"individual checks and thresholds on the other settings pages."
+msgstr ""
+"AntiSpam Wizard est prêt à protéger votre site dès l'installation. Ajustez "
+"les vérifications et seuils individuels sur les autres pages de réglages."
+
+#: includes/class-privacy.php:541
+msgid ""
+"AntiSpam Wizard spam-log entries, flagging reasons, form submissions, and "
+"training samples were removed."
+msgstr ""
+"Les entrées du journal anti-spam, les raisons de signalement, les "
+"soumissions de formulaires et les échantillons d'entraînement d'AntiSpam "
+"Wizard ont été supprimés."
+
+#: includes/class-privacy.php:544
+msgid ""
+"AntiSpam Wizard training samples could not be removed because of a database "
+"error. Please retry this erasure request."
+msgstr ""
+"Les échantillons d'entraînement d'AntiSpam Wizard n'ont pas pu être "
+"supprimés en raison d'une erreur de base de données. Veuillez relancer cette "
+"demande d'effacement."
+
+#: admin/views/settings-general.php:203 admin/views/settings-log.php:27
+#: admin/views/settings-stats.php:23
+msgid "Bayesian"
+msgstr "Bayésien"
+
+#: admin/views/settings-general.php:204
+msgid "Bayesian Filter"
+msgstr "Filtre bayésien"
+
+#: admin/views/settings-stop-words.php:27
+msgid "Blocked Words"
+msgstr "Mots bloqués"
+
+#: admin/views/settings-general.php:86
+msgid ""
+"Blocks comments containing words from your blacklist. Supports exact match "
+"(prefix \"=\") and substring modes. Configure the list on the Stop Words tab."
+msgstr ""
+"Bloque les commentaires contenant des mots de votre liste noire. Prend en "
+"charge la correspondance exacte (préfixe \"=\") et par sous-chaîne. "
+"Configurez la liste dans l'onglet Mots interdits."
+
+#: admin/views/settings-general.php:176
+msgid ""
+"Blocks repeated identical comments from the same IP within a time window. "
+"Threshold sets how many duplicates are allowed, TTL sets the window duration."
+msgstr ""
+"Bloque les commentaires identiques répétés depuis la même IP dans une "
+"fenêtre de temps. Le seuil définit combien de doublons sont autorisés, le "
+"TTL définit la durée de la fenêtre."
+
+#: admin/views/settings-general.php:39
+msgid "Bot Checks"
+msgstr "Vérifications de Robots"
+
+#: admin/views/settings-general.php:112
+msgid ""
+"Catches comments overloaded with emoji, a common pattern in automated spam."
+msgstr ""
+"Détecte les commentaires surchargés d'emoji, un schéma courant dans le spam "
+"automatisé."
+
+#: admin/views/settings-general.php:296
+msgid "Characters"
+msgstr "Caractères"
+
+#: admin/views/settings-general.php:206
+msgid ""
+"Classifies comments using a Naive Bayes model trained on your spam/ham "
+"samples. Higher threshold means stricter filtering (fewer false positives "
+"but may miss some spam)."
+msgstr ""
+"Classe les commentaires à l'aide d'un modèle Naive Bayes entraîné sur vos "
+"échantillons de spam/ham. Un seuil plus élevé signifie un filtrage plus "
+"strict (moins de faux positifs mais peut manquer certains spams)."
+
+#: admin/views/settings-log.php:40
+msgid "Clear Log"
+msgstr "Effacer le journal"
+
+#: includes/class-privacy.php:307
+msgid "Comment fragment"
+msgstr "Fragment du commentaire"
+
+#. translators: %s: Training category the comment was saved as (spam or ham).
+#: admin/class-admin-page.php:710
+#, php-format
+msgid "Comment marked as %s. Training data updated."
+msgstr "Commentaire marqué comme %s. Données d'entraînement mises à jour."
+
+#: admin/class-admin-page.php:564
+msgid "Comment not found in spam log. It may have been removed."
+msgstr ""
+"Commentaire introuvable dans le journal de spam. Il a peut-être été "
+"supprimé.Commentaire introuvable dans le journal de spam. Il a peut-être été "
+"supprimé."
+
+#: admin/class-admin-page.php:477 includes/class-moderation.php:508
+msgid "Comment not found."
+msgstr "Commentaire introuvable."
+
+#: admin/class-admin-page.php:688
+msgid ""
+"Comment status could not be changed and rollback failed. Please check "
+"training data manually."
+msgstr ""
+"Le statut du commentaire n'a pas pu être modifié et l'annulation a échoué. "
+"Veuillez vérifier les données d'entraînement manuellement."
+
+#: admin/class-admin-page.php:681 includes/class-moderation.php:517
+msgid "Comment status could not be changed. Please try again."
+msgstr "Le statut du commentaire n'a pas pu être modifié. Veuillez réessayer."
+
+#: admin/views/settings-general.php:293
+msgid ""
+"Comments shorter than this skip the heavier Bayesian and Similarity checks, "
+"since very short messages rarely provide enough signal for statistical "
+"analysis."
+msgstr ""
+"Les commentaires plus courts que cette valeur ignorent les vérifications "
+"bayésiennes et de similarité plus lourdes, car les messages très courts "
+"fournissent rarement suffisamment de signal pour l'analyse statistique."
+
+#: admin/views/settings-general.php:225
+msgid ""
+"Compares each comment against known spam samples using cosine similarity on "
+"tokenized text. Higher threshold means the comment must be more similar to "
+"known spam to be blocked."
+msgstr ""
+"Compare chaque commentaire aux échantillons de spam connus en utilisant la "
+"similarité cosinus sur le texte tokenisé. Un seuil plus élevé signifie que "
+"le commentaire doit être plus similaire au spam connu pour être bloqué."
+
+#: admin/views/settings-general.php:323 admin/views/settings-general.php:324
+msgid "Contact Form 7"
+msgstr "Contact Form 7"
+
+#: includes/class-privacy.php:395
+msgid "Date added to training data"
+msgstr "Date d'ajout aux données d'entraînement"
+
+#: includes/class-privacy.php:301 includes/class-privacy.php:350
+msgid "Date flagged"
+msgstr "Date de signalement"
+
+#: admin/views/settings-general.php:128
+msgid ""
+"Detects obfuscated text where characters are separated by spaces (e.g. \"h e "
+"l l o w o r l d\") to bypass word-based filters. Parameters control "
+"sensitivity: min words count sets how long a comment must be before this "
+"check applies, short word length/ratio detect single-character \"words\", "
+"space ratio catches excessive whitespace."
+msgstr ""
+"Détecte le texte masqué où les caractères sont séparés par des espaces (ex. "
+"\"h e l l o w o r l d\") pour contourner les filtres basés sur les mots. Les "
+"paramètres contrôlent la sensibilité : le nombre minimum de mots définit la "
+"longueur requise d'un commentaire avant l'application de cette vérification, "
+"la longueur/proportion de mots courts détecte les \"mots\" d'un seul "
+"caractère, la proportion d'espaces détecte les espaces excessifs."
+
+#: admin/views/settings-log.php:26
+msgid "Duplicate"
+msgstr "Doublon"
+
+#: admin/views/settings-general.php:174
+msgid "Duplicate Detector"
+msgstr "Détecteur de doublons"
+
+#: admin/views/settings-general.php:173 admin/views/settings-stats.php:22
+msgid "Duplicates"
+msgstr "Doublons"
+
+#: admin/views/settings-stats.php:69
+msgid ""
+"Each blocked comment can trigger multiple checks. These counts show "
+"individual check matches, so the sum may exceed Total Blocked."
+msgstr ""
+"Chaque commentaire bloqué peut déclencher plusieurs vérifications. Ces "
+"compteurs montrent les correspondances individuelles, donc la somme peut "
+"dépasser le total bloqué."
+
+#: admin/views/settings-general.php:109 admin/views/settings-log.php:23
+#: admin/views/settings-stats.php:19
+msgid "Emoji"
+msgstr "Emoji"
+
+#: admin/views/settings-general.php:110
+msgid "Emoji Limiter"
+msgstr "Limiteur d'emoji"
+
+#: admin/views/settings-main.php:32
+msgid ""
+"Enable or disable all spam checks globally. When disabled, all comments pass "
+"through without filtering."
+msgstr ""
+"Activer ou désactiver globalement toutes les vérifications anti-spam. "
+"Lorsque désactivé, tous les commentaires passent sans filtrage."
+
+#: admin/class-admin-page.php:327
+msgid "Exact-match phrase cannot be empty."
+msgstr "La phrase de correspondance exacte ne peut pas être vide."
+
+#: admin/class-admin-page.php:331
+msgid "Exact-match phrase must contain only letters, numbers, and spaces."
+msgstr ""
+"La phrase exacte ne doit contenir que des lettres, des chiffres et des "
+"espaces.La phrase de correspondance exacte ne doit contenir que des lettres, "
+"des chiffres et des espaces."
+
+#: admin/class-admin-page.php:88
+msgid "Excluded Tokens"
+msgstr "Jetons exclus"
+
+#: admin/views/settings-excluded-tokens.php:66
+#: admin/views/settings-stop-words.php:67
+msgid "Export as Text File"
+msgstr "Exporter en fichier texte"
+
+#: admin/class-admin-page.php:558 admin/class-admin-page.php:699
+msgid "Failed to save training data."
+msgstr "Échec de l'enregistrement des données d'entraînement."
+
+#: admin/views/settings-general.php:96
+msgid ""
+"Flags comments with too many URLs. Spammers often stuff comments with links "
+"to boost SEO. Adjust the max to match your site's typical comment style."
+msgstr ""
+"Signale les commentaires avec trop d'URLs. Les spammeurs remplissent souvent "
+"les commentaires de liens pour améliorer le SEO. Ajustez le maximum selon le "
+"style de commentaires typique de votre site."
+
+#: admin/views/settings-general.php:160
+msgid ""
+"Flags words that mix characters from different Unicode scripts (e.g. Latin + "
+"Cyrillic) in a single word, a technique used to visually mimic legitimate "
+"text. Threshold sets how many such words trigger blocking."
+msgstr ""
+"Signale les mots qui mélangent des caractères de différents scripts Unicode "
+"(ex. Latin + Cyrillique) dans un seul mot, une technique utilisée pour "
+"imiter visuellement du texte légitime. Le seuil définit combien de ces mots "
+"déclenchent le blocage."
+
+#: admin/views/settings-log.php:79
+msgid "Form"
+msgstr "Formulaire"
+
+#: admin/views/settings-general.php:318
+msgid "Form Integrations"
+msgstr "Intégrations de formulaires"
+
+#: admin/views/settings-general.php:143
+msgid ""
+"Fraction of short words (0.1–1.0) that triggers the check. Example: 0.6 "
+"means the comment is flagged when 60% or more of its words are short."
+msgstr ""
+"Proportion de mots courts (0,1–1,0) qui déclenche la vérification. Exemple : "
+"0,6 signifie que le commentaire est signalé lorsque 60 % ou plus de ses mots "
+"sont courts."
+
+#: admin/views/settings-general.php:148
+msgid ""
+"Fraction of whitespace characters relative to total length (0.1–1.0) that "
+"triggers the check. Example: 0.4 means the comment is flagged when 40% or "
+"more of its characters are spaces."
+msgstr ""
+"Proportion de caractères d'espacement par rapport à la longueur totale (0,1–"
+"1,0) qui déclenche la vérification. Exemple : 0,4 signifie que le "
+"commentaire est signalé lorsque 40 % ou plus de ses caractères sont des "
+"espaces."
+
+#: admin/class-admin-page.php:86
+msgid "General"
+msgstr "Général"
+
+#: admin/views/settings-general.php:285
+msgid "Global Settings"
+msgstr "Paramètres globaux"
+
+#: admin/views/settings-log.php:91 includes/class-privacy.php:409
+msgid "Ham"
+msgstr "Ham"
+
+#: admin/views/settings-general.php:260
+msgid "Ham Samples"
+msgstr "Échantillons de ham"
+
+#: admin/views/settings-general.php:46 admin/views/settings-general.php:47
+#: admin/views/settings-log.php:19 admin/views/settings-stats.php:15
+msgid "Honeypot"
+msgstr "Pot de miel (Honeypot)"
+
+#: includes/class-privacy.php:313 includes/class-privacy.php:362
+msgid "IP address (SHA-256 hash)"
+msgstr "Adresse IP (hachage SHA-256)"
+
+#: admin/views/settings-excluded-tokens.php:60
+#: admin/views/settings-stop-words.php:61
+msgid "Import"
+msgstr "Importer"
+
+#: admin/views/settings-excluded-tokens.php:45
+#: admin/views/settings-stop-words.php:46
+msgid "Import / Export"
+msgstr "Importer / Exporter"
+
+#: admin/views/settings-excluded-tokens.php:52
+msgid "Import from file (one token per line):"
+msgstr "Importer depuis un fichier (un jeton par ligne) :"
+
+#: admin/views/settings-stop-words.php:53
+msgid "Import from file (one word per line):"
+msgstr "Importer depuis un fichier (un mot par ligne) :"
+
+#. translators: %d: Maximum number of excluded-token entries kept on import.
+#: admin/class-admin-page.php:934
+#, php-format
+msgid "Import truncated: excluded tokens list capped at %d entries."
+msgstr "Import tronqué : la liste des jetons exclus est limitée à %d entrées."
+
+#. translators: %d: Maximum number of stop-word entries kept on import.
+#: admin/class-admin-page.php:824
+#, php-format
+msgid "Import truncated: stop-words list capped at %d entries."
+msgstr "Import tronqué : la liste des mots interdits est limitée à %d entrées."
+
+#: admin/class-admin-page.php:471
+msgid "Invalid category."
+msgstr "Catégorie non valide."
+
+#: admin/class-admin-page.php:466
+msgid "Invalid comment ID."
+msgstr "ID de commentaire non valide."
+
+#: admin/views/settings-stats.php:62
+msgid "Last Blocked"
+msgstr "Dernier bloqué"
+
+#: includes/class-comment-form.php:73
+msgid "Leave this field empty"
+msgstr "Laissez ce champ vide"
+
+#: admin/class-admin-page.php:705
+msgid "Legacy"
+msgstr "Legacy"
+
+#: admin/views/settings-general.php:94
+msgid "Link Counter"
+msgstr "Compteur de liens"
+
+#: admin/views/settings-general.php:93 admin/views/settings-log.php:22
+#: admin/views/settings-stats.php:18
+msgid "Links"
+msgstr "Liens"
+
+#: admin/views/settings-general.php:244
+msgid "Loaded Models"
+msgstr "Modèles chargés"
+
+#: admin/views/settings-general.php:196
+msgid "ML-Based Checks"
+msgstr "Vérifications basées sur le ML"
+
+#: admin/class-admin-page.php:85
+msgid "Main"
+msgstr "Accueil"
+
+#: includes/class-moderation.php:466
+msgid "Mark as spam"
+msgstr "Marquer comme spam"
+
+#: admin/views/settings-log.php:29
+msgid "Marked by moderator"
+msgstr "Marqué par le modérateur"
+
+#: admin/views/settings-general.php:115
+msgid "Max emoji"
+msgstr "Max. emoji"
+
+#: admin/views/settings-general.php:99
+msgid "Max links"
+msgstr "Max. liens"
+
+#: admin/views/settings-general.php:138
+msgid ""
+"Maximum character length for a word to be considered \"short\" (e.g. set to "
+"1 to count only single-character tokens like \"h\", \"e\", \"l\")."
+msgstr ""
+"Longueur maximale en caractères pour qu'un mot soit considéré comme "
+"\"court\" (ex. définir à 1 pour ne compter que les jetons d'un seul "
+"caractère comme \"h\", \"e\", \"l\")."
+
+#: admin/views/settings-general.php:59
+msgid ""
+"Measures how long the user took to submit the form. Bots typically submit "
+"forms instantly."
+msgstr ""
+"Mesure le temps pris par l'utilisateur pour soumettre le formulaire. Les "
+"robots soumettent généralement les formulaires instantanément."
+
+#: admin/views/settings-general.php:62
+msgid "Min seconds"
+msgstr "Secondes minimum"
+
+#: admin/views/settings-general.php:131
+msgid "Min words"
+msgstr "Min. mots"
+
+#: admin/views/settings-general.php:291
+msgid "Minimum Message Length"
+msgstr "Longueur minimale du message"
+
+#: admin/views/settings-general.php:133
+msgid ""
+"Minimum number of words a comment must contain before this check is applied. "
+"Shorter comments are skipped."
+msgstr ""
+"Nombre minimum de mots qu'un commentaire doit contenir avant l'application "
+"de cette vérification. Les commentaires plus courts sont ignorés."
+
+#: admin/views/settings-general.php:157 admin/views/settings-log.php:25
+#: admin/views/settings-stats.php:21
+msgid "Mixed Scripts"
+msgstr "Scripts mixtes"
+
+#: admin/views/settings-general.php:158
+msgid "Mixed Scripts Detector"
+msgstr "Détecteur de scripts mixtes"
+
+#: admin/views/settings-stats.php:58
+msgid "Never"
+msgstr "Jamais"
+
+#: admin/views/settings-stats.php:91
+msgid "No check-level statistics recorded yet."
+msgstr "Aucune statistique par vérification enregistrée pour le moment."
+
+#: admin/class-admin-page.php:139 admin/views/settings-excluded-tokens.php:30
+msgid "No excluded tokens configured."
+msgstr "Aucun jeton exclu configuré."
+
+#: admin/views/settings-general.php:276
+msgid ""
+"No script-specific training data found. Mark comments as spam or ham to "
+"start building models."
+msgstr ""
+"Aucune donnée d'entraînement spécifique au script trouvée. Marquez les "
+"commentaires comme spam ou ham pour commencer à construire des modèles."
+
+#: admin/views/settings-log.php:101
+msgid "No spam has been blocked yet."
+msgstr "Aucun spam n'a encore été bloqué."
+
+#: admin/class-admin-page.php:138 admin/views/settings-stop-words.php:30
+msgid "No stop-words configured."
+msgstr "Aucun mot interdit configuré."
+
+#: admin/views/settings-excluded-tokens.php:56
+msgid "Or paste tokens (one per line):"
+msgstr "Ou coller des jetons (un par ligne) :"
+
+#: admin/views/settings-stop-words.php:57
+msgid "Or paste words (one per line):"
+msgstr "Ou coller des mots (un par ligne) :"
+
+#: admin/views/settings-general.php:64
+msgid ""
+"Pages served from cache may use stale tokens, but they fail open and allow "
+"the comment."
+msgstr ""
+"Les pages servies depuis le cache peuvent utiliser des jetons expirés, mais "
+"échouent de manière ouverte et autorisent le commentaire."
+
+#: admin/views/settings-stats.php:68
+msgid "Per-Check Breakdown"
+msgstr "Détail par vérification"
+
+#: admin/class-admin-page.php:308 admin/class-admin-page.php:361
+#: admin/class-admin-page.php:390 admin/class-admin-page.php:428
+#: admin/class-admin-page.php:458
+msgid "Permission denied."
+msgstr "Permission refusée."
+
+#: admin/class-admin-page.php:553
+msgid "Plugin not fully initialized."
+msgstr "Extension pas entièrement initialisée."
+
+#: includes/class-privacy.php:325
+msgid "Reason flagged"
+msgstr "Motif du signalement"
+
+#: admin/views/settings-log.php:35
+msgid ""
+"Recent comments and form submissions blocked by AntiSpam Wizard (newest "
+"first, max 100)."
+msgstr ""
+"Commentaires et soumissions de formulaires récents bloqués par AntiSpam "
+"Wizard (plus récents d'abord, max 100)."
+
+#: admin/class-admin-page.php:137 admin/views/settings-excluded-tokens.php:35
+#: admin/views/settings-stop-words.php:36
+msgid "Remove"
+msgstr "Supprimer"
+
+#: admin/views/settings-general.php:76
+msgid "Rule-Based Checks"
+msgstr "Vérifications basées sur les règles"
+
+#: admin/views/settings-general.php:334 admin/views/settings-main.php:42
+msgid "Save Changes"
+msgstr "Enregistrer les modifications"
+
+#. translators: %s: Human-readable name of the script model the sample was saved to.
+#: admin/class-admin-page.php:716
+#, php-format
+msgid "Saved to: %s model"
+msgstr "Enregistré dans : modèle %s"
+
+#: admin/views/settings-general.php:258
+msgid "Script Group"
+msgstr "Groupe de script"
+
+#: admin/class-admin-page.php:303 admin/class-admin-page.php:356
+#: admin/class-admin-page.php:385 admin/class-admin-page.php:423
+#: admin/class-admin-page.php:453
+msgid "Security check failed."
+msgstr "La vérification de sécurité a échoué."
+
+#: admin/views/settings-general.php:18 admin/views/settings-main.php:18
+msgid "Settings saved."
+msgstr "Paramètres enregistrés."
+
+#: admin/views/settings-general.php:136
+msgid "Short word len"
+msgstr "Long. mot court"
+
+#: admin/views/settings-general.php:141
+msgid "Short word ratio"
+msgstr "Proportion de mots courts"
+
+#: admin/views/settings-general.php:305
+msgid "Show flagged comments to their author"
+msgstr "Afficher les commentaires signalés à leur auteur"
+
+#: admin/views/settings-general.php:222 admin/views/settings-log.php:28
+#: admin/views/settings-stats.php:24
+msgid "Similarity"
+msgstr "Similarité"
+
+#: admin/views/settings-general.php:223
+msgid "Similarity Filter"
+msgstr "Filtre de similarité"
+
+#: admin/views/settings-general.php:228
+msgid "Similarity threshold"
+msgstr "Seuil de similarité"
+
+#: admin/views/settings-general.php:146
+msgid "Space ratio"
+msgstr "Proportion d'espaces"
+
+#: admin/views/settings-general.php:125 admin/views/settings-log.php:24
+#: admin/views/settings-stats.php:20
+msgid "Spacing"
+msgstr "Espacement"
+
+#: admin/views/settings-log.php:92 includes/class-privacy.php:404
+msgid "Spam"
+msgstr "Spam"
+
+#: admin/class-admin-page.php:89 admin/views/settings-log.php:34
+msgid "Spam Log"
+msgstr "Journal de spam"
+
+#: admin/views/settings-main.php:30
+msgid "Spam Protection"
+msgstr "Protection anti-spam"
+
+#: admin/views/settings-general.php:259
+msgid "Spam Samples"
+msgstr "Échantillons de spam"
+
+#: admin/views/settings-general.php:209
+msgid "Spam probability threshold"
+msgstr "Seuil de probabilité de spam"
+
+#: admin/class-admin-page.php:90
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: admin/class-admin-page.php:87 admin/views/settings-general.php:83
+#: admin/views/settings-log.php:21 admin/views/settings-stats.php:17
+msgid "Stop Words"
+msgstr "Mots interdits"
+
+#: admin/views/settings-general.php:84
+msgid "Stop Words Filter"
+msgstr "Filtre de mots interdits"
+
+#: includes/class-privacy.php:356
+msgid "Submission fragment"
+msgstr "Fragment de soumission"
+
+#: admin/views/settings-general.php:56 admin/views/settings-general.php:57
+#: admin/views/settings-log.php:20 admin/views/settings-stats.php:16
+msgid "Submit Time"
+msgstr "Temps de Soumission"
+
+#: admin/views/settings-general.php:183
+msgid "TTL (sec)"
+msgstr "TTL (sec)"
+
+#: admin/class-admin-page.php:563
+msgid "This comment has already been used for training."
+msgstr "Ce commentaire a déjà été utilisé pour l'entraînement."
+
+#: admin/views/settings-general.php:163 admin/views/settings-general.php:179
+msgid "Threshold"
+msgstr "Seuil"
+
+#: admin/views/settings-excluded-tokens.php:27
+msgid "Token Cloud"
+msgstr "Nuage de jetons"
+
+#: admin/class-admin-page.php:415
+msgid "Token added."
+msgstr "Jeton ajouté."
+
+#: admin/class-admin-page.php:408
+msgid "Token already exists."
+msgstr "Le jeton existe déjà."
+
+#: admin/class-admin-page.php:397
+msgid "Token cannot be empty."
+msgstr "Le jeton ne peut pas être vide."
+
+#: admin/class-admin-page.php:402
+msgid "Token must be a single word (letters and numbers only)."
+msgstr "Le jeton doit être un seul mot (lettres et chiffres uniquement)."
+
+#: admin/class-admin-page.php:438
+msgid "Token not found."
+msgstr "Jeton introuvable."
+
+#: admin/class-admin-page.php:445
+msgid "Token removed."
+msgstr "Jeton supprimé."
+
+#: admin/views/settings-excluded-tokens.php:18
+msgid ""
+"Tokens listed here are excluded during tokenization for Bayesian and "
+"Similarity checks. These are typically common words (stop-words) that do not "
+"contribute to spam detection."
+msgstr ""
+"Les jetons listés ici sont exclus lors de la tokenisation pour les "
+"vérifications bayésiennes et de similarité. Ce sont généralement des mots "
+"courants (mots interdits) qui ne contribuent pas à la détection du spam."
+
+#: admin/views/settings-stats.php:47
+msgid "Total Blocked"
+msgstr "Total bloqués"
+
+#: admin/class-admin-page.php:141
+msgid "Trained as "
+msgstr "Entraîné comme "
+
+#. translators: %s: Training category the entry was marked as (spam or ham).
+#: admin/views/settings-log.php:88
+#, php-format
+msgid "Trained as %s"
+msgstr "Entraîné comme %s"
+
+#: includes/class-privacy.php:403 includes/class-privacy.php:408
+msgid "Training category"
+msgstr "Catégorie d'entraînement"
+
+#: admin/views/settings-general.php:248
+msgid ""
+"Training data available per script group for Bayesian and Similarity checks. "
+"Mark comments as spam or ham in the Spam Log to grow each model."
+msgstr ""
+"Données d'entraînement disponibles par groupe de script pour les "
+"vérifications bayésiennes et de similarité. Marquez les commentaires comme "
+"spam ou ham dans le journal de spam pour enrichir chaque modèle."
+
+#: admin/class-admin-page.php:764
+msgid "Training data may be inconsistent. Please check training data manually."
+msgstr ""
+"Les données d'entraînement sont peut-être incohérentes. Veuillez vérifier "
+"les données d'entraînement manuellement."
+
+#: includes/class-privacy.php:416
+msgid "Training sample text"
+msgstr "Texte de l'échantillon d'entraînement"
+
+#: includes/class-privacy.php:319 includes/class-privacy.php:368
+msgid "Triggered checks"
+msgstr "Vérifications déclenchées"
+
+#: admin/views/settings-stop-words.php:20
+msgid "Type a word to block..."
+msgstr "Saisissez un mot à bloquer…"
+
+#: admin/class-admin-page.php:348
+msgid "Word added."
+msgstr "Mot ajouté."
+
+#: admin/class-admin-page.php:341
+msgid "Word already exists."
+msgstr "Le mot existe déjà."
+
+#: admin/class-admin-page.php:314
+msgid "Word cannot be empty."
+msgstr "Le mot ne peut pas être vide."
+
+#: admin/class-admin-page.php:319
+msgid "Word must be 64 characters or fewer."
+msgstr "Le mot doit contenir 64 caractères ou moins."
+
+#: admin/class-admin-page.php:335
+msgid "Word must contain only letters and numbers."
+msgstr "Le mot ne doit contenir que des lettres et des chiffres."
+
+#: admin/class-admin-page.php:370
+msgid "Word not found."
+msgstr "Mot introuvable."
+
+#: admin/class-admin-page.php:377
+msgid "Word removed."
+msgstr "Mot supprimé."
+
+#: admin/views/settings-stop-words.php:18
+msgid ""
+"Words prefixed with \"=\" require an exact match. Otherwise, substring "
+"matching is used."
+msgstr ""
+"Les mots préfixés par \"=\" nécessitent une correspondance exacte. Sinon, la "
+"correspondance par sous-chaîne est utilisée."
+
+#: includes/class-moderation.php:498
+msgid "You do not have permission to moderate comments."
+msgstr "Vous n'avez pas l'autorisation de modérer les commentaires."
+
+#. translators: 1: Whitespace-to-length ratio, 2: Percentage of short words.
+#: includes/checks/class-spacing-check.php:83
+#, php-format
+msgid "abnormal (ratio: %1$.2f, short: %2$.0f%%)"
+msgstr "anormal (proportion : %1$.2f, courts : %2$.0f%%)"
+
+#: includes/checks/class-bayesian-check.php:109
+#: includes/checks/class-duplicate-check.php:82
+#: includes/checks/class-emoji-check.php:42
+#: includes/checks/class-honeypot-check.php:41
+#: includes/checks/class-links-check.php:27
+#: includes/checks/class-multi-lang-check.php:109
+#: includes/checks/class-similarity-check.php:122
+#: includes/checks/class-spacing-check.php:27
+#: includes/checks/class-stop-words-check.php:47
+#: includes/checks/class-submit-time-check.php:54
+msgid "check disabled"
+msgstr "vérification désactivée"
+
+#: includes/checks/class-bayesian-check.php:127
+msgid "comment too short for bayesian"
+msgstr "commentaire trop court pour le bayésien"
+
+#: includes/checks/class-similarity-check.php:140
+msgid "comment too short for similarity"
+msgstr "commentaire trop court pour la similarité"
+
+#. translators: 1: Number of identical submissions seen, 2: Configured threshold.
+#: includes/checks/class-duplicate-check.php:138
+#, php-format
+msgid "duplicate comment %1$d/%2$d"
+msgstr "commentaire en double %1$d/%2$d"
+
+#. translators: 1: Number of identical submissions seen, 2: Configured threshold.
+#: includes/checks/class-duplicate-check.php:146
+#, php-format
+msgid "duplicate count %1$d/%2$d"
+msgstr "nombre de doublons %1$d/%2$d"
+
+#: includes/checks/class-submit-time-check.php:100
+msgid "elapsed time acceptable"
+msgstr "temps écoulé acceptable"
+
+#. translators: 1: Number of emoji found, 2: Configured maximum.
+#: includes/checks/class-emoji-check.php:66
+#, php-format
+msgid "emoji %1$d/%2$d"
+msgstr "emoji %1$d/%2$d"
+
+#: includes/checks/class-bayesian-check.php:114
+#: includes/checks/class-emoji-check.php:47
+#: includes/checks/class-links-check.php:32
+#: includes/checks/class-multi-lang-check.php:114
+#: includes/checks/class-similarity-check.php:127
+#: includes/checks/class-stop-words-check.php:57
+msgid "empty comment"
+msgstr "commentaire vide"
+
+#: includes/checks/class-honeypot-check.php:56
+msgid "field absent"
+msgstr "champ absent"
+
+#: includes/checks/class-honeypot-check.php:66
+msgid "field empty"
+msgstr "champ vide"
+
+#: includes/checks/class-submit-time-check.php:85
+msgid "future timestamp"
+msgstr "horodatage futur"
+
+#: includes/checks/class-honeypot-check.php:60
+#: includes/checks/class-honeypot-check.php:72
+msgid "honeypot filled"
+msgstr "pot de miel rempli"
+
+#: includes/checks/class-bayesian-check.php:133
+msgid "insufficient training data"
+msgstr "données d'entraînement insuffisantes"
+
+#. translators: 1: Number of links found, 2: Configured maximum.
+#: includes/checks/class-links-check.php:52
+#, php-format
+msgid "links %1$d/%2$d"
+msgstr "liens %1$d/%2$d"
+
+#: includes/checks/class-duplicate-check.php:101
+msgid "missing data"
+msgstr "données manquantes"
+
+#. translators: 1: Number of distinct scripts detected, 2: Configured threshold.
+#: includes/checks/class-multi-lang-check.php:125
+#: includes/checks/class-multi-lang-check.php:133
+#, php-format
+msgid "mixed scripts %1$d/%2$d"
+msgstr "scripts mixtes %1$d/%2$d"
+
+#: includes/checks/class-spacing-check.php:57
+msgid "no spaces or letters"
+msgstr "aucun espace ni lettre"
+
+#: includes/checks/class-stop-words-check.php:69
+msgid "no stop words configured"
+msgstr "aucun mot interdit configuré"
+
+#. translators: 1: Whitespace-to-length ratio, 2: Percentage of short words.
+#: includes/checks/class-spacing-check.php:91
+#, php-format
+msgid "normal (ratio: %1$.2f, short: %2$.0f%%)"
+msgstr "normal (proportion : %1$.2f, courts : %2$.0f%%)"
+
+#: includes/checks/class-stop-words-check.php:85
+msgid "not found"
+msgstr "introuvable"
+
+#: includes/checks/class-honeypot-check.php:47
+#: includes/checks/class-submit-time-check.php:59
+msgid "skipped non-comment type"
+msgstr "type non-commentaire ignoré"
+
+#. translators: 1: Elapsed seconds, 2: Minimum configured seconds.
+#: includes/checks/class-submit-time-check.php:96
+#, php-format
+msgid "submitted in %1$ds (min %2$ds)"
+msgstr "soumis en %1$ds (min %2$ds)"
+
+#: includes/checks/class-submit-time-check.php:66
+msgid "token absent"
+msgstr "jeton absent"
+
+#: includes/checks/class-submit-time-check.php:89
+msgid "token expired"
+msgstr "token expired"
+
+#: includes/checks/class-submit-time-check.php:71
+#: includes/checks/class-submit-time-check.php:79
+msgid "token malformed or tampered"
+msgstr "jeton malformé ou altéré"
+
+#. translators: %d: Number of words found in the comment.
+#: includes/checks/class-spacing-check.php:48
+#, php-format
+msgid "too few words (%d)"
+msgstr "trop peu de mots (%d)"
+
+#. translators: 1: Number of emoji found, 2: Configured maximum.
+#: includes/checks/class-emoji-check.php:58
+#, php-format
+msgid "too many emoji %1$d/%2$d"
+msgstr "trop d'emoji %1$d/%2$d"
+
+#. translators: 1: Number of links found, 2: Configured maximum.
+#: includes/checks/class-links-check.php:44
+#, php-format
+msgid "too many links %1$d/%2$d"
+msgstr "trop de liens %1$d/%2$d"
+
+#: includes/checks/class-spacing-check.php:33
+msgid "too short"
+msgstr "trop court"
