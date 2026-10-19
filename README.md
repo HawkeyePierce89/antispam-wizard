@@ -177,3 +177,13 @@ To remove all data (database, WordPress files) and start fresh:
 ```bash
 docker compose down -v
 ```
+
+## Contributing and security
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to run the test suite and open a pull request.
+Found a vulnerability? Do not open an issue: use **Report a vulnerability** on the repository's
+Security tab, so the report stays private until a fix is released.
+
+## License
+
+GPL-2.0-or-later, see [LICENSE](LICENSE).
