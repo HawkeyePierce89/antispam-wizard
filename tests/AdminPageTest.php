@@ -355,6 +355,56 @@ class AdminPageTest extends TestCase {
         $this->assertStringContainsString( '$brand_icon = \'' . $expected_svg . '\';', $source );
     }
 
+    /**
+     * The website and source addresses live in two constants, and readme.txt,
+     * the Plugin URI header and the Plugins-screen row all carry the same ones,
+     * so none of them can drift.
+     */
+    public function test_website_and_source_addresses_agree_across_readme_header_and_row() {
+        $this->assertSame( 'https://antispamwizard.com/', ASW_Admin_Page::WEBSITE_URL );
+        $this->assertSame( 'https://github.com/HawkeyePierce89/antispam-wizard', ASW_Admin_Page::SOURCE_URL );
+
+        $header = file_get_contents( ASW_PATH . 'antispam-wizard.php' );
+        $this->assertMatchesRegularExpression( '/^ \* Plugin URI:\s+' . preg_quote( ASW_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
+
+        $readme = file_get_contents( ASW_PATH . 'readme.txt' );
+        $this->assertStringContainsString( '* Website: ' . ASW_Admin_Page::WEBSITE_URL, $readme );
+        $this->assertStringContainsString( '* Source code and issue tracker: ' . ASW_Admin_Page::SOURCE_URL, $readme );
+    }
+
+    /**
+     * The Plugins screen row carries a "Source code" link through
+     * plugin_row_meta, registered with two arguments; the website is already
+     * core's "Visit plugin site" (from the Plugin URI header), so it is not
+     * repeated. Any other plugin's row is returned untouched.
+     */
+    public function test_plugin_row_meta_adds_the_source_link_to_our_row_only() {
+        global $wp_filters;
+        $wp_filters = array();
+        $this->admin_page->init();
+
+        $registered = array_filter(
+            $wp_filters['plugin_row_meta'] ?? array(),
+            static function ( $hook ) {
+                return 2 === $hook['accepted_args'] && 'plugin_row_meta' === ( $hook['callback'][1] ?? null );
+            }
+        );
+        $this->assertCount( 1, $registered, 'plugin_row_meta must be registered once, with two accepted arguments' );
+
+        $ours = $this->admin_page->plugin_row_meta( array( '<a href="#">View details</a>' ), plugin_basename( ASW_FILE ) );
+        $this->assertSame(
+            array(
+                '<a href="#">View details</a>',
+                '<a href="https://github.com/HawkeyePierce89/antispam-wizard" target="_blank" rel="noopener">Source code</a>',
+            ),
+            $ours
+        );
+
+        $other = array( '<a href="#">View details</a>' );
+        $this->assertSame( $other, $this->admin_page->plugin_row_meta( $other, 'akismet/akismet.php' ) );
+        $this->assertSame( 'not-an-array', $this->admin_page->plugin_row_meta( 'not-an-array', plugin_basename( ASW_FILE ) ) );
+    }
+
     public function test_render_page_has_no_tab_navigation() {
         ob_start();
         $this->admin_page->render_page();

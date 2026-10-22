@@ -14,6 +14,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class ASW_Admin_Page {
 
+    /** The plugin's website; the Plugin URI header and readme.txt carry the same address. */
+    public const WEBSITE_URL = 'https://antispamwizard.com/';
+
+    /** The public source repository and issue tracker, linked from the Plugins screen row. */
+    public const SOURCE_URL = 'https://github.com/HawkeyePierce89/antispam-wizard';
+
     const NONCE_ACTION = 'asw_save_settings';
     const NONCE_FIELD  = 'asw_nonce';
     const AJAX_NONCE   = 'asw_stop_words';
@@ -54,6 +60,7 @@ class ASW_Admin_Page {
         add_action( 'admin_init', array( $this, 'handle_excluded_tokens_export' ) );
         add_action( 'admin_init', array( $this, 'handle_clear_log' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+        add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
         add_action( 'wp_ajax_asw_add_stop_word', array( $this, 'ajax_add_stop_word' ) );
         add_action( 'wp_ajax_asw_remove_stop_word', array( $this, 'ajax_remove_stop_word' ) );
         add_action( 'wp_ajax_asw_add_excluded_token', array( $this, 'ajax_add_excluded_token' ) );
@@ -163,6 +170,26 @@ class ASW_Admin_Page {
     public static function get_submenu_url( string $tab ): string {
         $slug = isset( self::SUBMENU_SLUGS[ $tab ] ) ? self::SUBMENU_SLUGS[ $tab ] : self::SUBMENU_SLUGS['main'];
         return add_query_arg( array( 'page' => $slug ), admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Adds a "Source code" link to the plugin's row on the Plugins screen, next
+     * to core's "View details" and "Visit plugin site" (which core builds from
+     * the Plugin URI header, so the website needs no link of its own here).
+     * Other plugins' rows are returned untouched.
+     *
+     * @param array  $links       The row meta links WordPress collected so far.
+     * @param string $plugin_file Plugin basename of the row being rendered.
+     * @return array
+     */
+    public function plugin_row_meta( $links, $plugin_file ) {
+        if ( ! is_array( $links ) || plugin_basename( ASW_FILE ) !== $plugin_file ) {
+            return $links;
+        }
+
+        $links[] = '<a href="' . esc_url( self::SOURCE_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'Source code', 'antispam-wizard' ) . '</a>';
+
+        return $links;
     }
 
     /**

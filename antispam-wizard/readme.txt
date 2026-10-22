@@ -35,6 +35,11 @@ Detection checks include:
 
 All checks are configurable from the WordPress admin panel with collapsible inline help for each setting.
 
+= Links =
+
+* Website: https://antispamwizard.com/
+* Source code and issue tracker: https://github.com/HawkeyePierce89/antispam-wizard
+
 The seed corpus is comment spam and is expected to transfer reasonably to Contact Form 7 submissions, but this is unmeasured; a form-specific corpus is explicit future work.
 
 = Translations =
