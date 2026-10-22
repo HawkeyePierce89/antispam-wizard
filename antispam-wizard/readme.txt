@@ -12,7 +12,14 @@ Offline-first comment spam protection for WordPress with multiple configurable d
 
 == Description ==
 
-AntiSpam Wizard provides automatic comment spam detection for WordPress sites.
+AntiSpam Wizard is spam protection for WordPress comments and Contact Form 7 submissions that runs entirely on your own server. There is no external API, no account and no API key: nothing about your visitors leaves your site, the plugin keeps working offline, and it adds no third-party dependency to your privacy policy.
+
+What sets it apart from the cloud-based and the rule-only antispam plugins:
+
+* **A classifier that learns from your own moderation.** A Naive Bayes model and a cosine-similarity check ship with a seed corpus for ten writing systems (Latin, Cyrillic, CJK, Arabic, Devanagari, Greek, Hebrew, Thai, Bengali, Indic), so a non-English site starts with a working filter, and every Spam / Not Spam decision made anywhere in WordPress trains it further on your site's own spam.
+* **A flagged comment stays visible to its author** as "awaiting moderation", and to nobody else, so a real visitor caught by mistake does not post it again.
+* **Privacy by construction.** Raw IP addresses and emails are never stored, only salted hashes; everything the plugin keeps, including training samples, is exportable and erasable per person through the WordPress Privacy tools and removed on uninstall.
+* **Ten independent checks**, each with its own toggle and thresholds, ordered so the cheap bot checks short-circuit first and a typical comment costs a few milliseconds.
 
 Detection checks include:
 
