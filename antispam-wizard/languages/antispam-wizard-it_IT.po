@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AntiSpam Wizard 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 02:45+0400\n"
+"POT-Creation-Date: 2026-10-22 22:06+0400\n"
 "PO-Revision-Date: 2026-04-09 00:00+0000\n"
 "Last-Translator: AntiSpam Wizard Team\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -21,7 +21,11 @@ msgid ""
 "A comment the plugin flags as spam stays visible to the person who wrote it, "
 "marked as awaiting moderation, so a real visitor caught by mistake does not "
 "post it again. Nobody else sees it."
-msgstr "Un commento che il plugin segnala come spam resta visibile alla persona che l'ha scritto, contrassegnato come in attesa di moderazione, così un visitatore reale bloccato per errore non lo invia di nuovo. Nessun altro lo vede."
+msgstr ""
+"Un commento che il plugin segnala come spam resta visibile alla persona che "
+"l'ha scritto, contrassegnato come in attesa di moderazione, così un "
+"visitatore reale bloccato per errore non lo invia di nuovo. Nessun altro lo "
+"vede."
 
 #: admin/views/settings-general.php:126
 msgid "Abnormal Spacing"
@@ -62,11 +66,11 @@ msgstr ""
 "gli invii segnalati vengono bloccati tramite il meccanismo antispam di "
 "Contact Form 7."
 
-#: admin/class-admin-page.php:140
+#: admin/class-admin-page.php:147
 msgid "An error occurred."
 msgstr "Si è verificato un errore."
 
-#: admin/class-admin-page.php:71 admin/class-admin-page.php:72
+#: admin/class-admin-page.php:78 admin/class-admin-page.php:79
 #: includes/class-privacy.php:65 includes/class-privacy.php:79
 #: includes/class-privacy.php:333 includes/class-privacy.php:375
 #: includes/class-privacy.php:423 includes/class-privacy.php:571
@@ -74,12 +78,12 @@ msgid "AntiSpam Wizard"
 msgstr "AntiSpam Wizard"
 
 #. translators: %s: Submenu page label.
-#: admin/class-admin-page.php:97
+#: admin/class-admin-page.php:104
 #, php-format
 msgid "AntiSpam Wizard - %s"
 msgstr "AntiSpam Wizard – %s"
 
-#: admin/class-admin-page.php:183
+#: admin/class-admin-page.php:210
 msgid "AntiSpam Wizard Settings"
 msgstr "Impostazioni di AntiSpam Wizard"
 
@@ -212,20 +216,20 @@ msgid "Comment fragment"
 msgstr "Frammento del commento"
 
 #. translators: %s: Training category the comment was saved as (spam or ham).
-#: admin/class-admin-page.php:710
+#: admin/class-admin-page.php:751
 #, php-format
 msgid "Comment marked as %s. Training data updated."
 msgstr "Commento contrassegnato come %s. Dati di addestramento aggiornati."
 
-#: admin/class-admin-page.php:564
+#: admin/class-admin-page.php:596
 msgid "Comment not found in spam log. It may have been removed."
 msgstr "Commento non trovato nel registro spam. Potrebbe essere stato rimosso."
 
-#: admin/class-admin-page.php:477 includes/class-moderation.php:508
+#: admin/class-admin-page.php:509 includes/class-moderation.php:510
 msgid "Comment not found."
 msgstr "Commento non trovato."
 
-#: admin/class-admin-page.php:688
+#: admin/class-admin-page.php:729
 msgid ""
 "Comment status could not be changed and rollback failed. Please check "
 "training data manually."
@@ -233,7 +237,7 @@ msgstr ""
 "Impossibile modificare lo stato del commento e il ripristino è fallito. "
 "Controlla manualmente i dati di addestramento."
 
-#: admin/class-admin-page.php:681 includes/class-moderation.php:517
+#: admin/class-admin-page.php:722 includes/class-moderation.php:519
 msgid "Comment status could not be changed. Please try again."
 msgstr "Impossibile modificare lo stato del commento. Riprova."
 
@@ -322,17 +326,17 @@ msgstr ""
 "Attiva o disattiva globalmente tutti i controlli anti-spam. Quando "
 "disattivato, tutti i commenti passano senza filtraggio."
 
-#: admin/class-admin-page.php:327
+#: admin/class-admin-page.php:359
 msgid "Exact-match phrase cannot be empty."
 msgstr "La frase a corrispondenza esatta non può essere vuota."
 
-#: admin/class-admin-page.php:331
+#: admin/class-admin-page.php:363
 msgid "Exact-match phrase must contain only letters, numbers, and spaces."
 msgstr ""
 "La frase esatta deve contenere solo lettere, numeri e spazi.La frase a "
 "corrispondenza esatta deve contenere solo lettere, numeri e spazi."
 
-#: admin/class-admin-page.php:88
+#: admin/class-admin-page.php:95
 msgid "Excluded Tokens"
 msgstr "Token esclusi"
 
@@ -341,7 +345,7 @@ msgstr "Token esclusi"
 msgid "Export as Text File"
 msgstr "Esporta come file di testo"
 
-#: admin/class-admin-page.php:558 admin/class-admin-page.php:699
+#: admin/class-admin-page.php:590 admin/class-admin-page.php:740
 msgid "Failed to save training data."
 msgstr "Impossibile salvare i dati di addestramento."
 
@@ -392,7 +396,7 @@ msgstr ""
 "1,0) che attiva il controllo. Esempio: 0,4 significa che il commento viene "
 "segnalato quando il 40% o più dei caratteri sono spazi."
 
-#: admin/class-admin-page.php:86
+#: admin/class-admin-page.php:93
 msgid "General"
 msgstr "Generale"
 
@@ -436,22 +440,22 @@ msgid "Import from file (one word per line):"
 msgstr "Importa da file (una parola per riga):"
 
 #. translators: %d: Maximum number of excluded-token entries kept on import.
-#: admin/class-admin-page.php:934
+#: admin/class-admin-page.php:1027
 #, php-format
 msgid "Import truncated: excluded tokens list capped at %d entries."
 msgstr "Importazione troncata: elenco token esclusi limitato a %d voci."
 
 #. translators: %d: Maximum number of stop-word entries kept on import.
-#: admin/class-admin-page.php:824
+#: admin/class-admin-page.php:917
 #, php-format
 msgid "Import truncated: stop-words list capped at %d entries."
 msgstr "Importazione troncata: elenco parole vietate limitato a %d voci."
 
-#: admin/class-admin-page.php:471
+#: admin/class-admin-page.php:503
 msgid "Invalid category."
 msgstr "Categoria non valida."
 
-#: admin/class-admin-page.php:466
+#: admin/class-admin-page.php:498
 msgid "Invalid comment ID."
 msgstr "ID commento non valido."
 
@@ -463,7 +467,7 @@ msgstr "Ultimo bloccato"
 msgid "Leave this field empty"
 msgstr "Lascia questo campo vuoto"
 
-#: admin/class-admin-page.php:705
+#: admin/class-admin-page.php:746
 msgid "Legacy"
 msgstr "Legacy"
 
@@ -484,11 +488,11 @@ msgstr "Modelli caricati"
 msgid "ML-Based Checks"
 msgstr "Controlli basati su ML"
 
-#: admin/class-admin-page.php:85
+#: admin/class-admin-page.php:92
 msgid "Main"
 msgstr "Principale"
 
-#: includes/class-moderation.php:466
+#: includes/class-moderation.php:468
 msgid "Mark as spam"
 msgstr "Segna come spam"
 
@@ -558,7 +562,7 @@ msgstr "Mai"
 msgid "No check-level statistics recorded yet."
 msgstr "Nessuna statistica per controllo ancora registrata."
 
-#: admin/class-admin-page.php:139 admin/views/settings-excluded-tokens.php:30
+#: admin/class-admin-page.php:146 admin/views/settings-excluded-tokens.php:30
 msgid "No excluded tokens configured."
 msgstr "Nessun token escluso configurato."
 
@@ -574,7 +578,7 @@ msgstr ""
 msgid "No spam has been blocked yet."
 msgstr "Nessuno spam è stato ancora bloccato."
 
-#: admin/class-admin-page.php:138 admin/views/settings-stop-words.php:30
+#: admin/class-admin-page.php:145 admin/views/settings-stop-words.php:30
 msgid "No stop-words configured."
 msgstr "Nessuna parola vietata configurata."
 
@@ -598,13 +602,13 @@ msgstr ""
 msgid "Per-Check Breakdown"
 msgstr "Dettaglio per controllo"
 
-#: admin/class-admin-page.php:308 admin/class-admin-page.php:361
-#: admin/class-admin-page.php:390 admin/class-admin-page.php:428
-#: admin/class-admin-page.php:458
+#: admin/class-admin-page.php:340 admin/class-admin-page.php:393
+#: admin/class-admin-page.php:422 admin/class-admin-page.php:460
+#: admin/class-admin-page.php:490
 msgid "Permission denied."
 msgstr "Permesso negato."
 
-#: admin/class-admin-page.php:553
+#: admin/class-admin-page.php:585
 msgid "Plugin not fully initialized."
 msgstr "Plugin non completamente inizializzato."
 
@@ -620,7 +624,7 @@ msgstr ""
 "Commenti e invii di moduli recenti bloccati da AntiSpam Wizard (più recenti "
 "prima, max 100)."
 
-#: admin/class-admin-page.php:137 admin/views/settings-excluded-tokens.php:35
+#: admin/class-admin-page.php:144 admin/views/settings-excluded-tokens.php:35
 #: admin/views/settings-stop-words.php:36
 msgid "Remove"
 msgstr "Rimuovi"
@@ -634,7 +638,7 @@ msgid "Save Changes"
 msgstr "Salva modifiche"
 
 #. translators: %s: Human-readable name of the script model the sample was saved to.
-#: admin/class-admin-page.php:716
+#: admin/class-admin-page.php:757
 #, php-format
 msgid "Saved to: %s model"
 msgstr "Salvato nel modello: %s"
@@ -643,9 +647,9 @@ msgstr "Salvato nel modello: %s"
 msgid "Script Group"
 msgstr "Gruppo script"
 
-#: admin/class-admin-page.php:303 admin/class-admin-page.php:356
-#: admin/class-admin-page.php:385 admin/class-admin-page.php:423
-#: admin/class-admin-page.php:453
+#: admin/class-admin-page.php:335 admin/class-admin-page.php:388
+#: admin/class-admin-page.php:417 admin/class-admin-page.php:455
+#: admin/class-admin-page.php:485
 msgid "Security check failed."
 msgstr "Controllo di sicurezza fallito."
 
@@ -678,6 +682,10 @@ msgstr "Filtro di similarità"
 msgid "Similarity threshold"
 msgstr "Soglia di similarità"
 
+#: admin/class-admin-page.php:190
+msgid "Source code"
+msgstr "Codice sorgente"
+
 #: admin/views/settings-general.php:146
 msgid "Space ratio"
 msgstr "Rapporto spazi"
@@ -691,7 +699,7 @@ msgstr "Spaziatura"
 msgid "Spam"
 msgstr "Spam"
 
-#: admin/class-admin-page.php:89 admin/views/settings-log.php:34
+#: admin/class-admin-page.php:96 admin/views/settings-log.php:34
 msgid "Spam Log"
 msgstr "Registro spam"
 
@@ -707,11 +715,11 @@ msgstr "Campioni spam"
 msgid "Spam probability threshold"
 msgstr "Soglia di probabilità spam"
 
-#: admin/class-admin-page.php:90
+#: admin/class-admin-page.php:97
 msgid "Statistics"
 msgstr "Statistiche"
 
-#: admin/class-admin-page.php:87 admin/views/settings-general.php:83
+#: admin/class-admin-page.php:94 admin/views/settings-general.php:83
 #: admin/views/settings-log.php:21 admin/views/settings-stats.php:17
 msgid "Stop Words"
 msgstr "Parole vietate"
@@ -733,7 +741,7 @@ msgstr "Tempo di Invio"
 msgid "TTL (sec)"
 msgstr "TTL (sec)"
 
-#: admin/class-admin-page.php:563
+#: admin/class-admin-page.php:595
 msgid "This comment has already been used for training."
 msgstr "Questo commento è già stato utilizzato per l'addestramento."
 
@@ -745,27 +753,27 @@ msgstr "Soglia"
 msgid "Token Cloud"
 msgstr "Nuvola di token"
 
-#: admin/class-admin-page.php:415
+#: admin/class-admin-page.php:447
 msgid "Token added."
 msgstr "Token aggiunto."
 
-#: admin/class-admin-page.php:408
+#: admin/class-admin-page.php:440
 msgid "Token already exists."
 msgstr "Il token esiste già."
 
-#: admin/class-admin-page.php:397
+#: admin/class-admin-page.php:429
 msgid "Token cannot be empty."
 msgstr "Il token non può essere vuoto."
 
-#: admin/class-admin-page.php:402
+#: admin/class-admin-page.php:434
 msgid "Token must be a single word (letters and numbers only)."
 msgstr "Il token deve essere una singola parola (solo lettere e numeri)."
 
-#: admin/class-admin-page.php:438
+#: admin/class-admin-page.php:470
 msgid "Token not found."
 msgstr "Token non trovato."
 
-#: admin/class-admin-page.php:445
+#: admin/class-admin-page.php:477
 msgid "Token removed."
 msgstr "Token rimosso."
 
@@ -783,7 +791,7 @@ msgstr ""
 msgid "Total Blocked"
 msgstr "Totale bloccati"
 
-#: admin/class-admin-page.php:141
+#: admin/class-admin-page.php:148
 msgid "Trained as "
 msgstr "Addestrato come "
 
@@ -806,7 +814,7 @@ msgstr ""
 "bayesiani e di similarità. Contrassegna i commenti come spam o ham nel "
 "Registro spam per far crescere ogni modello."
 
-#: admin/class-admin-page.php:764
+#: admin/class-admin-page.php:857
 msgid "Training data may be inconsistent. Please check training data manually."
 msgstr ""
 "I dati di addestramento potrebbero essere incoerenti. Controlla manualmente "
@@ -824,31 +832,31 @@ msgstr "Controlli attivati"
 msgid "Type a word to block..."
 msgstr "Digita una parola da bloccare…"
 
-#: admin/class-admin-page.php:348
+#: admin/class-admin-page.php:380
 msgid "Word added."
 msgstr "Parola aggiunta."
 
-#: admin/class-admin-page.php:341
+#: admin/class-admin-page.php:373
 msgid "Word already exists."
 msgstr "La parola esiste già."
 
-#: admin/class-admin-page.php:314
+#: admin/class-admin-page.php:346
 msgid "Word cannot be empty."
 msgstr "La parola non può essere vuota."
 
-#: admin/class-admin-page.php:319
+#: admin/class-admin-page.php:351
 msgid "Word must be 64 characters or fewer."
 msgstr "La parola deve avere 64 caratteri o meno."
 
-#: admin/class-admin-page.php:335
+#: admin/class-admin-page.php:367
 msgid "Word must contain only letters and numbers."
 msgstr "La parola deve contenere solo lettere e numeri."
 
-#: admin/class-admin-page.php:370
+#: admin/class-admin-page.php:402
 msgid "Word not found."
 msgstr "Parola non trovata."
 
-#: admin/class-admin-page.php:377
+#: admin/class-admin-page.php:409
 msgid "Word removed."
 msgstr "Parola rimossa."
 
@@ -860,7 +868,7 @@ msgstr ""
 "Le parole con prefisso \"=\" richiedono una corrispondenza esatta. "
 "Altrimenti viene utilizzata la corrispondenza per sottostringa."
 
-#: includes/class-moderation.php:498
+#: includes/class-moderation.php:500
 msgid "You do not have permission to moderate comments."
 msgstr "Non hai i permessi per moderare i commenti."
 
@@ -1023,3 +1031,4 @@ msgstr "troppi link %1$d/%2$d"
 #: includes/checks/class-spacing-check.php:33
 msgid "too short"
 msgstr "troppo breve"
+

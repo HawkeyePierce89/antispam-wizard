@@ -4,8 +4,8 @@
  * Plugin URI:  https://antispamwizard.com/
  * Description: Offline-first comment spam protection for WordPress with multiple configurable detection checks.
  * Version:     1.0.0
- * Author:      Anton Karmanov
- * Author URI:  https://github.com/HawkeyePierce89
+ * Author:      AntiSpam Wizard
+ * Author URI:  https://antispamwizard.com/
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: antispam-wizard

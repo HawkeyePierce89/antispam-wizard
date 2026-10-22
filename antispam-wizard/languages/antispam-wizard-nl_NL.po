@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AntiSpam Wizard 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 02:45+0400\n"
+"POT-Creation-Date: 2026-10-22 22:06+0400\n"
 "PO-Revision-Date: 2026-04-09 00:00+0000\n"
 "Last-Translator: AntiSpam Wizard Team\n"
 "Language-Team: Dutch <nl@li.org>\n"
@@ -21,7 +21,11 @@ msgid ""
 "A comment the plugin flags as spam stays visible to the person who wrote it, "
 "marked as awaiting moderation, so a real visitor caught by mistake does not "
 "post it again. Nobody else sees it."
-msgstr "Een reactie die de plugin als spam markeert, blijft zichtbaar voor de persoon die haar schreef, gemarkeerd als wachtend op moderatie, zodat een echte bezoeker die per vergissing werd tegengehouden haar niet opnieuw plaatst. Niemand anders ziet haar."
+msgstr ""
+"Een reactie die de plugin als spam markeert, blijft zichtbaar voor de "
+"persoon die haar schreef, gemarkeerd als wachtend op moderatie, zodat een "
+"echte bezoeker die per vergissing werd tegengehouden haar niet opnieuw "
+"plaatst. Niemand anders ziet haar."
 
 #: admin/views/settings-general.php:126
 msgid "Abnormal Spacing"
@@ -62,11 +66,11 @@ msgstr ""
 "en gemarkeerde inzendingen worden geblokkeerd via het eigen spammechanisme "
 "van Contact Form 7."
 
-#: admin/class-admin-page.php:140
+#: admin/class-admin-page.php:147
 msgid "An error occurred."
 msgstr "Er is een fout opgetreden."
 
-#: admin/class-admin-page.php:71 admin/class-admin-page.php:72
+#: admin/class-admin-page.php:78 admin/class-admin-page.php:79
 #: includes/class-privacy.php:65 includes/class-privacy.php:79
 #: includes/class-privacy.php:333 includes/class-privacy.php:375
 #: includes/class-privacy.php:423 includes/class-privacy.php:571
@@ -74,12 +78,12 @@ msgid "AntiSpam Wizard"
 msgstr "AntiSpam Wizard"
 
 #. translators: %s: Submenu page label.
-#: admin/class-admin-page.php:97
+#: admin/class-admin-page.php:104
 #, php-format
 msgid "AntiSpam Wizard - %s"
 msgstr "AntiSpam Wizard – %s"
 
-#: admin/class-admin-page.php:183
+#: admin/class-admin-page.php:210
 msgid "AntiSpam Wizard Settings"
 msgstr "AntiSpam Wizard-instellingen"
 
@@ -211,20 +215,20 @@ msgid "Comment fragment"
 msgstr "Reactiefragment"
 
 #. translators: %s: Training category the comment was saved as (spam or ham).
-#: admin/class-admin-page.php:710
+#: admin/class-admin-page.php:751
 #, php-format
 msgid "Comment marked as %s. Training data updated."
 msgstr "Reactie gemarkeerd als %s. Trainingsgegevens bijgewerkt."
 
-#: admin/class-admin-page.php:564
+#: admin/class-admin-page.php:596
 msgid "Comment not found in spam log. It may have been removed."
 msgstr "Reactie niet gevonden in spamlogboek. Deze is mogelijk verwijderd."
 
-#: admin/class-admin-page.php:477 includes/class-moderation.php:508
+#: admin/class-admin-page.php:509 includes/class-moderation.php:510
 msgid "Comment not found."
 msgstr "Reactie niet gevonden."
 
-#: admin/class-admin-page.php:688
+#: admin/class-admin-page.php:729
 msgid ""
 "Comment status could not be changed and rollback failed. Please check "
 "training data manually."
@@ -232,7 +236,7 @@ msgstr ""
 "Reactiestatus kon niet worden gewijzigd en het terugdraaien is mislukt. "
 "Controleer de trainingsgegevens handmatig."
 
-#: admin/class-admin-page.php:681 includes/class-moderation.php:517
+#: admin/class-admin-page.php:722 includes/class-moderation.php:519
 msgid "Comment status could not be changed. Please try again."
 msgstr "Reactiestatus kon niet worden gewijzigd. Probeer het opnieuw."
 
@@ -321,15 +325,15 @@ msgstr ""
 "Schakel alle spamcontroles globaal in of uit. Wanneer uitgeschakeld worden "
 "alle reacties zonder filtering doorgelaten."
 
-#: admin/class-admin-page.php:327
+#: admin/class-admin-page.php:359
 msgid "Exact-match phrase cannot be empty."
 msgstr "Exacte overeenkomst mag niet leeg zijn."
 
-#: admin/class-admin-page.php:331
+#: admin/class-admin-page.php:363
 msgid "Exact-match phrase must contain only letters, numbers, and spaces."
 msgstr "Exacte overeenkomst mag alleen letters, cijfers en spaties bevatten."
 
-#: admin/class-admin-page.php:88
+#: admin/class-admin-page.php:95
 msgid "Excluded Tokens"
 msgstr "Uitgesloten tokens"
 
@@ -338,7 +342,7 @@ msgstr "Uitgesloten tokens"
 msgid "Export as Text File"
 msgstr "Exporteren als tekstbestand"
 
-#: admin/class-admin-page.php:558 admin/class-admin-page.php:699
+#: admin/class-admin-page.php:590 admin/class-admin-page.php:740
 msgid "Failed to save training data."
 msgstr "Trainingsgegevens opslaan mislukt."
 
@@ -389,7 +393,7 @@ msgstr ""
 "controle activeert. Voorbeeld: 0.4 betekent dat de reactie wordt gemarkeerd "
 "wanneer 40% of meer van de tekens spaties zijn."
 
-#: admin/class-admin-page.php:86
+#: admin/class-admin-page.php:93
 msgid "General"
 msgstr "Algemeen"
 
@@ -433,22 +437,22 @@ msgid "Import from file (one word per line):"
 msgstr "Importeren uit bestand (een woord per regel):"
 
 #. translators: %d: Maximum number of excluded-token entries kept on import.
-#: admin/class-admin-page.php:934
+#: admin/class-admin-page.php:1027
 #, php-format
 msgid "Import truncated: excluded tokens list capped at %d entries."
 msgstr "Import afgekapt: lijst met uitgesloten tokens begrensd op %d items."
 
 #. translators: %d: Maximum number of stop-word entries kept on import.
-#: admin/class-admin-page.php:824
+#: admin/class-admin-page.php:917
 #, php-format
 msgid "Import truncated: stop-words list capped at %d entries."
 msgstr "Import afgekapt: stopwoordenlijst begrensd op %d items."
 
-#: admin/class-admin-page.php:471
+#: admin/class-admin-page.php:503
 msgid "Invalid category."
 msgstr "Ongeldige categorie."
 
-#: admin/class-admin-page.php:466
+#: admin/class-admin-page.php:498
 msgid "Invalid comment ID."
 msgstr "Ongeldig reactie-ID."
 
@@ -460,7 +464,7 @@ msgstr "Laatst geblokkeerd"
 msgid "Leave this field empty"
 msgstr "Laat dit veld leeg"
 
-#: admin/class-admin-page.php:705
+#: admin/class-admin-page.php:746
 msgid "Legacy"
 msgstr "Verouderd"
 
@@ -481,11 +485,11 @@ msgstr "Geladen modellen"
 msgid "ML-Based Checks"
 msgstr "ML-gebaseerde controles"
 
-#: admin/class-admin-page.php:85
+#: admin/class-admin-page.php:92
 msgid "Main"
 msgstr "Hoofdpagina"
 
-#: includes/class-moderation.php:466
+#: includes/class-moderation.php:468
 msgid "Mark as spam"
 msgstr "Markeren als spam"
 
@@ -555,7 +559,7 @@ msgstr "Nooit"
 msgid "No check-level statistics recorded yet."
 msgstr "Nog geen statistieken per controle vastgelegd."
 
-#: admin/class-admin-page.php:139 admin/views/settings-excluded-tokens.php:30
+#: admin/class-admin-page.php:146 admin/views/settings-excluded-tokens.php:30
 msgid "No excluded tokens configured."
 msgstr "Geen uitgesloten tokens geconfigureerd."
 
@@ -571,7 +575,7 @@ msgstr ""
 msgid "No spam has been blocked yet."
 msgstr "Er is nog geen spam geblokkeerd."
 
-#: admin/class-admin-page.php:138 admin/views/settings-stop-words.php:30
+#: admin/class-admin-page.php:145 admin/views/settings-stop-words.php:30
 msgid "No stop-words configured."
 msgstr "Geen stopwoorden geconfigureerd."
 
@@ -595,13 +599,13 @@ msgstr ""
 msgid "Per-Check Breakdown"
 msgstr "Uitsplitsing per controle"
 
-#: admin/class-admin-page.php:308 admin/class-admin-page.php:361
-#: admin/class-admin-page.php:390 admin/class-admin-page.php:428
-#: admin/class-admin-page.php:458
+#: admin/class-admin-page.php:340 admin/class-admin-page.php:393
+#: admin/class-admin-page.php:422 admin/class-admin-page.php:460
+#: admin/class-admin-page.php:490
 msgid "Permission denied."
 msgstr "Toegang geweigerd."
 
-#: admin/class-admin-page.php:553
+#: admin/class-admin-page.php:585
 msgid "Plugin not fully initialized."
 msgstr "Plugin niet volledig geïnitialiseerd."
 
@@ -617,7 +621,7 @@ msgstr ""
 "Recente reacties en formulierinzendingen geblokkeerd door AntiSpam Wizard "
 "(nieuwste eerst, max 100)."
 
-#: admin/class-admin-page.php:137 admin/views/settings-excluded-tokens.php:35
+#: admin/class-admin-page.php:144 admin/views/settings-excluded-tokens.php:35
 #: admin/views/settings-stop-words.php:36
 msgid "Remove"
 msgstr "Verwijderen"
@@ -631,7 +635,7 @@ msgid "Save Changes"
 msgstr "Wijzigingen opslaan"
 
 #. translators: %s: Human-readable name of the script model the sample was saved to.
-#: admin/class-admin-page.php:716
+#: admin/class-admin-page.php:757
 #, php-format
 msgid "Saved to: %s model"
 msgstr "Opgeslagen in: %s model"
@@ -640,9 +644,9 @@ msgstr "Opgeslagen in: %s model"
 msgid "Script Group"
 msgstr "Schriftgroep"
 
-#: admin/class-admin-page.php:303 admin/class-admin-page.php:356
-#: admin/class-admin-page.php:385 admin/class-admin-page.php:423
-#: admin/class-admin-page.php:453
+#: admin/class-admin-page.php:335 admin/class-admin-page.php:388
+#: admin/class-admin-page.php:417 admin/class-admin-page.php:455
+#: admin/class-admin-page.php:485
 msgid "Security check failed."
 msgstr "Beveiligingscontrole mislukt."
 
@@ -675,6 +679,10 @@ msgstr "Gelijkenisfilter"
 msgid "Similarity threshold"
 msgstr "Gelijkenisdrempel"
 
+#: admin/class-admin-page.php:190
+msgid "Source code"
+msgstr "Broncode"
+
 #: admin/views/settings-general.php:146
 msgid "Space ratio"
 msgstr "Spatieratio"
@@ -688,7 +696,7 @@ msgstr "Spatiering"
 msgid "Spam"
 msgstr "Spam"
 
-#: admin/class-admin-page.php:89 admin/views/settings-log.php:34
+#: admin/class-admin-page.php:96 admin/views/settings-log.php:34
 msgid "Spam Log"
 msgstr "Spamlogboek"
 
@@ -704,11 +712,11 @@ msgstr "Spamvoorbeelden"
 msgid "Spam probability threshold"
 msgstr "Drempel spamwaarschijnlijkheid"
 
-#: admin/class-admin-page.php:90
+#: admin/class-admin-page.php:97
 msgid "Statistics"
 msgstr "Statistieken"
 
-#: admin/class-admin-page.php:87 admin/views/settings-general.php:83
+#: admin/class-admin-page.php:94 admin/views/settings-general.php:83
 #: admin/views/settings-log.php:21 admin/views/settings-stats.php:17
 msgid "Stop Words"
 msgstr "Stopwoorden"
@@ -730,7 +738,7 @@ msgstr "Verzendtijd"
 msgid "TTL (sec)"
 msgstr "TTL (sec)"
 
-#: admin/class-admin-page.php:563
+#: admin/class-admin-page.php:595
 msgid "This comment has already been used for training."
 msgstr "Deze reactie is al gebruikt voor training."
 
@@ -742,27 +750,27 @@ msgstr "Drempel"
 msgid "Token Cloud"
 msgstr "Tokenwolk"
 
-#: admin/class-admin-page.php:415
+#: admin/class-admin-page.php:447
 msgid "Token added."
 msgstr "Token toegevoegd."
 
-#: admin/class-admin-page.php:408
+#: admin/class-admin-page.php:440
 msgid "Token already exists."
 msgstr "Token bestaat al."
 
-#: admin/class-admin-page.php:397
+#: admin/class-admin-page.php:429
 msgid "Token cannot be empty."
 msgstr "Token mag niet leeg zijn."
 
-#: admin/class-admin-page.php:402
+#: admin/class-admin-page.php:434
 msgid "Token must be a single word (letters and numbers only)."
 msgstr "Token moet een enkel woord zijn (alleen letters en cijfers)."
 
-#: admin/class-admin-page.php:438
+#: admin/class-admin-page.php:470
 msgid "Token not found."
 msgstr "Token niet gevonden."
 
-#: admin/class-admin-page.php:445
+#: admin/class-admin-page.php:477
 msgid "Token removed."
 msgstr "Token verwijderd."
 
@@ -780,7 +788,7 @@ msgstr ""
 msgid "Total Blocked"
 msgstr "Totaal geblokkeerd"
 
-#: admin/class-admin-page.php:141
+#: admin/class-admin-page.php:148
 msgid "Trained as "
 msgstr "Getraind als "
 
@@ -803,7 +811,7 @@ msgstr ""
 "Gelijkeniscontroles. Markeer reacties als spam of ham in het Spamlogboek om "
 "elk model te vergroten."
 
-#: admin/class-admin-page.php:764
+#: admin/class-admin-page.php:857
 msgid "Training data may be inconsistent. Please check training data manually."
 msgstr ""
 "De trainingsgegevens zijn mogelijk inconsistent. Controleer de "
@@ -821,31 +829,31 @@ msgstr "Geactiveerde controles"
 msgid "Type a word to block..."
 msgstr "Typ een woord om te blokkeren…"
 
-#: admin/class-admin-page.php:348
+#: admin/class-admin-page.php:380
 msgid "Word added."
 msgstr "Woord toegevoegd."
 
-#: admin/class-admin-page.php:341
+#: admin/class-admin-page.php:373
 msgid "Word already exists."
 msgstr "Woord bestaat al."
 
-#: admin/class-admin-page.php:314
+#: admin/class-admin-page.php:346
 msgid "Word cannot be empty."
 msgstr "Woord mag niet leeg zijn."
 
-#: admin/class-admin-page.php:319
+#: admin/class-admin-page.php:351
 msgid "Word must be 64 characters or fewer."
 msgstr "Woord mag maximaal 64 tekens bevatten."
 
-#: admin/class-admin-page.php:335
+#: admin/class-admin-page.php:367
 msgid "Word must contain only letters and numbers."
 msgstr "Woord mag alleen letters en cijfers bevatten."
 
-#: admin/class-admin-page.php:370
+#: admin/class-admin-page.php:402
 msgid "Word not found."
 msgstr "Woord niet gevonden."
 
-#: admin/class-admin-page.php:377
+#: admin/class-admin-page.php:409
 msgid "Word removed."
 msgstr "Woord verwijderd."
 
@@ -857,7 +865,7 @@ msgstr ""
 "Woorden met het prefix \"=\" vereisen een exacte overeenkomst. Anders wordt "
 "substringovereenkomst gebruikt."
 
-#: includes/class-moderation.php:498
+#: includes/class-moderation.php:500
 msgid "You do not have permission to moderate comments."
 msgstr "Je hebt geen toestemming om reacties te modereren."
 
@@ -1020,3 +1028,4 @@ msgstr "te veel links %1$d/%2$d"
 #: includes/checks/class-spacing-check.php:33
 msgid "too short"
 msgstr "te kort"
+
