@@ -69,10 +69,20 @@ class PluginMetadataTest extends TestCase {
         return $fields;
     }
 
-    public function test_plugin_header_has_tested_up_to(): void {
+    /**
+     * The directory's automated scan rejects a "Tested up to" line in the main
+     * plugin file (plugin_header_tested_up_to_not_allowed): the field belongs
+     * to readme.txt only, so the two can never drift apart.
+     */
+    public function test_plugin_header_has_no_tested_up_to(): void {
         $headers = $this->parse_plugin_header();
-        $this->assertArrayHasKey( 'Tested up to', $headers );
-        $this->assertEquals( '7.1', $headers['Tested up to'] );
+        $this->assertArrayNotHasKey( 'Tested up to', $headers, 'Tested up to must live only in readme.txt' );
+    }
+
+    public function test_readme_tested_up_to_is_current(): void {
+        $readme = $this->parse_readme();
+        $this->assertArrayHasKey( 'Tested up to', $readme );
+        $this->assertEquals( '7.1', $readme['Tested up to'] );
     }
 
     public function test_readme_exists(): void {
@@ -117,17 +127,6 @@ class PluginMetadataTest extends TestCase {
             $headers['Requires at least'],
             $readme['Requires at least'],
             'Plugin header and readme.txt Requires at least must match'
-        );
-    }
-
-    public function test_header_and_readme_tested_up_to_match(): void {
-        $headers = $this->parse_plugin_header();
-        $readme  = $this->parse_readme();
-
-        $this->assertEquals(
-            $headers['Tested up to'],
-            $readme['Tested up to'],
-            'Plugin header and readme.txt Tested up to must match'
         );
     }
 
