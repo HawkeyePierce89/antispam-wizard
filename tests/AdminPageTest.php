@@ -357,7 +357,7 @@ class AdminPageTest extends TestCase {
 
     /**
      * The website and source addresses live in two constants, and readme.txt,
-     * the Plugin URI header and the Plugins-screen row all carry the same ones,
+     * the Author URI header and the Plugins-screen row all carry the same ones,
      * so none of them can drift.
      */
     public function test_website_and_source_addresses_agree_across_readme_header_and_row() {
@@ -365,7 +365,8 @@ class AdminPageTest extends TestCase {
         $this->assertSame( 'https://github.com/HawkeyePierce89/antispam-wizard', ASW_Admin_Page::SOURCE_URL );
 
         $header = file_get_contents( ASW_PATH . 'antispam-wizard.php' );
-        $this->assertMatchesRegularExpression( '/^ \* Plugin URI:\s+' . preg_quote( ASW_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
+        $this->assertMatchesRegularExpression( '/^ \* Author URI:\s+' . preg_quote( ASW_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
+        $this->assertStringNotContainsString( 'Plugin URI:', $header, 'the directory rejects a Plugin URI equal to the Author URI; only the Author URI carries the website' );
 
         $readme = file_get_contents( ASW_PATH . 'readme.txt' );
         $this->assertStringContainsString( '* Website: ' . ASW_Admin_Page::WEBSITE_URL, $readme );
@@ -375,8 +376,8 @@ class AdminPageTest extends TestCase {
     /**
      * The Plugins screen row carries a "Source code" link through
      * plugin_row_meta, registered with two arguments; the website is already
-     * core's "Visit plugin site" (from the Plugin URI header), so it is not
-     * repeated. Any other plugin's row is returned untouched.
+     * the "By AntiSpam Wizard" link core builds from the Author URI header, so
+     * it is not repeated. Any other plugin's row is returned untouched.
      */
     public function test_plugin_row_meta_adds_the_source_link_to_our_row_only() {
         global $wp_filters;
