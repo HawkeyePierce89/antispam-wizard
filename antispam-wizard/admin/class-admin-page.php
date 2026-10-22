@@ -174,9 +174,9 @@ class ASW_Admin_Page {
 
     /**
      * Adds a "Source code" link to the plugin's row on the Plugins screen, next
-     * to core's "View details" and "Visit plugin site" (which core builds from
-     * the Plugin URI header, so the website needs no link of its own here).
-     * Other plugins' rows are returned untouched.
+     * to core's "View details" and the "By AntiSpam Wizard" author link (which
+     * core builds from the Author URI header, so the website needs no link of
+     * its own here). Other plugins' rows are returned untouched.
      *
      * @param array  $links       The row meta links WordPress collected so far.
      * @param string $plugin_file Plugin basename of the row being rendered.

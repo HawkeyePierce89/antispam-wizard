@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name: AntiSpam Wizard
- * Plugin URI:  https://antispamwizard.com/
  * Description: Offline-first comment spam protection for WordPress with multiple configurable detection checks.
  * Version:     1.0.0
  * Author:      AntiSpam Wizard
