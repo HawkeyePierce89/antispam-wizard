@@ -1,6 +1,40 @@
 # AntiSpam Wizard
 
-A WordPress plugin that detects and blocks spam comments — and, when Contact Form 7 is active, Contact Form 7 submissions — using multiple configurable checks: a honeypot field, submit-time validation, stop-words, excessive links, emoji abuse, multi-language mixing, duplicate content, suspicious spacing patterns, Naive Bayes classification, and cosine similarity matching. The seed corpus is comment spam and is expected to transfer reasonably to form submissions, but this is unmeasured; a form-specific corpus is explicit future work. Note that the two bot checks (honeypot and submit-time) fail open and do not store any personal data: they are heuristics against unsophisticated automated submissions, a missing or stale field never blocks anyone, and a bot written for a specific site can bypass them and is then judged by the content-based checks alone. The plugin also learns from moderation: a single hook on `transition_comment_status` means every Spam / Not Spam decision made anywhere in WordPress — a Comments-screen row action, a bulk action, another antispam plugin, or the plugin's own Spam Log pill — trains the classifier, and administrators additionally get a nonced, JavaScript-free "Mark as spam" link under each comment on the site itself. Training is locked once per comment and category, so the same decision made twice stores one sample and a reversal replaces it; marking a comment the plugin never blocked also records a spam-log entry badged "Marked by moderator". No new storage location is introduced. The Contact Form 7 integration is a soft dependency (registered on `plugins_loaded` only when CF7 is active) and reuses the same detection pipeline via CF7's `wpcf7_spam` filter — no new storage location is introduced, flagged form submissions are logged in the existing spam log with a `source => 'form'` marker, and the plugin behaves exactly as today when CF7 is absent.
+Offline-first spam protection for WordPress comments and Contact Form 7 submissions. Ten
+configurable checks run on your own server: nothing is sent anywhere, no account and no API key.
+
+## What it does
+
+- **Ten checks, each with its own toggle and thresholds.** Two bot checks run first, a honeypot
+  field and submit-time validation. Then stop words, link count, emoji count, abnormal spacing,
+  mixed writing systems, duplicate content, a Naive Bayes classifier and cosine similarity against
+  known spam samples.
+- **Learns from your moderation.** Every Spam / Not Spam decision made anywhere in WordPress
+  trains the classifier: a Comments-screen row action, a bulk action, another antispam plugin, or
+  the plugin's own Spam Log. Administrators also get a JavaScript-free "Mark as spam" link under
+  each comment on the site. A comment is learned once per category, so repeating a decision stores
+  one sample and reversing it replaces that sample.
+- **Shows a flagged comment to its own author as "awaiting moderation"**, and to nobody else, so
+  a real visitor caught by mistake does not post it again. A General tab setting turns it off.
+- **Contact Form 7, when it is active.** All enabled checks run on form submissions through
+  CF7's own spam handling, and flagged ones land in the same Spam Log with a form marker.
+  Without CF7 nothing changes.
+- **Ten writing systems**, each with its own seed corpus (Latin, Cyrillic, CJK, Arabic, Devanagari,
+  Greek, Hebrew, Thai, Bengali, Indic), so a non-English site starts with a working classifier.
+- **WordPress Privacy API**: export and erase per person, see [Privacy](#privacy).
+- **Admin interface in ten languages**, see [Supported Languages](#supported-languages).
+
+Requirements: WordPress 6.4 or newer, PHP 8.1 or newer, tested up to WordPress 7.1.
+
+## Notes on detection
+
+- The two bot checks fail open and store no personal data. A missing or stale field never blocks
+  anyone, and a bot written for one specific site can bypass them; it is then judged by the
+  content checks alone.
+- The seed corpus is comment spam. It is expected to transfer reasonably to form submissions,
+  but that is unmeasured, and a form-specific corpus is explicit future work.
+- Marking a comment the plugin never blocked still records a Spam Log entry, badged
+  "Marked by moderator".
 
 ## Supported Languages
 
