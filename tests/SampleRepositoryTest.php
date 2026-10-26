@@ -625,6 +625,18 @@ class SampleRepositoryTest extends TestCase {
         $this->assertStringContainsString( 'DEFAULT CHARACTER SET', $sql );
     }
 
+    public function test_get_create_table_sql_uses_no_datetime_default_expression(): void {
+        // MySQL 5.5, still within WordPress's supported range, accepts DEFAULT
+        // CURRENT_TIMESTAMP on TIMESTAMP columns only; on a DATETIME column the
+        // CREATE fails and dbDelta() reports nothing, so the plugin would activate
+        // without its table. insert() always supplies created_at explicitly, so
+        // the column needs no default at all.
+        $sql = $this->repo->get_create_table_sql();
+
+        $this->assertStringContainsString( 'created_at DATETIME NOT NULL,', $sql );
+        $this->assertStringNotContainsString( 'CURRENT_TIMESTAMP', $sql );
+    }
+
     public function test_get_create_table_sql_carries_the_comment_id_subject_key(): void {
         $sql = $this->repo->get_create_table_sql();
 

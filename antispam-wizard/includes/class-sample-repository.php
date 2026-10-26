@@ -175,7 +175,7 @@ class ASW_Sample_Repository {
             category VARCHAR(10) NOT NULL,
             content TEXT NOT NULL,
             content_hash CHAR(64) NOT NULL,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME NOT NULL,
             PRIMARY KEY (id),
             KEY idx_comment_id (comment_id),
             KEY idx_email_hash (email_hash),
