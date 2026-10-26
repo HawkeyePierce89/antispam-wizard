@@ -357,16 +357,21 @@ class AdminPageTest extends TestCase {
 
     /**
      * The website and source addresses live in two constants, and readme.txt,
-     * the Author URI header and the Plugins-screen row all carry the same ones,
-     * so none of them can drift.
+     * the Plugin URI header and the Plugins-screen row all carry the same ones,
+     * so none of them can drift. The Author headers name the maintainer and
+     * their own site: the directory's ownership check relates the submitting
+     * account to the author it finds in the header, and it rejects a Plugin
+     * URI equal to the Author URI, so the two must stay different.
      */
     public function test_website_and_source_addresses_agree_across_readme_header_and_row() {
         $this->assertSame( 'https://antispamwizard.com/', ASW_Admin_Page::WEBSITE_URL );
         $this->assertSame( 'https://github.com/HawkeyePierce89/antispam-wizard', ASW_Admin_Page::SOURCE_URL );
 
         $header = file_get_contents( ASW_PATH . 'antispam-wizard.php' );
-        $this->assertMatchesRegularExpression( '/^ \* Author URI:\s+' . preg_quote( ASW_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
-        $this->assertStringNotContainsString( 'Plugin URI:', $header, 'the directory rejects a Plugin URI equal to the Author URI; only the Author URI carries the website' );
+        $this->assertMatchesRegularExpression( '/^ \* Plugin URI:\s+' . preg_quote( ASW_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
+        $this->assertMatchesRegularExpression( '/^ \* Author:\s+Anton Karmanov$/m', $header );
+        $this->assertMatchesRegularExpression( '/^ \* Author URI:\s+https:\/\/karmanov\.ws\/$/m', $header );
+        $this->assertStringNotContainsString( ASW_Admin_Page::WEBSITE_URL, substr( $header, strpos( $header, 'Author URI:' ), 60 ), 'Author URI must differ from Plugin URI' );
 
         $readme = file_get_contents( ASW_PATH . 'readme.txt' );
         $this->assertStringContainsString( '* Website: ' . ASW_Admin_Page::WEBSITE_URL, $readme );
@@ -376,7 +381,7 @@ class AdminPageTest extends TestCase {
     /**
      * The Plugins screen row carries a "Source code" link through
      * plugin_row_meta, registered with two arguments; the website is already
-     * the "By AntiSpam Wizard" link core builds from the Author URI header, so
+     * the "Visit plugin site" link core builds from the Plugin URI header, so
      * it is not repeated. Any other plugin's row is returned untouched.
      */
     public function test_plugin_row_meta_adds_the_source_link_to_our_row_only() {
