@@ -58,7 +58,7 @@ Translation files are in `antispam-wizard/languages/`.
 AntiSpam Wizard integrates with WordPress's built-in personal-data tools (Tools → Export/Erase Personal Data), so you can honor GDPR access and erasure requests:
 
 - **Export** — for a given email, the report includes the plugin's stored data for that person's flagged comments and, when Contact Form 7 is in use, flagged form submissions: the date, a short comment/submission fragment, the SHA-256 hash of the IP address (the raw IP is never stored), the salted SHA-256 hash of the email for form entries (raw email never stored), the checks that triggered, and the reason the comment/submission was flagged. If a comment was later used to train the spam filter — from the Spam Log's pills or by any Spam / Not Spam moderation decision — the report also carries one item per training sample: the date it was added, the training category (Spam/Ham), and the **full** stored comment text — unlike the spam-log fragment, a training sample keeps the comment verbatim.
-- **Erase** — removes the matching spam-log entries (by `comment_id` for comments and by salted email hash for form entries on page 1), the `_asw_reason` comment meta, and the training samples added from those comments (`{prefix}asw_samples`, matched by `comment_id` and, on page 1, by the salted email hash — which still reaches a sample whose source comment was hard-deleted); removing samples invalidates the cached models for that writing system (and the combined model), so the classifier is rebuilt without the erased text.
+- **Erase** — removes the matching spam-log entries (by `comment_id` for comments and by salted email hash for form entries on page 1), the `_antispamwizard_reason` comment meta, and the training samples added from those comments (`{prefix}antispamwizard_samples`, matched by `comment_id` and, on page 1, by the salted email hash — which still reaches a sample whose source comment was hard-deleted); removing samples invalidates the cached models for that writing system (and the combined model), so the classifier is rebuilt without the erased text.
 
 Suggested privacy-policy text describing what the plugin stores and how to remove it — including that it also analyzes Contact Form 7 submissions and stores, for a flagged submission, a short text fragment, a SHA-256 hash of the IP and a salted SHA-256 hash of the email (raw values never stored), and that training the filter on a comment stores that comment's full text as a training sample keyed by its comment ID and by a salted hash of the author's email — is available under **Settings → Privacy** (the WordPress Privacy Policy Guide), ready to insert into your site's policy.
 
@@ -116,7 +116,7 @@ bash dev/reset.sh
    - **Duplicate content**: Post the exact same comment three times (the default threshold is 3). Matching is per commenter IP within the TTL window, not per post, so the repeats may be on different posts.
    - **Suspicious spacing**: Use unusual whitespace patterns (e.g. extra spaces between every letter).
    - **Bayesian classifier**: Post comments similar to known spam patterns (e.g. "buy cheap pills online free discount"). Admins can refine detection by marking comments as spam or ham in the spam log.
-   - **Similarity matching**: Post a comment closely resembling known spam samples (e.g. "buy cheap pills online free discount"). Uses cosine similarity against the shipped spam corpus plus the most recently learned spam samples — the learned half is capped by `ASW_Model_Store::LEARNED_SIMILARITY_BUDGET` (128 KiB of packed tokens per writing system, newest first) so a cached model stays under the object cache's 1 MB per-item limit, while the Bayesian classifier trains on every learned sample (on a site running a persistent object cache the cached model is additionally compressed and, if it would still not fit, its rarest words are dropped until it does); adjustable threshold in settings (default 0.6).
+   - **Similarity matching**: Post a comment closely resembling known spam samples (e.g. "buy cheap pills online free discount"). Uses cosine similarity against the shipped spam corpus plus the most recently learned spam samples — the learned half is capped by `ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET` (128 KiB of packed tokens per writing system, newest first) so a cached model stays under the object cache's 1 MB per-item limit, while the Bayesian classifier trains on every learned sample (on a site running a persistent object cache the cached model is additionally compressed and, if it would still not fit, its rarest words are dropped until it does); adjustable threshold in settings (default 0.6).
 4. Verify the spam comment is blocked and appears in the spam log (AntiSpam Wizard > Spam Log).
 5. As an administrator, view a post on the site: each non-spam comment carries a "Mark as spam" link that moves the comment to spam and trains the classifier.
 5. Check detection statistics on the Stats tab (AntiSpam Wizard > Statistics).
@@ -137,13 +137,13 @@ Form 7 is present, through `wpcf7_spam` via `tests/smoke/cf7-check.php`:
 ```bash
 bash dev/smoke.sh                                   # WP 7.1 (default)
 WORDPRESS_IMAGE=6.4-php8.1-apache bash dev/smoke.sh # WP 6.4 floor (control)
-ASW_SMOKE_SKIP_CF7=1 bash dev/smoke.sh              # force the CF7 inert path
+ANTISPAMWIZARD_SMOKE_SKIP_CF7=1 bash dev/smoke.sh   # force the CF7 inert path
 ```
 
 After activation the harness attempts `wp plugin install contact-form-7 --activate`;
 if that fails or the classes are not loaded (no network, dead download) it prints
 a `SKIP` line and continues — proving the integration degrades to inert rather
-than failing the plugin — and `ASW_SMOKE_SKIP_CF7` forces the same skip path.
+than failing the plugin — and `ANTISPAMWIZARD_SMOKE_SKIP_CF7` forces the same skip path.
 The CF7 check creates a contact form via the CF7 API, pins deterministic
 settings (Links as spam trigger, probabilistic checks off), drives real
 submissions through `WPCF7_ContactForm::submit()` with `$_POST` populated
@@ -157,7 +157,7 @@ core-version assertion: if the booted core's `major.minor` does not match the
 requested image it fails fast with an actionable "stale/mismatched WordPress core
 tree" message instead of a raw core fatal. The harness runs fully isolated under
 a **per-run, per-image** compose project derived from the sanitized
-`WORDPRESS_IMAGE` plus the harness PID (e.g. `asw-smoke-6-4-php8-1-apache-12345`),
+`WORDPRESS_IMAGE` plus the harness PID (e.g. `antispamwizard-smoke-6-4-php8-1-apache-12345`),
 each with ephemeral volumes and a teardown trap, so no two runs — different
 images, or two concurrent invocations of the same image — ever share
 volumes/containers/network even on the same Docker daemon, and your persistent
@@ -189,7 +189,7 @@ fails the run — there is no skip path.
 
 Override the WordPress image with `WORDPRESS_IMAGE` (default `7.1-php8.3-apache`;
 floor `6.4-php8.1-apache`). Isolation follows the smoke harness model: a per-run,
-per-image compose project (`asw-pc-6-4-php8-1-apache-12345`) with ephemeral
+per-image compose project (`antispamwizard-pc-6-4-php8-1-apache-12345`) with ephemeral
 volumes, no published host ports and a teardown trap, plus the same core-version
 gate — your persistent dev environment is never touched.
 

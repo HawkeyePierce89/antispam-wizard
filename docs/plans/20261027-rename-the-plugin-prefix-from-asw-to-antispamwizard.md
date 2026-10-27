@@ -163,9 +163,9 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
   `docs/shadow-display.md`, `docs/test-stubs.md`, plus any other `docs/*.md` outside `docs/plans/`
   that contains the token.
 
-- [ ] Apply the same three ordered replacements from Task 1 to these files. `ASWTest` →
+- [x] Apply the same three ordered replacements from Task 1 to these files. `ASWTest` →
   `AntiSpamWizardTest` goes first.
-- [ ] Read the diff of every prose file:
+- [x] Read the diff of every prose file:
   - Anywhere the text names the plugin by its old abbreviation instead of an identifier, use
     "AntiSpam Wizard" in place of the all-caps class name.
   - If any prose explains the prefix itself, it now says `antispamwizard`/`ANTISPAMWIZARD`.
@@ -173,11 +173,11 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
     `'ANTISPAMWIZARD: shadow display failed at '` log prefix quoted in `docs/conventions.md` and
     `docs/shadow-display.md`.
   - Text that describes the seed corpus content is not altered.
-- [ ] Cross-check the switch list in CLAUDE.md's Commands section and in `docs/test-stubs.md`. Every
+- [x] Cross-check the switch list in CLAUDE.md's Commands section and in `docs/test-stubs.md`. Every
   renamed `$GLOBALS` switch there must exist verbatim in `tests/bootstrap.php` or in the plugin code
   that reads it, for example `antispamwizard_zlib_unavailable`, `antispamwizard_gzcompress_fails`,
   `antispamwizard_max_cached_unit_bytes`, `antispamwizard_max_inflated_unit_bytes`.
-- [ ] Confirm that the storage names listed in CLAUDE.md's Data storage section match what
+- [x] Confirm that the storage names listed in CLAUDE.md's Data storage section match what
   `antispam-wizard/uninstall.php` deletes:
   - the table `{prefix}antispamwizard_samples`;
   - the options `antispamwizard_settings`, `_spam_log`, `_stats`, `_shadow_display_after`,
@@ -185,8 +185,8 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
   - the `_transient_antispamwizard_dup_%` and `_transient_antispamwizard_classifiers_%` sweeps;
   - the comment meta `_antispamwizard_reason`;
   - the lock directory `.antispamwizard-locks`.
-- [ ] `wc -c CLAUDE.md` must be under 150 000.
-- [ ] Run `docker compose run --rm test`. It must be green; PluginMetadataTest and
+- [x] `wc -c CLAUDE.md` must be under 150 000.
+- [x] Run `docker compose run --rm test`. It must be green; PluginMetadataTest and
   PluginCheckHarnessTest read some docs and harness text.
 
 ### Task 3: Verify acceptance criteria
