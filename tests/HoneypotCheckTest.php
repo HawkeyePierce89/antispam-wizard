@@ -21,13 +21,13 @@ class HoneypotCheckTest extends TestCase {
         parent::tearDown();
     }
 
-    private function get_check_with_request( array $request ): ASW_Honeypot_Check {
-        return new ASW_Honeypot_Check( $request );
+    private function get_check_with_request( array $request ): ANTISPAMWIZARD_Honeypot_Check {
+        return new ANTISPAMWIZARD_Honeypot_Check( $request );
     }
 
     public function test_filled_is_spam(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => 'bot_value'
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'bot_value'
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -38,7 +38,7 @@ class HoneypotCheckTest extends TestCase {
 
     public function test_empty_string_passes(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => ''
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => ''
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -48,7 +48,7 @@ class HoneypotCheckTest extends TestCase {
 
     public function test_array_value_is_spam(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => array( 'bot' => 'value' )
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => array( 'bot' => 'value' )
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -61,7 +61,7 @@ class HoneypotCheckTest extends TestCase {
         // Whitespace can be injected by autofill or clipboard quirks; only a
         // real value counts as a filled honeypot.
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => "   \t \n "
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => "   \t \n "
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -78,10 +78,10 @@ class HoneypotCheckTest extends TestCase {
     }
 
     public function test_disabled_passes(): void {
-        ASW_Settings::update( array( 'honeypot_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'honeypot_enabled' => false ) );
 
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => 'bot_value'
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'bot_value'
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -91,7 +91,7 @@ class HoneypotCheckTest extends TestCase {
 
     public function test_trackback_passes(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => 'bot_value'
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'bot_value'
         ) );
 
         $result = $check->check( array( 'comment_type' => 'trackback' ) );
@@ -101,7 +101,7 @@ class HoneypotCheckTest extends TestCase {
 
     public function test_pingback_passes(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => 'bot_value'
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'bot_value'
         ) );
 
         $result = $check->check( array( 'comment_type' => 'pingback' ) );
@@ -112,7 +112,7 @@ class HoneypotCheckTest extends TestCase {
     public function test_details_string_contains_no_submitted_value(): void {
         $secret = 'this_is_a_secret_submitted_value';
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => $secret
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => $secret
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -122,20 +122,20 @@ class HoneypotCheckTest extends TestCase {
     }
 
     public function test_falls_back_to_post(): void {
-        $_POST[ASW_Comment_Form::HONEYPOT_FIELD] = 'global_value';
-        $check = new ASW_Honeypot_Check();
+        $_POST[ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD] = 'global_value';
+        $check = new ANTISPAMWIZARD_Honeypot_Check();
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
 
         $this->assertTrue( $result->is_spam() );
         $this->assertSame( 'honeypot filled', $result->get_details() );
 
-        unset( $_POST[ASW_Comment_Form::HONEYPOT_FIELD] );
+        unset( $_POST[ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD] );
     }
 
     public function test_empty_comment_type_treated_as_comment(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => 'value'
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'value'
         ) );
 
         $result = $check->check( array() ); // comment_type not set
@@ -153,7 +153,7 @@ class HoneypotCheckTest extends TestCase {
      */
     public function test_tags_only_value_is_spam(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::HONEYPOT_FIELD => '<a href="http://spam.example"></a><br>'
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => '<a href="http://spam.example"></a><br>'
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -168,9 +168,9 @@ class HoneypotCheckTest extends TestCase {
      * as a filled honeypot and flag a legitimate commenter.
      */
     public function test_post_fallback_unslashes_value(): void {
-        $_POST = array( ASW_Comment_Form::HONEYPOT_FIELD => '\\' );
+        $_POST = array( ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => '\\' );
 
-        $check  = new ASW_Honeypot_Check();
+        $check  = new ANTISPAMWIZARD_Honeypot_Check();
         $result = $check->check( array( 'comment_type' => 'comment' ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -182,9 +182,9 @@ class HoneypotCheckTest extends TestCase {
      * is wired up and not just failing open on everything.
      */
     public function test_post_fallback_filled_value_is_spam(): void {
-        $_POST = array( ASW_Comment_Form::HONEYPOT_FIELD => 'bot_value' );
+        $_POST = array( ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'bot_value' );
 
-        $check  = new ASW_Honeypot_Check();
+        $check  = new ANTISPAMWIZARD_Honeypot_Check();
         $result = $check->check( array( 'comment_type' => 'comment' ) );
 
         $this->assertTrue( $result->is_spam() );

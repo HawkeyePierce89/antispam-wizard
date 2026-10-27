@@ -17,7 +17,7 @@
 # are always printed for information but never fail the run.
 #
 # Fully isolated, on the same model as dev/smoke.sh: a per-run, per-image compose
-# project (asw-pc-<image>-<pid>) with ephemeral volumes, no published host ports,
+# project (antispamwizard-pc-<image>-<pid>) with ephemeral volumes, no published host ports,
 # and a teardown trap that runs `down -v` on success or failure — the user's
 # persistent dev env (project antispam-wizard_*) is never read or destroyed.
 # Deriving the project from the image *and* this process's PID means no two runs
@@ -38,10 +38,10 @@ cd "$ROOT_DIR"
 
 # Per-run, per-image compose project: sanitize the image ref (lowercase, any run
 # of non-alphanumeric chars → a single "-") and append this process's PID, e.g.
-# asw-pc-6-4-php8-1-apache-12345. Same rationale as dev/smoke.sh: two runs on one
+# antispamwizard-pc-6-4-php8-1-apache-12345. Same rationale as dev/smoke.sh: two runs on one
 # Docker daemon must never share a project and tear down each other's stack.
 PROJECT_SLUG="$(printf '%s' "$WORDPRESS_IMAGE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
-PROJECT="asw-pc-${PROJECT_SLUG}-$$"
+PROJECT="antispamwizard-pc-${PROJECT_SLUG}-$$"
 
 # Expected core major.minor: the leading token of WORDPRESS_IMAGE before the
 # first "-", reduced to its first two dot-components (e.g. "6.4" from
@@ -79,10 +79,10 @@ trap cleanup EXIT
 # Built under the repo root (rather than $TMPDIR) so the bind mount works on
 # Docker Desktop without depending on which host paths the user has shared.
 # Removed by the cleanup trap; .gitignore covers it if a run is hard-killed.
-EXPORT_DIR="$(mktemp -d "${ROOT_DIR}/.asw-pc-export.XXXXXX")"
+EXPORT_DIR="$(mktemp -d "${ROOT_DIR}/.antispamwizard-pc-export.XXXXXX")"
 EXPORT_ROOT="${EXPORT_DIR}/${PLUGIN_SLUG}"
 
-OVERRIDE="$(mktemp -t asw-pc-override.XXXXXX.yml)"
+OVERRIDE="$(mktemp -t antispamwizard-pc-override.XXXXXX.yml)"
 
 fail() {
   echo ""
@@ -180,7 +180,7 @@ done
 echo "Installing throwaway WordPress site..."
 wpcli core install \
   --url="http://localhost" \
-  --title="ASW Plugin Check" \
+  --title="AntiSpam Wizard Plugin Check" \
   --admin_user="admin" \
   --admin_password="admin" \
   --admin_email="admin@example.com" \
@@ -188,7 +188,7 @@ wpcli core install \
 
 # --- Core-version gate: fail fast on a stale/mismatched core tree ------------
 echo "Asserting WP core version matches the requested image (expected ${EXPECTED_WP_VERSION})..."
-CORE_VERSION_ERR="$(mktemp -t asw-pc-coreversion.XXXXXX)"
+CORE_VERSION_ERR="$(mktemp -t antispamwizard-pc-coreversion.XXXXXX)"
 if ! ACTUAL_WP_VERSION="$(wpcli core version 2>"$CORE_VERSION_ERR" | tr -d '\r' | tr -d '[:space:]')"; then
   CORE_VERSION_DIAG="$(sed 's/^/    /' "$CORE_VERSION_ERR")"
   rm -f "$CORE_VERSION_ERR"
@@ -218,7 +218,7 @@ echo "  - activation exit 0"
 
 # --- Run the check -----------------------------------------------------------
 echo "Running: wp plugin check ${PLUGIN_SLUG} --categories=plugin_repo"
-RESULTS="$(mktemp -t asw-pc-results.XXXXXX.csv)"
+RESULTS="$(mktemp -t antispamwizard-pc-results.XXXXXX.csv)"
 # `wp plugin check` exits 0 on every *normal* run, findings or not: the clean case
 # ends in `WP_CLI::success( 'Checks complete. No errors found.' )` and the findings
 # case prints `FILE: ...` plus CSV rows and simply returns (Plugin Check 2.1.0,

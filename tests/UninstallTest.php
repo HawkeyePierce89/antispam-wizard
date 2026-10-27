@@ -21,7 +21,7 @@ class UninstallTest extends TestCase {
      */
     private function lock_dir(): string {
         $upload_dir = wp_upload_dir();
-        return $upload_dir['basedir'] . '/.asw-locks';
+        return $upload_dir['basedir'] . '/.antispamwizard-locks';
     }
 
     /**
@@ -61,24 +61,33 @@ class UninstallTest extends TestCase {
     private function assertRemovalSetUnchanged(): void {
         global $wp_options, $wpdb;
 
-        $this->assertArrayNotHasKey( 'asw_settings', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_spam_log', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_stats', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_samples_revision', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_samples_db_version', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_shadow_display_after', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_settings', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_spam_log', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_stats', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_samples_revision', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_samples_db_version', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_shadow_display_after', $wp_options );
 
         $this->assertNotEmpty( $wpdb->queries );
-        $this->assertStringContainsString( 'asw\\_dup\\_', $wpdb->queries[0] );
-        $this->assertStringContainsString( 'asw\\_classifiers\\_', $wpdb->queries[0] );
+        $this->assertStringContainsString( 'antispamwizard\\_dup\\_', $wpdb->queries[0] );
+        $this->assertStringContainsString( 'antispamwizard\\_classifiers\\_', $wpdb->queries[0] );
+        // Each sweep and its timeout twin, exactly as esc_like() escapes them.
+        foreach ( array(
+            '\\_transient\\_antispamwizard\\_dup\\_%',
+            '\\_transient\\_timeout\\_antispamwizard\\_dup\\_%',
+            '\\_transient\\_antispamwizard\\_classifiers\\_%',
+            '\\_transient\\_timeout\\_antispamwizard\\_classifiers\\_%',
+        ) as $like ) {
+            $this->assertStringContainsString( $like, $wpdb->queries[0] );
+        }
 
         $this->assertNotEmpty( $wpdb->deletes );
         $this->assertSame( 'wp_commentmeta', $wpdb->deletes[0]['table'] );
-        $this->assertSame( '_asw_reason', $wpdb->deletes[0]['where']['meta_key'] );
+        $this->assertSame( '_antispamwizard_reason', $wpdb->deletes[0]['where']['meta_key'] );
 
         $drop_found = false;
         foreach ( $wpdb->queries as $q ) {
-            if ( strpos( $q, 'DROP TABLE IF EXISTS `wp_asw_samples`' ) !== false ) {
+            if ( strpos( $q, 'DROP TABLE IF EXISTS `wp_antispamwizard_samples`' ) !== false ) {
                 $drop_found = true;
                 break;
             }
@@ -88,20 +97,20 @@ class UninstallTest extends TestCase {
 
     public function test_uninstall_removes_all_plugin_options() {
         // Populate options that the plugin creates.
-        update_option( 'asw_settings', array( 'links_max' => 5 ) );
-        update_option( 'asw_spam_log', array( 'entry1' ) );
-        update_option( 'asw_stats', array( 'total' => 10 ) );
-        update_option( 'asw_samples_revision', 5 );
-        update_option( 'asw_samples_db_version', '2' );
-        update_option( 'asw_shadow_display_after', 41 );
+        update_option( 'antispamwizard_settings', array( 'links_max' => 5 ) );
+        update_option( 'antispamwizard_spam_log', array( 'entry1' ) );
+        update_option( 'antispamwizard_stats', array( 'total' => 10 ) );
+        update_option( 'antispamwizard_samples_revision', 5 );
+        update_option( 'antispamwizard_samples_db_version', '2' );
+        update_option( 'antispamwizard_shadow_display_after', 41 );
 
         // Verify they exist.
         global $wp_options;
-        $this->assertArrayHasKey( 'asw_settings', $wp_options );
-        $this->assertArrayHasKey( 'asw_spam_log', $wp_options );
-        $this->assertArrayHasKey( 'asw_stats', $wp_options );
-        $this->assertArrayHasKey( 'asw_samples_revision', $wp_options );
-        $this->assertArrayHasKey( 'asw_samples_db_version', $wp_options );
+        $this->assertArrayHasKey( 'antispamwizard_settings', $wp_options );
+        $this->assertArrayHasKey( 'antispamwizard_spam_log', $wp_options );
+        $this->assertArrayHasKey( 'antispamwizard_stats', $wp_options );
+        $this->assertArrayHasKey( 'antispamwizard_samples_revision', $wp_options );
+        $this->assertArrayHasKey( 'antispamwizard_samples_db_version', $wp_options );
 
         // Simulate uninstall (define the guard constant, then include uninstall.php).
         if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -110,26 +119,26 @@ class UninstallTest extends TestCase {
         require dirname( __DIR__ ) . '/antispam-wizard/uninstall.php';
 
         // All plugin options should be gone.
-        $this->assertArrayNotHasKey( 'asw_settings', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_spam_log', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_stats', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_samples_revision', $wp_options );
-        $this->assertArrayNotHasKey( 'asw_samples_db_version', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_settings', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_spam_log', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_stats', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_samples_revision', $wp_options );
+        $this->assertArrayNotHasKey( 'antispamwizard_samples_db_version', $wp_options );
 
         // Verify transient cleanup query was issued.
         global $wpdb;
         $this->assertNotEmpty( $wpdb->queries );
-        $this->assertStringContainsString( 'asw\_dup\_', $wpdb->queries[0] );
+        $this->assertStringContainsString( 'antispamwizard\_dup\_', $wpdb->queries[0] );
 
         // Verify comment meta cleanup was issued.
         $this->assertNotEmpty( $wpdb->deletes );
         $this->assertSame( 'wp_commentmeta', $wpdb->deletes[0]['table'] );
-        $this->assertSame( '_asw_reason', $wpdb->deletes[0]['where']['meta_key'] );
+        $this->assertSame( '_antispamwizard_reason', $wpdb->deletes[0]['where']['meta_key'] );
 
         // Verify samples table DROP query was issued.
         $drop_found = false;
         foreach ( $wpdb->queries as $q ) {
-            if ( strpos( $q, 'DROP TABLE IF EXISTS `wp_asw_samples`' ) !== false ) {
+            if ( strpos( $q, 'DROP TABLE IF EXISTS `wp_antispamwizard_samples`' ) !== false ) {
                 $drop_found = true;
                 break;
             }
@@ -141,7 +150,7 @@ class UninstallTest extends TestCase {
         $dir = $this->lock_dir();
         $this->assertTrue( wp_mkdir_p( $dir ) );
 
-        $lock     = $dir . '/asw_spam_log_' . md5( ABSPATH ) . '.lock';
+        $lock     = $dir . '/antispamwizard_spam_log_' . md5( ABSPATH ) . '.lock';
         $index    = $dir . '/index.php';
         $htaccess = $dir . '/.htaccess';
         file_put_contents( $lock, '' );
@@ -153,11 +162,11 @@ class UninstallTest extends TestCase {
         $this->assertFileExists( $htaccess );
 
         // The rest of the removal set must still be removed alongside the files.
-        update_option( 'asw_settings', array( 'links_max' => 5 ) );
-        update_option( 'asw_spam_log', array( 'entry1' ) );
-        update_option( 'asw_stats', array( 'total' => 10 ) );
-        update_option( 'asw_samples_revision', 5 );
-        update_option( 'asw_samples_db_version', '2' );
+        update_option( 'antispamwizard_settings', array( 'links_max' => 5 ) );
+        update_option( 'antispamwizard_spam_log', array( 'entry1' ) );
+        update_option( 'antispamwizard_stats', array( 'total' => 10 ) );
+        update_option( 'antispamwizard_samples_revision', 5 );
+        update_option( 'antispamwizard_samples_db_version', '2' );
 
         $this->run_uninstall();
 
@@ -174,7 +183,7 @@ class UninstallTest extends TestCase {
 
         $dir = $this->lock_dir();
         $this->assertTrue( wp_mkdir_p( $dir ) );
-        $lock     = $dir . '/asw_dup_ab.lock';
+        $lock     = $dir . '/antispamwizard_dup_ab.lock';
         $htaccess = $dir . '/.htaccess';
         file_put_contents( $lock, '' );
         file_put_contents( $htaccess, 'Deny from all' );
@@ -196,11 +205,11 @@ class UninstallTest extends TestCase {
 
         $this->assertDirectoryDoesNotExist( $this->lock_dir() );
 
-        update_option( 'asw_settings', array( 'links_max' => 5 ) );
-        update_option( 'asw_spam_log', array( 'entry1' ) );
-        update_option( 'asw_stats', array( 'total' => 10 ) );
-        update_option( 'asw_samples_revision', 5 );
-        update_option( 'asw_samples_db_version', '2' );
+        update_option( 'antispamwizard_settings', array( 'links_max' => 5 ) );
+        update_option( 'antispamwizard_spam_log', array( 'entry1' ) );
+        update_option( 'antispamwizard_stats', array( 'total' => 10 ) );
+        update_option( 'antispamwizard_samples_revision', 5 );
+        update_option( 'antispamwizard_samples_db_version', '2' );
 
         $this->run_uninstall();
 

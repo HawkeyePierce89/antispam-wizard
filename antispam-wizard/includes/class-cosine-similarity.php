@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Computes cosine similarity between two token arrays using term frequency vectors.
  */
-class ASW_Cosine_Similarity {
+class ANTISPAMWIZARD_Cosine_Similarity {
 
     /**
      * Compare two token arrays and return their cosine similarity.

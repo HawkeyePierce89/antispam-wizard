@@ -58,7 +58,7 @@ class PluginCheckHarnessTest extends TestCase {
     }
 
     public function test_derives_per_run_per_image_compose_project() {
-        $this->assertStringContainsString( 'PROJECT="asw-pc-${PROJECT_SLUG}-$$"', $this->script );
+        $this->assertStringContainsString( 'PROJECT="antispamwizard-pc-${PROJECT_SLUG}-$$"', $this->script );
         $this->assertStringContainsString( 'PROJECT_SLUG=', $this->script );
         // Every compose invocation must be pinned to that project, so the user's
         // persistent dev env (project antispam-wizard_*) is never touched.
@@ -260,9 +260,15 @@ class PluginCheckHarnessTest extends TestCase {
     }
 
     public function test_export_directory_is_gitignored() {
-        $gitignore = (string) file_get_contents( dirname( __DIR__ ) . '/.gitignore' );
+        // Both sides of the contract: the template the script creates the
+        // export under, and the .gitignore pattern that covers it.
         $this->assertStringContainsString(
-            '.asw-pc-export.',
+            'EXPORT_DIR="$(mktemp -d "${ROOT_DIR}/.antispamwizard-pc-export.XXXXXX")"',
+            $this->script
+        );
+        $gitignore = (string) file_get_contents( dirname( __DIR__ ) . '/.gitignore' );
+        $this->assertMatchesRegularExpression(
+            '/^\.antispamwizard-pc-export\.\*$/m',
             $gitignore,
             'A hard-killed run must not leave untracked junk that git status reports.'
         );

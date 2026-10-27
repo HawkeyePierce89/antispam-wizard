@@ -4,11 +4,11 @@ use PHPUnit\Framework\TestCase;
 
 class CosineSimilarityTest extends TestCase {
 
-    private ASW_Cosine_Similarity $similarity;
+    private ANTISPAMWIZARD_Cosine_Similarity $similarity;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->similarity = new ASW_Cosine_Similarity();
+        $this->similarity = new ANTISPAMWIZARD_Cosine_Similarity();
     }
 
     public function test_identical_texts_return_one(): void {

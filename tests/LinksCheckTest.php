@@ -4,13 +4,13 @@ use PHPUnit\Framework\TestCase;
 
 class LinksCheckTest extends TestCase {
 
-    private ASW_Links_Check $check;
+    private ANTISPAMWIZARD_Links_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
         global $wp_options;
         $wp_options = array();
-        $this->check = new ASW_Links_Check();
+        $this->check = new ANTISPAMWIZARD_Links_Check();
     }
 
     protected function tearDown(): void {
@@ -62,7 +62,7 @@ class LinksCheckTest extends TestCase {
     }
 
     public function test_custom_threshold(): void {
-        ASW_Settings::update( array( 'links_max' => 5 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'links_max' => 5 ) );
         $result = $this->check->check( $this->make_comment(
             'http://a.com https://b.com http://c.com https://d.com'
         ) );
@@ -71,7 +71,7 @@ class LinksCheckTest extends TestCase {
     }
 
     public function test_disabled_check_returns_not_spam(): void {
-        ASW_Settings::update( array( 'links_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'links_enabled' => false ) );
         $result = $this->check->check( $this->make_comment(
             'http://a.com https://b.com http://c.com'
         ) );
@@ -86,6 +86,6 @@ class LinksCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 }

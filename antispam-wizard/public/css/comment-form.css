@@ -2,7 +2,7 @@
  * This file exists separately (instead of using inline styles) to survive
  * strict style-src Content Security Policy (CSP) directives.
  */
-.asw-hp-field {
+.antispamwizard-hp-field {
 	position: absolute;
 	left: -10000px;
 	width: 1px;
@@ -14,11 +14,11 @@
  * "Mark as spam" link rendered under each comment for administrators. Kept
  * small, secondary and colour-inherited so it does not fight the theme.
  */
-.asw-moderate {
+.antispamwizard-moderate {
 	margin: 0.5em 0 0;
 }
 
-.asw-moderate-link {
+.antispamwizard-moderate-link {
 	font-size: 0.8em;
 	color: inherit;
 	opacity: 0.7;

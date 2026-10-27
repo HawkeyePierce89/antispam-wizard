@@ -19,9 +19,9 @@ declare( strict_types=1 );
 require dirname( __DIR__ ) . '/tests/bootstrap.php';
 
 $verbose   = in_array( '--verbose', $argv, true ) || in_array( '-v', $argv, true );
-$scripts   = array_values( array_diff( array_slice( $argv, 1 ), array( '-v', '--verbose' ) ) ) ?: array_keys( ASW_Script_Detector::SCRIPT_GROUPS );
-$threshold = (float) ASW_Settings::get( 'bayesian_threshold' );
-$data      = new ASW_Training_Data();
+$scripts   = array_values( array_diff( array_slice( $argv, 1 ), array( '-v', '--verbose' ) ) ) ?: array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS );
+$threshold = (float) ANTISPAMWIZARD_Settings::get( 'bayesian_threshold' );
+$data      = new ANTISPAMWIZARD_Training_Data();
 $fixtures  = dirname( __DIR__ ) . '/tests/fixtures/corpus/';
 
 /**
@@ -29,7 +29,7 @@ $fixtures  = dirname( __DIR__ ) . '/tests/fixtures/corpus/';
  * @param string[] $ham
  * @return array{recall: float, fpr: float, missed: string[], flagged: string[]}
  */
-$evaluate = static function ( ASW_Naive_Bayes $classifier, array $spam, array $ham ) use ( $threshold ): array {
+$evaluate = static function ( ANTISPAMWIZARD_Naive_Bayes $classifier, array $spam, array $ham ) use ( $threshold ): array {
 	$missed  = array();
 	$flagged = array();
 	foreach ( $spam as $text ) {
@@ -60,7 +60,7 @@ foreach ( $scripts as $script ) {
 	$held_spam = $data->load_samples( $fixtures . 'spam-' . $script . '.txt' );
 	$held_ham  = $data->load_samples( $fixtures . 'ham-' . $script . '.txt' );
 	if ( $held_spam && $held_ham ) {
-		$classifier = new ASW_Naive_Bayes( new ASW_Tokenizer(), $script );
+		$classifier = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer(), $script );
 		$data->train_script_classifier( $classifier, $script );
 		$r = $evaluate( $classifier, $held_spam, $held_ham );
 		printf( "   held-out (%d/%d): recall %.2f, false positives %.2f\n", count( $held_spam ), count( $held_ham ), $r['recall'], $r['fpr'] );
@@ -72,7 +72,7 @@ foreach ( $scripts as $script ) {
 		}
 	}
 
-	$tokenizer   = new ASW_Tokenizer( array() );
+	$tokenizer   = new ANTISPAMWIZARD_Tokenizer( array() );
 	$spam_tokens = 0;
 	foreach ( $spam as $line ) {
 		$spam_tokens += count( $tokenizer->tokenize_for_script( $line, $script ) );
@@ -106,7 +106,7 @@ foreach ( $scripts as $script ) {
 				$train_ham[] = $h;
 			}
 		}
-		$classifier = new ASW_Naive_Bayes( new ASW_Tokenizer(), $script );
+		$classifier = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer(), $script );
 		$data->train_classifier_with_samples( $classifier, $train_spam, $train_ham );
 		$r        = $evaluate( $classifier, $test_spam, $test_ham );
 		$recall  += $r['recall'] / $folds;

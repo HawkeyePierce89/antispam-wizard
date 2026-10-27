@@ -43,14 +43,14 @@ class CorpusQualityTest extends TestCase {
      *
      * The per-item limit a persistent object cache imposes is 1 048 576 bytes
      * -- memcached's default `-I`, which Redis drop-ins inherit as a convention
-     * -- *less* the allowance ASW_Model_Store holds back for the cache item's
+     * -- *less* the allowance ANTISPAMWIZARD_Model_Store holds back for the cache item's
      * own overhead, because that is the limit production actually prunes at.
      * Flagging at the raw figure instead left a kilobyte-wide band in which a
      * unit passed every guard here and in dev/bench.php and was still
      * pruned on a live site.
      */
-    private const UNIT_SIZE_LIMIT = ASW_Model_Store::MAX_CACHED_UNIT_BYTES
-        - ASW_Model_Store::CACHE_ITEM_OVERHEAD_BYTES;
+    private const UNIT_SIZE_LIMIT = ANTISPAMWIZARD_Model_Store::MAX_CACHED_UNIT_BYTES
+        - ANTISPAMWIZARD_Model_Store::CACHE_ITEM_OVERHEAD_BYTES;
 
     /**
      * Learned samples of entirely new vocabulary the unbounded-history
@@ -59,9 +59,9 @@ class CorpusQualityTest extends TestCase {
      * Sized to overrun both bounds the design leans on rather than to sit
      * comfortably under them: 1 300 samples of LEARNED_SAMPLE_WORDS words each
      * tokenise to roughly 800 000 bytes of learned similarity lists -- six
-     * times ASW_Model_Store::LEARNED_SIMILARITY_BUDGET -- and their 52 000
+     * times ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET -- and their 52 000
      * fresh tokens take the cyrillic spam dictionary all the way to
-     * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE. A site with that history is
+     * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE. A site with that history is
      * exactly the one whose units used to cross the object-cache item limit.
      */
     private const LEARNED_SAMPLE_HISTORY = 1300;
@@ -86,7 +86,7 @@ class CorpusQualityTest extends TestCase {
      * fixture line re-asserts what the held-out tests already measure. The
      * original Cyrillic and Latin entries were fixture lines, so each was
      * nudged — the garage ad, the live miss this class was written for, by
-     * its last phone digit, which ASW_Tokenizer folds into the same phone
+     * its last phone digit, which ANTISPAMWIZARD_Tokenizer folds into the same phone
      * marker either way; the others by a word.
      */
     private const CANARIES = array(
@@ -239,7 +239,7 @@ class CorpusQualityTest extends TestCase {
         ),
     );
 
-    private ASW_Training_Data $training_data;
+    private ANTISPAMWIZARD_Training_Data $training_data;
 
     /** @var string[]|null Memoised learned-sample vocabulary. */
     private ?array $novel_vocabulary = null;
@@ -262,22 +262,22 @@ class CorpusQualityTest extends TestCase {
         $wp_transients = array();
         // Every size measurement below is of what a *persistent object cache*
         // is handed, since that is the only backend the 1 048 576-byte per-item
-        // limit belongs to -- and the only one ASW_Model_Store stores a unit
+        // limit belongs to -- and the only one ANTISPAMWIZARD_Model_Store stores a unit
         // compressed in. Without an external cache a transient is a `longtext`
         // option row with no per-item limit, and the store writes the plain
         // array there because wpdb will not take a deflate stream into a
         // utf8mb4 column at all.
         $wp_using_ext_object_cache = true;
-        // None of the three ASW_TESTING switches is reset by reset_tables(),
+        // None of the three ANTISPAMWIZARD_TESTING switches is reset by reset_tables(),
         // so all three are reset on both sides here for the same reason
         // ModelStoreTest does: a lowered limit -- or a zlib this class did not
         // turn off -- left behind would measure another class's units against
         // a bound they were never built for under --random-order.
-        $GLOBALS['asw_max_cached_unit_bytes'] = null;
-        $GLOBALS['asw_zlib_unavailable']      = false;
-        $GLOBALS['asw_gzcompress_fails']      = false;
+        $GLOBALS['antispamwizard_max_cached_unit_bytes'] = null;
+        $GLOBALS['antispamwizard_zlib_unavailable']      = false;
+        $GLOBALS['antispamwizard_gzcompress_fails']      = false;
         $wpdb->reset_tables();
-        $this->training_data = new ASW_Training_Data();
+        $this->training_data = new ANTISPAMWIZARD_Training_Data();
     }
 
     protected function tearDown(): void {
@@ -285,27 +285,27 @@ class CorpusQualityTest extends TestCase {
         $wp_options                           = array();
         $wp_transients                        = array();
         $wp_using_ext_object_cache            = false;
-        $GLOBALS['asw_max_cached_unit_bytes'] = null;
-        $GLOBALS['asw_zlib_unavailable']      = false;
-        $GLOBALS['asw_gzcompress_fails']      = false;
+        $GLOBALS['antispamwizard_max_cached_unit_bytes'] = null;
+        $GLOBALS['antispamwizard_zlib_unavailable']      = false;
+        $GLOBALS['antispamwizard_gzcompress_fails']      = false;
         $wpdb->reset_tables();
         parent::tearDown();
     }
 
-    private function trained_classifier( string $script ): ASW_Naive_Bayes {
-        $classifier = new ASW_Naive_Bayes( new ASW_Tokenizer(), $script );
+    private function trained_classifier( string $script ): ANTISPAMWIZARD_Naive_Bayes {
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer(), $script );
         $this->training_data->train_script_classifier( $classifier, $script );
         return $classifier;
     }
 
-    private function shipped_check(): ASW_Bayesian_Check {
+    private function shipped_check(): ANTISPAMWIZARD_Bayesian_Check {
         $classifiers = array();
         foreach ( self::SCRIPTS as $script ) {
             $classifiers[ $script ] = $this->trained_classifier( $script );
         }
-        $combined = new ASW_Naive_Bayes();
+        $combined = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_combined_classifier( $combined );
-        return new ASW_Bayesian_Check( $classifiers, $combined );
+        return new ANTISPAMWIZARD_Bayesian_Check( $classifiers, $combined );
     }
 
     /** @return string[] */
@@ -350,7 +350,7 @@ class CorpusQualityTest extends TestCase {
     }
 
     public function test_held_out_spam_recall_meets_the_floor(): void {
-        $threshold = ASW_Settings::get( 'bayesian_threshold' );
+        $threshold = ANTISPAMWIZARD_Settings::get( 'bayesian_threshold' );
         foreach ( self::SCRIPTS as $script ) {
             $classifier = $this->trained_classifier( $script );
             $samples    = $this->fixture( 'spam', $script );
@@ -371,7 +371,7 @@ class CorpusQualityTest extends TestCase {
     }
 
     public function test_held_out_ham_false_positive_rate_stays_under_the_ceiling(): void {
-        $threshold = ASW_Settings::get( 'bayesian_threshold' );
+        $threshold = ANTISPAMWIZARD_Settings::get( 'bayesian_threshold' );
         foreach ( self::SCRIPTS as $script ) {
             $classifier = $this->trained_classifier( $script );
             $samples    = $this->fixture( 'ham', $script );
@@ -410,7 +410,7 @@ class CorpusQualityTest extends TestCase {
     }
 
     public function test_corpus_has_no_duplicates_and_no_line_in_both_categories(): void {
-        $scripts = array_keys( ASW_Script_Detector::SCRIPT_GROUPS );
+        $scripts = array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS );
         foreach ( $scripts as $script ) {
             $spam = array_map( 'mb_strtolower', $this->corpus( 'spam', $script ) );
             $ham  = array_map( 'mb_strtolower', $this->corpus( 'ham', $script ) );
@@ -422,7 +422,7 @@ class CorpusQualityTest extends TestCase {
     }
 
     public function test_corpus_token_counts_stay_balanced_between_categories(): void {
-        $tokenizer = new ASW_Tokenizer( array() );
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer( array() );
         $report    = array();
         $failures  = array();
         foreach ( self::SCRIPTS as $script ) {
@@ -493,10 +493,10 @@ class CorpusQualityTest extends TestCase {
      * both of them at once:
      *
      * - the similarity corpus takes only the newest
-     *   ASW_Model_Store::LEARNED_SIMILARITY_BUDGET packed bytes of learned
+     *   ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET packed bytes of learned
      *   spam, and
      * - the classifier's vocabulary stops at
-     *   ASW_Naive_Bayes::MAX_DICTIONARY_SIZE tokens per category.
+     *   ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE tokens per category.
      *
      * LEARNED_SAMPLE_HISTORY samples of LEARNED_SAMPLE_WORDS words each go in
      * under `cyrillic`, which owns the largest per-script unit, so the tightest
@@ -520,11 +520,11 @@ class CorpusQualityTest extends TestCase {
         global $wpdb;
         $wpdb->reset_tables();
         $wpdb->register_table_columns(
-            $wpdb->prefix . 'asw_samples',
+            $wpdb->prefix . 'antispamwizard_samples',
             array( 'id', 'script', 'category', 'content', 'content_hash', 'comment_id', 'email_hash', 'created_at' )
         );
 
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         for ( $i = 0; $i < self::LEARNED_SAMPLE_HISTORY; $i++ ) {
             // Every insert has to land, or the measurement is quietly taken over
             // fewer samples than it claims: two samples sharing a body would
@@ -571,19 +571,19 @@ class CorpusQualityTest extends TestCase {
 
         // The samples must actually be in the units, or this test measures the
         // corpus a second time and can never go red: they reach a unit through
-        // ASW_Training_Data, so a store handed a repository but a repositoryless
-        // ASW_Training_Data builds byte-identical units. The comparison is on
+        // ANTISPAMWIZARD_Training_Data, so a store handed a repository but a repositoryless
+        // ANTISPAMWIZARD_Training_Data builds byte-identical units. The comparison is on
         // the uncompressed payload, since a compressed size can move for
         // reasons of its own.
         $corpus_only = $this->measure_units( null );
         $this->assertGreaterThan(
-            $corpus_only['asw_classifiers_cyrillic']['raw'],
-            $with_samples['asw_classifiers_cyrillic']['raw'],
+            $corpus_only['antispamwizard_classifiers_cyrillic']['raw'],
+            $with_samples['antispamwizard_classifiers_cyrillic']['raw'],
             'the learned samples never reached the cyrillic unit, so nothing was measured'
         );
         $this->assertGreaterThan(
-            $corpus_only['asw_classifiers_combined']['raw'],
-            $with_samples['asw_classifiers_combined']['raw'],
+            $corpus_only['antispamwizard_classifiers_combined']['raw'],
+            $with_samples['antispamwizard_classifiers_combined']['raw'],
             'the learned samples never reached the combined unit, so nothing was measured'
         );
 
@@ -591,18 +591,18 @@ class CorpusQualityTest extends TestCase {
         // similarity one; a run that did not reach the cap is measuring a
         // smaller worst case than it claims.
         $this->assertSame(
-            ASW_Naive_Bayes::MAX_DICTIONARY_SIZE,
-            $with_samples['asw_classifiers_cyrillic']['dictionary']['spam'] ?? 0,
+            ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE,
+            $with_samples['antispamwizard_classifiers_cyrillic']['dictionary']['spam'] ?? 0,
             'the learned history did not fill the spam dictionary, so the classifier half is under-measured'
         );
 
         // The learned half of the similarity corpus is the difference between
         // the two builds: the shipped lists are identical in both, so whatever
         // is left is exactly what admit_within_budget() paid for.
-        $learned_bytes = $with_samples['asw_classifiers_cyrillic']['samples_bytes']
-            - $corpus_only['asw_classifiers_cyrillic']['samples_bytes'];
-        $learned_lists = $with_samples['asw_classifiers_cyrillic']['samples_count']
-            - $corpus_only['asw_classifiers_cyrillic']['samples_count'];
+        $learned_bytes = $with_samples['antispamwizard_classifiers_cyrillic']['samples_bytes']
+            - $corpus_only['antispamwizard_classifiers_cyrillic']['samples_bytes'];
+        $learned_lists = $with_samples['antispamwizard_classifiers_cyrillic']['samples_count']
+            - $corpus_only['antispamwizard_classifiers_cyrillic']['samples_count'];
 
         $this->assertGreaterThan(
             0,
@@ -610,12 +610,12 @@ class CorpusQualityTest extends TestCase {
             'no learned sample reached the similarity corpus, so the budget was not exercised'
         );
         $this->assertLessThanOrEqual(
-            ASW_Model_Store::LEARNED_SIMILARITY_BUDGET,
+            ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET,
             $learned_bytes,
             sprintf(
                 'the learned similarity corpus is %d bytes, over the %d-byte budget',
                 $learned_bytes,
-                ASW_Model_Store::LEARNED_SIMILARITY_BUDGET
+                ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET
             )
         );
         $this->assertLessThan(
@@ -633,13 +633,13 @@ class CorpusQualityTest extends TestCase {
      * LEARNED_SIMILARITY_BUDGET is not a guess: it is what is left under the
      * 1 048 576-byte object-cache item limit once the worst unit a site can
      * reach is paid for. That worst case is not something a corpus test can
-     * grow into -- it needs a full ASW_Naive_Bayes::MAX_DICTIONARY_SIZE
+     * grow into -- it needs a full ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE
      * dictionary in *both* categories, which no realistic fixture reaches in
      * the ham half -- so it is synthesised here instead: 50 000 novel tokens
      * per category, the whole shipped Cyrillic similarity corpus (the largest
      * per-script one), and a learned tail filling the budget exactly.
      *
-     * Everything is packed and compressed through ASW_Model_Store's own code
+     * Everything is packed and compressed through ANTISPAMWIZARD_Model_Store's own code
      * by reflection rather than by a copy of it, so the measurement cannot
      * drift from the format the plugin actually stores: a change to the packed
      * representation or to COMPRESSION_LEVEL is measured here the moment it
@@ -647,11 +647,11 @@ class CorpusQualityTest extends TestCase {
      *
      * What this case does *not* reach is the dictionary whose *tokens* are
      * long: the ones drawn here are 4-10 Cyrillic characters, i.e. 8-20 bytes,
-     * where ASW_Tokenizer puts no cap on a token's length at all and a full
+     * where ANTISPAMWIZARD_Tokenizer puts no cap on a token's length at all and a full
      * two-category dictionary of 10-character CJK tokens compresses to more
      * than twice the limit on the classifier alone. That case is reachable and
      * is covered by the test below, through the admission control that bounds
-     * it -- ASW_Model_Store::storable_unit().
+     * it -- ANTISPAMWIZARD_Model_Store::storable_unit().
      */
     public function test_a_full_dictionary_worst_case_unit_fits_the_object_cache_item_limit(): void {
         if ( ! function_exists( 'gzcompress' ) || ! function_exists( 'gzuncompress' ) ) {
@@ -660,10 +660,10 @@ class CorpusQualityTest extends TestCase {
             );
         }
 
-        $store = new ASW_Model_Store(
-            new ASW_Tokenizer(),
+        $store = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer(),
             array(),
-            new ASW_Training_Data( null ),
+            new ANTISPAMWIZARD_Training_Data( null ),
             null
         );
 
@@ -672,10 +672,10 @@ class CorpusQualityTest extends TestCase {
 
         // Two full dictionaries of tokens that share nothing, which is the
         // worst the packed state can be for a given token length.
-        $words      = $this->lcg_words( 2 * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE, 424242 );
+        $words      = $this->lcg_words( 2 * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE, 424242 );
         $categories = array(
-            'spam' => array_slice( $words, 0, ASW_Naive_Bayes::MAX_DICTIONARY_SIZE ),
-            'ham'  => array_slice( $words, ASW_Naive_Bayes::MAX_DICTIONARY_SIZE ),
+            'spam' => array_slice( $words, 0, ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE ),
+            'ham'  => array_slice( $words, ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE ),
         );
 
         $token_counts = array();
@@ -686,7 +686,7 @@ class CorpusQualityTest extends TestCase {
                 $counts[ $token ] = 1 + strlen( $token ) % 9;
             }
             $this->assertCount(
-                ASW_Naive_Bayes::MAX_DICTIONARY_SIZE,
+                ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE,
                 $counts,
                 "the $category dictionary is not full, so the worst case is under-measured"
             );
@@ -715,8 +715,8 @@ class CorpusQualityTest extends TestCase {
         foreach ( array_chunk( $pool, self::LEARNED_SAMPLE_WORDS ) as $tokens ) {
             // What admit_within_budget() charges: the packed bytes plus the
             // array element the list is stored in.
-            $cost = strlen( implode( ' ', $tokens ) ) + ASW_Model_Store::LEARNED_SAMPLE_OVERHEAD_BYTES;
-            if ( $spent + $cost > ASW_Model_Store::LEARNED_SIMILARITY_BUDGET ) {
+            $cost = strlen( implode( ' ', $tokens ) ) + ANTISPAMWIZARD_Model_Store::LEARNED_SAMPLE_OVERHEAD_BYTES;
+            if ( $spent + $cost > ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET ) {
                 $rejected = $cost;
                 break;
             }
@@ -732,7 +732,7 @@ class CorpusQualityTest extends TestCase {
             'the synthetic word pool ran out before the budget did, so the worst case is under-measured'
         );
         $this->assertGreaterThan(
-            ASW_Model_Store::LEARNED_SIMILARITY_BUDGET - $rejected,
+            ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET - $rejected,
             $spent,
             'the synthetic learned tail does not fill the budget, so the worst case is under-measured'
         );
@@ -746,7 +746,7 @@ class CorpusQualityTest extends TestCase {
             ),
         );
 
-        $stored = strlen( serialize( asw_test_wrap_unit( $unit ) ) );
+        $stored = strlen( serialize( antispamwizard_test_wrap_unit( $unit ) ) );
         $raw    = strlen( serialize( $unit ) );
 
         $this->assertLessThan(
@@ -761,7 +761,7 @@ class CorpusQualityTest extends TestCase {
                 $stored / self::UNIT_SIZE_LIMIT * 100,
                 $raw,
                 self::UNIT_SIZE_LIMIT - $stored,
-                ASW_Model_Store::LEARNED_SIMILARITY_BUDGET
+                ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET
             )
         );
     }
@@ -769,8 +769,8 @@ class CorpusQualityTest extends TestCase {
     /**
      * The dictionary that no budget can predict, bounded by weighing it.
      *
-     * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE caps the *count* of tokens a
-     * category learns, not their length, and ASW_Tokenizer emits a whole
+     * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE caps the *count* of tokens a
+     * category learns, not their length, and ANTISPAMWIZARD_Tokenizer emits a whole
      * unbroken run as one token -- so a Cyrillic-dominant sample quoting CJK
      * keeps a 10-character run whole as one 30-byte token. A full two-category
      * dictionary of those packs to ~3.3 MB and compresses to ~2.2 MB, 211 % of
@@ -786,7 +786,7 @@ class CorpusQualityTest extends TestCase {
      * 1.0x ratio, so it would prune ordinary sites whose units compress
      * 2.5-3.5x and are nowhere near the limit.
      *
-     * ASW_Model_Store::storable_unit() weighs the value it is about to write
+     * ANTISPAMWIZARD_Model_Store::storable_unit() weighs the value it is about to write
      * instead, and drops the least frequent half of each category's vocabulary
      * until the cache can hold it. This drives the reachable failing case
      * through it and asserts the outcome: a stored value under the limit, and
@@ -799,19 +799,19 @@ class CorpusQualityTest extends TestCase {
             );
         }
 
-        $store = new ASW_Model_Store(
-            new ASW_Tokenizer(),
+        $store = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer(),
             array(),
-            new ASW_Training_Data( null ),
+            new ANTISPAMWIZARD_Training_Data( null ),
             null
         );
 
         // 10-character CJK tokens, 30 bytes each, sharing nothing -- the worst
         // the packed state can be at the count cap.
-        $tokens     = $this->lcg_cjk_tokens( 2 * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE, 10, 31337 );
+        $tokens     = $this->lcg_cjk_tokens( 2 * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE, 10, 31337 );
         $categories = array(
-            'spam' => array_slice( $tokens, 0, ASW_Naive_Bayes::MAX_DICTIONARY_SIZE ),
-            'ham'  => array_slice( $tokens, ASW_Naive_Bayes::MAX_DICTIONARY_SIZE ),
+            'spam' => array_slice( $tokens, 0, ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE ),
+            'ham'  => array_slice( $tokens, ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE ),
         );
 
         $state = array(
@@ -825,7 +825,7 @@ class CorpusQualityTest extends TestCase {
                 $counts[ $token ] = 1 + $index % 9;
             }
             $this->assertCount(
-                ASW_Naive_Bayes::MAX_DICTIONARY_SIZE,
+                ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE,
                 $counts,
                 "the $category dictionary is not full, so the worst case is under-measured"
             );
@@ -833,12 +833,12 @@ class CorpusQualityTest extends TestCase {
             $state['token_totals'][ $category ] = array_sum( $counts );
         }
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $classifier->set_state( $state );
         $this->assertSame(
             $state['token_counts']['spam'],
             $classifier->get_state()['token_counts']['spam'],
-            'premise: the synthetic state is one ASW_Naive_Bayes accepts'
+            'premise: the synthetic state is one ANTISPAMWIZARD_Naive_Bayes accepts'
         );
 
         $export = array(
@@ -849,7 +849,7 @@ class CorpusQualityTest extends TestCase {
 
         // The premise, asserted rather than assumed: without admission control
         // this is exactly the item a persistent object cache drops on the floor.
-        $unbounded = strlen( serialize( asw_test_wrap_unit( $export ) ) );
+        $unbounded = strlen( serialize( antispamwizard_test_wrap_unit( $export ) ) );
         $this->assertGreaterThan(
             self::UNIT_SIZE_LIMIT,
             $unbounded,
@@ -878,7 +878,7 @@ class CorpusQualityTest extends TestCase {
         $pruned = $classifier->get_state();
         foreach ( array( 'spam', 'ham' ) as $category ) {
             $this->assertLessThan(
-                ASW_Naive_Bayes::MAX_DICTIONARY_SIZE,
+                ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE,
                 count( $pruned['token_counts'][ $category ] ),
                 "the $category vocabulary was not pruned, so the unit fitted for some other reason"
             );
@@ -889,7 +889,7 @@ class CorpusQualityTest extends TestCase {
             );
         }
 
-        $served = asw_test_unwrap_unit( $stored );
+        $served = antispamwizard_test_unwrap_unit( $stored );
         $this->assertIsArray( $served, 'the pruned unit must still be readable by the serving path' );
         $this->assertSame(
             $this->store_call( $store, 'pack_classifier_state', array( $pruned ) ),
@@ -956,46 +956,46 @@ class CorpusQualityTest extends TestCase {
      * per-member figures below come from the format the plugin really writes
      * rather than from a copy of it here.
      *
-     * @param ASW_Sample_Repository|null $repository Repository whose samples are added, or null for the corpus alone.
+     * @param ANTISPAMWIZARD_Sample_Repository|null $repository Repository whose samples are added, or null for the corpus alone.
      * @return array<string, array{stored: int, raw: int, samples_bytes: int, samples_count: int, dictionary: array<string, int>}>
      */
-    private function measure_units( ?ASW_Sample_Repository $repository ): array {
-        global $wp_transients, $asw_max_cached_unit_bytes;
+    private function measure_units( ?ANTISPAMWIZARD_Sample_Repository $repository ): array {
+        global $wp_transients, $antispamwizard_max_cached_unit_bytes;
         $wp_transients = array();
 
         // Admission control is switched off for the build, and that is what
-        // makes the assertion below mean anything. ASW_Model_Store::storable_unit()
+        // makes the assertion below mean anything. ANTISPAMWIZARD_Model_Store::storable_unit()
         // prunes a unit's vocabulary until it is under the very limit
         // assert_units_fit() checks, so measuring what it wrote would assert
         // the write path's own postcondition: a corpus edit that doubled a
         // unit would be silently absorbed by halving the dictionary and the
         // guard would stay green. Weighing the *unpruned* unit is the question
         // this test exists to ask.
-        $previous_limit            = $asw_max_cached_unit_bytes;
-        $asw_max_cached_unit_bytes = PHP_INT_MAX;
+        $previous_limit            = $antispamwizard_max_cached_unit_bytes;
+        $antispamwizard_max_cached_unit_bytes = PHP_INT_MAX;
 
         try {
-            $store = new ASW_Model_Store(
-                new ASW_Tokenizer(),
+            $store = new ANTISPAMWIZARD_Model_Store(
+                new ANTISPAMWIZARD_Tokenizer(),
                 array(),
-                new ASW_Training_Data( $repository ),
+                new ANTISPAMWIZARD_Training_Data( $repository ),
                 $repository
             );
 
             // Load every unit so each one is built and written. A per-script body
             // never reaches the combined unit, so it has to be asked for by name.
-            foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+            foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
                 $store->script_classifier( $script );
                 $store->script_sample_tokens( $script );
             }
             $store->combined_classifier();
             $store->combined_sample_tokens();
         } finally {
-            $asw_max_cached_unit_bytes = $previous_limit;
+            $antispamwizard_max_cached_unit_bytes = $previous_limit;
         }
 
         $measurements = array();
-        foreach ( ASW_Model_Store::unit_keys() as $key ) {
+        foreach ( ANTISPAMWIZARD_Model_Store::unit_keys() as $key ) {
             $this->assertArrayHasKey(
                 $key,
                 $wp_transients,
@@ -1007,7 +1007,7 @@ class CorpusQualityTest extends TestCase {
             // value; the payload a real site stores carries no such member.
             unset( $stored['__ttl'] );
 
-            $unit = asw_test_unwrap_unit( $stored );
+            $unit = antispamwizard_test_unwrap_unit( $stored );
             $this->assertIsArray(
                 $unit,
                 "unit $key was cached in a form the store itself will not serve"
@@ -1039,44 +1039,44 @@ class CorpusQualityTest extends TestCase {
      * The packed similarity lists a script's unit holds over the shipped
      * corpus alone.
      *
-     * @param ASW_Model_Store $store  Store to build the unit with.
+     * @param ANTISPAMWIZARD_Model_Store $store  Store to build the unit with.
      * @param string          $script Script group name.
      * @return array<int, string> Packed sample strings.
      */
-    private function shipped_similarity_lists( ASW_Model_Store $store, string $script ): array {
+    private function shipped_similarity_lists( ANTISPAMWIZARD_Model_Store $store, string $script ): array {
         global $wp_transients;
         $wp_transients = array();
 
         $store->script_sample_tokens( $script );
 
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . $script;
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . $script;
         $this->assertArrayHasKey( $key, $wp_transients, "unit $key was never cached" );
 
         $stored = $wp_transients[ $key ];
         unset( $stored['__ttl'] );
-        $unit = asw_test_unwrap_unit( $stored );
+        $unit = antispamwizard_test_unwrap_unit( $stored );
         $this->assertIsArray( $unit, "unit $key was cached in a form the store itself will not serve" );
 
         return $unit['samples'];
     }
 
     /**
-     * Call one of ASW_Model_Store's private packers.
+     * Call one of ANTISPAMWIZARD_Model_Store's private packers.
      *
      * Reflection rather than a reimplementation: the point of the worst-case
      * measurement is that it is taken in the stored format, so a change to
      * that format has to move it.
      *
-     * @param ASW_Model_Store $store  Store instance.
+     * @param ANTISPAMWIZARD_Model_Store $store  Store instance.
      * @param string          $method Private method name.
      * @param array           $args   Positional arguments.
      * @return mixed
      */
-    private function store_call( ASW_Model_Store $store, string $method, array $args ) {
+    private function store_call( ANTISPAMWIZARD_Model_Store $store, string $method, array $args ) {
         // No setAccessible() call: it has had no effect since PHP 8.1 -- the
         // plugin's floor -- and is deprecated from 8.5, where it would put a
         // notice into a suite that runs with failOnWarning.
-        $reflected = new ReflectionMethod( ASW_Model_Store::class, $method );
+        $reflected = new ReflectionMethod( ANTISPAMWIZARD_Model_Store::class, $method );
 
         return $reflected->invokeArgs( $store, $args );
     }
@@ -1224,7 +1224,7 @@ class CorpusQualityTest extends TestCase {
     /**
      * Every classifier key the shipped corpus itself contributes.
      *
-     * Read through the real ASW_Tokenizer, so the set is exactly the one a
+     * Read through the real ANTISPAMWIZARD_Tokenizer, so the set is exactly the one a
      * generated word could collide with, and over every data file rather than
      * the Cyrillic pair alone: the combined unit trains on all of them, so a
      * Cyrillic token sitting in the legacy files counts too.
@@ -1236,9 +1236,9 @@ class CorpusQualityTest extends TestCase {
             return $this->corpus_vocabulary;
         }
 
-        $tokenizer = new ASW_Tokenizer( array() );
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer( array() );
         $tokens    = array();
-        $files     = glob( ASW_PATH . 'data/*.txt' );
+        $files     = glob( ANTISPAMWIZARD_PATH . 'data/*.txt' );
         $this->assertNotEmpty( $files, 'no corpus files found, so nothing could be checked for collisions' );
 
         foreach ( $files as $path ) {

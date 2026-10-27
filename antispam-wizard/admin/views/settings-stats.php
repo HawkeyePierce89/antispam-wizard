@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$stats = ASW_Stats::get_all();
+$stats = ANTISPAMWIZARD_Stats::get_all();
 
 $check_meta = array(
     'honeypot'   => __( 'Honeypot', 'antispam-wizard' ),
@@ -24,7 +24,7 @@ $check_meta = array(
     'similarity' => __( 'Similarity', 'antispam-wizard' ),
 );
 
-$settings  = ASW_Settings::get_all();
+$settings  = ANTISPAMWIZARD_Settings::get_all();
 $per_check = isset( $stats['per_check'] ) && is_array( $stats['per_check'] ) ? $stats['per_check'] : array();
 
 // Include all enabled checks, even those with zero matches.
@@ -39,18 +39,18 @@ $max_count   = ! empty( $per_check ) ? max( array_values( $per_check ) ) : 0;
 $total_check = array_sum( $per_check );
 ?>
 
-<div class="asw-kpi-row">
-    <div class="asw-card asw-kpi">
-        <div class="asw-kpi-icon" aria-hidden="true">⊘</div>
+<div class="antispamwizard-kpi-row">
+    <div class="antispamwizard-card antispamwizard-kpi">
+        <div class="antispamwizard-kpi-icon" aria-hidden="true">⊘</div>
         <div>
-            <div class="asw-kpi-value"><?php echo esc_html( number_format_i18n( (int) ( $stats['total_blocked'] ?? 0 ) ) ); ?></div>
-            <div class="asw-kpi-label"><?php esc_html_e( 'Total Blocked', 'antispam-wizard' ); ?></div>
+            <div class="antispamwizard-kpi-value"><?php echo esc_html( number_format_i18n( (int) ( $stats['total_blocked'] ?? 0 ) ) ); ?></div>
+            <div class="antispamwizard-kpi-label"><?php esc_html_e( 'Total Blocked', 'antispam-wizard' ); ?></div>
         </div>
     </div>
-    <div class="asw-card asw-kpi">
-        <div class="asw-kpi-icon asw-kpi-icon--last" aria-hidden="true">⏱</div>
+    <div class="antispamwizard-card antispamwizard-kpi">
+        <div class="antispamwizard-kpi-icon antispamwizard-kpi-icon--last" aria-hidden="true">⏱</div>
         <div>
-            <div class="asw-kpi-value">
+            <div class="antispamwizard-kpi-value">
                 <?php
                 if ( ! empty( $stats['last_blocked_date'] ) ) {
                     echo esc_html( $stats['last_blocked_date'] );
@@ -59,35 +59,35 @@ $total_check = array_sum( $per_check );
                 }
                 ?>
             </div>
-            <div class="asw-kpi-label"><?php esc_html_e( 'Last Blocked', 'antispam-wizard' ); ?></div>
+            <div class="antispamwizard-kpi-label"><?php esc_html_e( 'Last Blocked', 'antispam-wizard' ); ?></div>
         </div>
     </div>
 </div>
 
-<div class="asw-card">
-    <h3 class="asw-card-title"><?php esc_html_e( 'Per-Check Breakdown', 'antispam-wizard' ); ?></h3>
-    <p class="asw-stats-note"><?php esc_html_e( 'Each blocked comment can trigger multiple checks. These counts show individual check matches, so the sum may exceed Total Blocked.', 'antispam-wizard' ); ?></p>
+<div class="antispamwizard-card">
+    <h3 class="antispamwizard-card-title"><?php esc_html_e( 'Per-Check Breakdown', 'antispam-wizard' ); ?></h3>
+    <p class="antispamwizard-stats-note"><?php esc_html_e( 'Each blocked comment can trigger multiple checks. These counts show individual check matches, so the sum may exceed Total Blocked.', 'antispam-wizard' ); ?></p>
     <?php if ( ! empty( $per_check ) ) : ?>
-        <div class="asw-bar-list">
+        <div class="antispamwizard-bar-list">
             <?php foreach ( $per_check as $check_name => $count ) :
                 $label = $check_meta[ $check_name ] ?? $check_name;
                 $width = $max_count > 0 ? round( ( $count / $max_count ) * 100, 1 ) : 0;
                 $pct   = $total_check > 0 ? round( ( $count / $total_check ) * 100, 1 ) : 0;
             ?>
-                <div class="asw-bar-row" data-check="<?php echo esc_attr( $check_name ); ?>">
-                    <div class="asw-bar-name">
-                        <span class="asw-bar-dot" aria-hidden="true"></span>
+                <div class="antispamwizard-bar-row" data-check="<?php echo esc_attr( $check_name ); ?>">
+                    <div class="antispamwizard-bar-name">
+                        <span class="antispamwizard-bar-dot" aria-hidden="true"></span>
                         <?php echo esc_html( $label ); ?>
                     </div>
-                    <div class="asw-bar-track">
-                        <div class="asw-bar-fill" style="width:<?php echo esc_attr( $width ); ?>%"></div>
+                    <div class="antispamwizard-bar-track">
+                        <div class="antispamwizard-bar-fill" style="width:<?php echo esc_attr( $width ); ?>%"></div>
                     </div>
-                    <div class="asw-bar-count"><?php echo esc_html( number_format_i18n( (int) $count ) ); ?></div>
-                    <div class="asw-bar-pct"><?php echo esc_html( $pct ); ?>%</div>
+                    <div class="antispamwizard-bar-count"><?php echo esc_html( number_format_i18n( (int) $count ) ); ?></div>
+                    <div class="antispamwizard-bar-pct"><?php echo esc_html( $pct ); ?>%</div>
                 </div>
             <?php endforeach; ?>
         </div>
     <?php else : ?>
-        <p class="asw-empty"><?php esc_html_e( 'No check-level statistics recorded yet.', 'antispam-wizard' ); ?></p>
+        <p class="antispamwizard-empty"><?php esc_html_e( 'No check-level statistics recorded yet.', 'antispam-wizard' ); ?></p>
     <?php endif; ?>
 </div>

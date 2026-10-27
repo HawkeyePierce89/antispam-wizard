@@ -5,9 +5,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * Corpus loader with spam samples for Cyrillic only, so a store built over it
  * has one script with a sample list and nine without -- the two sides of
- * ASW_Similarity_Check's per-script/combined branch.
+ * ANTISPAMWIZARD_Similarity_Check's per-script/combined branch.
  */
-class ASW_Similarity_Store_Corpus extends ASW_Training_Data {
+class ANTISPAMWIZARD_Similarity_Store_Corpus extends ANTISPAMWIZARD_Training_Data {
 
     public function load_samples( string $file_path ): array {
         return array();
@@ -32,12 +32,12 @@ class ASW_Similarity_Store_Corpus extends ASW_Training_Data {
  * one, which is what the combined unit's similarity corpus is actually built
  * from now that the ten per-script lists are no longer stored in it.
  *
- * ASW_Similarity_Store_Corpus has no legacy corpus, so a store built over it
+ * ANTISPAMWIZARD_Similarity_Store_Corpus has no legacy corpus, so a store built over it
  * caches an empty combined corpus -- against which "not spam" is true whatever
  * the corpus holds, and the deviation this branch took has nothing pinning it
  * at the check level.
  */
-class ASW_Legacy_Similarity_Store_Corpus extends ASW_Similarity_Store_Corpus {
+class ANTISPAMWIZARD_Legacy_Similarity_Store_Corpus extends ANTISPAMWIZARD_Similarity_Store_Corpus {
 
     public function load_samples( string $file_path ): array {
         return array(
@@ -49,9 +49,9 @@ class ASW_Legacy_Similarity_Store_Corpus extends ASW_Similarity_Store_Corpus {
 
 /**
  * Corpus loader with nothing at all, which is the degenerate case that keeps
- * ASW_Similarity_Check in its legacy word-tokenisation mode.
+ * ANTISPAMWIZARD_Similarity_Check in its legacy word-tokenisation mode.
  */
-class ASW_Empty_Similarity_Store_Corpus extends ASW_Training_Data {
+class ANTISPAMWIZARD_Empty_Similarity_Store_Corpus extends ANTISPAMWIZARD_Training_Data {
 
     public function load_samples( string $file_path ): array {
         return array();
@@ -65,7 +65,7 @@ class ASW_Empty_Similarity_Store_Corpus extends ASW_Training_Data {
 /**
  * Records which tokenisation strategy the check chose for the comment body.
  */
-class ASW_Similarity_Recording_Tokenizer extends ASW_Tokenizer {
+class ANTISPAMWIZARD_Similarity_Recording_Tokenizer extends ANTISPAMWIZARD_Tokenizer {
 
     /** @var string[] */
     public array $calls = array();
@@ -83,9 +83,9 @@ class ASW_Similarity_Recording_Tokenizer extends ASW_Tokenizer {
 
 class SimilarityCheckTest extends TestCase {
 
-    private ASW_Tokenizer $tokenizer;
-    private ASW_Cosine_Similarity $cosine;
-    private ASW_Similarity_Check $check;
+    private ANTISPAMWIZARD_Tokenizer $tokenizer;
+    private ANTISPAMWIZARD_Cosine_Similarity $cosine;
+    private ANTISPAMWIZARD_Similarity_Check $check;
 
     /** @var array<int, string> */
     private array $spam_samples;
@@ -97,13 +97,13 @@ class SimilarityCheckTest extends TestCase {
         $wp_transients      = array();
         $wp_transient_reads = array();
 
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
         ) );
 
-        $this->tokenizer = new ASW_Tokenizer();
-        $this->cosine    = new ASW_Cosine_Similarity();
+        $this->tokenizer = new ANTISPAMWIZARD_Tokenizer();
+        $this->cosine    = new ANTISPAMWIZARD_Cosine_Similarity();
 
         $this->spam_samples = array(
             'Buy cheap viagra online free shipping discount',
@@ -113,7 +113,7 @@ class SimilarityCheckTest extends TestCase {
             'Make money fast guaranteed income work from home',
         );
 
-        $this->check = new ASW_Similarity_Check(
+        $this->check = new ANTISPAMWIZARD_Similarity_Check(
             $this->tokenizer,
             $this->cosine,
             $this->spam_samples
@@ -133,7 +133,7 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 
     public function test_spam_detected_above_threshold(): void {
@@ -154,7 +154,7 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_disabled_check_returns_not_spam(): void {
-        ASW_Settings::update( array( 'similarity_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'similarity_enabled' => false ) );
         $result = $this->check->check( $this->make_comment(
             'Buy cheap viagra online free shipping discount'
         ) );
@@ -164,7 +164,7 @@ class SimilarityCheckTest extends TestCase {
 
     public function test_threshold_boundary_high(): void {
         // With threshold at 1.0, only perfect similarity matches get flagged.
-        ASW_Settings::update( array( 'similarity_threshold' => 1.0 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'similarity_threshold' => 1.0 ) );
         $result = $this->check->check( $this->make_comment(
             'I enjoyed reading this article about online shopping trends'
         ) );
@@ -173,7 +173,7 @@ class SimilarityCheckTest extends TestCase {
 
     public function test_threshold_boundary_low(): void {
         // With threshold at 0.0, any non-zero similarity should be flagged.
-        ASW_Settings::update( array( 'similarity_threshold' => 0.0, 'min_message_length' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'similarity_threshold' => 0.0, 'min_message_length' => 1 ) );
         $result = $this->check->check( $this->make_comment(
             'cheap online free'
         ) );
@@ -193,11 +193,11 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_empty_spam_samples_returns_not_spam(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled' => true,
             'min_message_length' => 1,
         ) );
-        $check  = new ASW_Similarity_Check(
+        $check  = new ANTISPAMWIZARD_Similarity_Check(
             $this->tokenizer,
             $this->cosine,
             array()
@@ -211,7 +211,7 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_short_comment_below_min_length_returns_not_spam(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 50,
@@ -224,7 +224,7 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_comment_at_threshold_length_proceeds_normally(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 50,
@@ -251,13 +251,13 @@ class SimilarityCheckTest extends TestCase {
     // --- Script-aware routing tests ---
 
     public function test_script_routing_uses_latin_samples(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 1,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         // Pre-tokenize Latin spam samples.
         $latin_tokens = array(
@@ -266,9 +266,9 @@ class SimilarityCheckTest extends TestCase {
         );
 
         // Empty combined — if routing works, it should use Latin samples.
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(), // no legacy samples
             array( 'latin' => $latin_tokens ),
             array()  // empty combined
@@ -281,22 +281,22 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_script_routing_falls_back_to_combined_for_unknown(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.0,
             'min_message_length'   => 1,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         // Combined samples contain the matching text.
         $combined_tokens = array(
             $tokenizer->tokenize( 'discount pills cheap buy free shipping online fast' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'latin' => array() ), // script_samples exist but no match for unknown
             $combined_tokens
@@ -313,13 +313,13 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_script_routing_falls_back_when_no_script_samples(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 1,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         // Only Latin samples exist, Cyrillic comment should fall back to combined.
         $latin_tokens = array(
@@ -329,9 +329,9 @@ class SimilarityCheckTest extends TestCase {
             $tokenizer->tokenize( 'Купить дешевые таблетки онлайн скидка доставка бесплатно' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'latin' => $latin_tokens ),
             $combined_tokens
@@ -344,22 +344,22 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_script_routing_uses_ngram_tokenization_for_cjk(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.3,
             'min_message_length'   => 1,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         // Pre-tokenize CJK samples with n-grams.
         $cjk_tokens = array(
             $tokenizer->tokenize_ngrams( '今すぐ無料でお金を稼ぐ方法をクリックしてください' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'cjk' => $cjk_tokens ),
             array()
@@ -374,7 +374,7 @@ class SimilarityCheckTest extends TestCase {
 
     public function test_legacy_constructor_still_works(): void {
         // Original 3-arg constructor should still work.
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $this->tokenizer,
             $this->cosine,
             $this->spam_samples
@@ -388,21 +388,21 @@ class SimilarityCheckTest extends TestCase {
     // --- CJK/Thai short comment min-length tests ---
 
     public function test_short_cjk_comment_passes_min_length_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.3,
             'min_message_length'   => 50,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         $cjk_tokens = array(
             $tokenizer->tokenize_ngrams( '今すぐ無料でお金を稼ぐ方法をクリックしてください' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'cjk' => $cjk_tokens ),
             array()
@@ -419,21 +419,21 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_short_thai_comment_passes_min_length_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.3,
             'min_message_length'   => 50,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         $thai_tokens = array(
             $tokenizer->tokenize_ngrams( 'สวัสดีครับวันนี้อากาศดีมากเลยนะ' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'thai' => $thai_tokens ),
             array()
@@ -449,20 +449,20 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_short_latin_comment_still_skipped_with_script_routing(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 50,
         ) );
 
-        $tokenizer    = new ASW_Tokenizer();
+        $tokenizer    = new ANTISPAMWIZARD_Tokenizer();
         $latin_tokens = array(
             $tokenizer->tokenize( 'Buy cheap viagra online free shipping discount' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'latin' => $latin_tokens ),
             array()
@@ -475,21 +475,21 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_very_short_cjk_comment_still_skipped(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.3,
             'min_message_length'   => 50,
         ) );
 
-        $tokenizer = new ASW_Tokenizer();
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer();
 
         $cjk_tokens = array(
             $tokenizer->tokenize_ngrams( '今すぐ無料でお金を稼ぐ方法をクリックしてください' ),
         );
 
-        $check = new ASW_Similarity_Check(
+        $check = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             array(),
             array( 'cjk' => $cjk_tokens ),
             array()
@@ -501,28 +501,28 @@ class SimilarityCheckTest extends TestCase {
         $this->assertSame( 'comment too short for similarity', $result->get_details() );
     }
 
-    // --- ASW_Model_Store construction form ---
+    // --- ANTISPAMWIZARD_Model_Store construction form ---
 
     /**
      * Build a store-backed check over the Cyrillic-only fixture corpus.
      */
-    private function make_store_check(): ASW_Similarity_Check {
-        ASW_Settings::update( array(
+    private function make_store_check(): ANTISPAMWIZARD_Similarity_Check {
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 20,
         ) );
 
-        $store = new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $store = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_Similarity_Store_Corpus(),
+            new ANTISPAMWIZARD_Similarity_Store_Corpus(),
             null
         );
 
-        return new ASW_Similarity_Check(
-            new ASW_Tokenizer( array() ),
-            new ASW_Cosine_Similarity(),
+        return new ANTISPAMWIZARD_Similarity_Check(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
             $store
         );
     }
@@ -548,13 +548,13 @@ class SimilarityCheckTest extends TestCase {
 
         $reads = $this->transient_reads();
         $this->assertCount( 1, $reads, 'A script with its own samples must not load the combined unit' );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
     }
 
     public function test_store_backed_check_falls_back_to_the_combined_unit_for_a_script_without_samples(): void {
         // This is the named-script half of the narrowed combined corpus'
         // accepted verdict deviation: the fallback is not reserved for bodies
-        // ASW_Script_Detector::detect() calls 'unknown'. Any of the ten named
+        // ANTISPAMWIZARD_Script_Detector::detect() calls 'unknown'. Any of the ten named
         // scripts reaches the combined unit once its own list comes out empty
         // -- as Latin's does on this fixture, which is what a missing,
         // unreadable or emptied corpus file looks like at this seam.
@@ -568,25 +568,25 @@ class SimilarityCheckTest extends TestCase {
 
         $reads = $this->transient_reads();
         $this->assertCount( 2, $reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'latin', $reads[0] );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'latin', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
     }
 
     public function test_store_backed_check_tokenises_the_comment_for_its_script_when_any_script_has_samples(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 20,
         ) );
 
-        $tokenizer = new ASW_Similarity_Recording_Tokenizer();
-        $check     = new ASW_Similarity_Check(
+        $tokenizer = new ANTISPAMWIZARD_Similarity_Recording_Tokenizer();
+        $check     = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
-            new ASW_Model_Store(
-                new ASW_Tokenizer( array() ),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Model_Store(
+                new ANTISPAMWIZARD_Tokenizer( array() ),
                 array(),
-                new ASW_Similarity_Store_Corpus(),
+                new ANTISPAMWIZARD_Similarity_Store_Corpus(),
                 null
             )
         );
@@ -603,20 +603,20 @@ class SimilarityCheckTest extends TestCase {
     }
 
     public function test_store_backed_check_falls_back_to_legacy_tokenisation_when_no_script_has_samples(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 20,
         ) );
 
-        $tokenizer = new ASW_Similarity_Recording_Tokenizer();
-        $check     = new ASW_Similarity_Check(
+        $tokenizer = new ANTISPAMWIZARD_Similarity_Recording_Tokenizer();
+        $check     = new ANTISPAMWIZARD_Similarity_Check(
             $tokenizer,
-            new ASW_Cosine_Similarity(),
-            new ASW_Model_Store(
-                new ASW_Tokenizer( array() ),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Model_Store(
+                new ANTISPAMWIZARD_Tokenizer( array() ),
                 array(),
-                new ASW_Empty_Similarity_Store_Corpus(),
+                new ANTISPAMWIZARD_Empty_Similarity_Store_Corpus(),
                 null
             )
         );
@@ -643,7 +643,7 @@ class SimilarityCheckTest extends TestCase {
 
         $reads = $this->transient_reads();
         $this->assertCount( 1, $reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[0] );
     }
 
     public function test_the_combined_unit_scores_a_fallback_body_against_the_legacy_corpus(): void {
@@ -655,19 +655,19 @@ class SimilarityCheckTest extends TestCase {
         // two fallback tests above assert "not spam" against a corpus that is
         // empty on their fixture, which holds just as well if the combined unit
         // stopped carrying a similarity corpus at all.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'similarity_enabled'   => true,
             'similarity_threshold' => 0.6,
             'min_message_length'   => 20,
         ) );
 
-        $check = new ASW_Similarity_Check(
-            new ASW_Tokenizer( array() ),
-            new ASW_Cosine_Similarity(),
-            new ASW_Model_Store(
-                new ASW_Tokenizer( array() ),
+        $check = new ANTISPAMWIZARD_Similarity_Check(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
+            new ANTISPAMWIZARD_Cosine_Similarity(),
+            new ANTISPAMWIZARD_Model_Store(
+                new ANTISPAMWIZARD_Tokenizer( array() ),
                 array(),
-                new ASW_Legacy_Similarity_Store_Corpus(),
+                new ANTISPAMWIZARD_Legacy_Similarity_Store_Corpus(),
                 null
             )
         );
@@ -680,7 +680,7 @@ class SimilarityCheckTest extends TestCase {
         $this->assertStringContainsString( 'similarity', $result->get_details() );
 
         $reads = $this->transient_reads();
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
     }
 
     public function test_store_backed_check_loads_nothing_for_a_body_below_the_minimum_length(): void {
@@ -694,7 +694,7 @@ class SimilarityCheckTest extends TestCase {
 
     public function test_a_disabled_store_backed_check_loads_nothing(): void {
         $check = $this->make_store_check();
-        ASW_Settings::update( array( 'similarity_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'similarity_enabled' => false ) );
 
         $result = $check->check( $this->make_comment(
             'Купить дешевые таблетки онлайн скидка аптека доставка бесплатно'

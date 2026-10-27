@@ -31,6 +31,6 @@ three on every push and pull request, the smoke harness across WordPress 6.4, 7.
 
 ## Code style
 
-WordPress coding style with the `ASW_` class prefix, no PHP namespaces, PHP 8.1 with strict
+WordPress coding style with the `ANTISPAMWIZARD_` class prefix, no PHP namespaces, PHP 8.1 with strict
 types, WordPress 6.4 or newer. Plugin Check deviations are never suppressed silently: each
 carries a `phpcs:ignore <sniff>` with a one-line reason.

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * Plugin data is keyed by comment_id. Given a data subject's email, WordPress
  * core locates the matching comments; this class uses their comment_id to
- * export or erase the corresponding spam-log entries, the `_asw_reason`
+ * export or erase the corresponding spam-log entries, the `_antispamwizard_reason`
  * comment meta and the training samples added from those comments.
  *
  * Data that outlives its comment carries a second key, the salted SHA-256 email
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * while the stored text is kept for the classifier). Both are emitted by hash on
  * page 1 only, so paginated comment pages cannot duplicate them.
  */
-class ASW_Privacy {
+class ANTISPAMWIZARD_Privacy {
 
     /**
      * Unique key for the exporter/eraser registration and data groups.
@@ -181,7 +181,7 @@ class ASW_Privacy {
         $export_data = array();
 
         if ( ! empty( $comment_ids ) ) {
-            $entries = ASW_Spam_Log::get_entries_by_comment_ids( $comment_ids );
+            $entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( $comment_ids );
 
             // Index log entries by comment_id for lookup.
             $by_comment = array();
@@ -194,7 +194,7 @@ class ASW_Privacy {
             }
 
             foreach ( $comment_ids as $comment_id ) {
-                $reason         = (string) get_comment_meta( $comment_id, '_asw_reason', true );
+                $reason         = (string) get_comment_meta( $comment_id, '_antispamwizard_reason', true );
                 $comment_groups = isset( $by_comment[ $comment_id ] ) ? $by_comment[ $comment_id ] : array();
 
                 if ( empty( $comment_groups ) && '' === $reason ) {
@@ -213,7 +213,7 @@ class ASW_Privacy {
             }
         }
 
-        $hash = ASW_Detector::hash_email( $email );
+        $hash = ANTISPAMWIZARD_Detector::hash_email( $email );
 
         // Training samples. They carry both subject keys: comment_id, which
         // paginates with the comments, and email_hash, which still resolves after
@@ -242,8 +242,8 @@ class ASW_Privacy {
         // nothing is withheld that the comment-keyed pass will not emit; and a
         // reachability lookup that comes back empty makes page 1 emit the row as
         // well as the page its comment falls on.
-        $repository = ASW::get_instance()->get_repository();
-        if ( $repository instanceof ASW_Sample_Repository ) {
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
+        if ( $repository instanceof ANTISPAMWIZARD_Sample_Repository ) {
             $samples = array();
 
             if ( ! empty( $comment_ids ) ) {
@@ -273,7 +273,7 @@ class ASW_Privacy {
         // on page 1 so they are not duplicated across paginated comment pages.
         // The done calculation stays driven by the comment count.
         if ( 1 === $page && '' !== $hash ) {
-            $form_entries = ASW_Spam_Log::get_entries_by_email_hash( $hash );
+            $form_entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_email_hash( $hash );
             foreach ( $form_entries as $entry ) {
                 $export_data[] = $this->build_form_data_group( $entry );
             }
@@ -290,7 +290,7 @@ class ASW_Privacy {
      *
      * @param int    $comment_id Comment ID.
      * @param array  $entry      Spam-log entry (may be empty).
-     * @param string $reason     The `_asw_reason` meta value.
+     * @param string $reason     The `_antispamwizard_reason` meta value.
      * @return array
      */
     private function build_data_group( int $comment_id, array $entry, string $reason ): array {
@@ -443,19 +443,19 @@ class ASW_Privacy {
         $items_retained = false;
 
         if ( ! empty( $comment_ids ) ) {
-            $deleted = ASW_Spam_Log::delete_entries_by_comment_ids( $comment_ids );
+            $deleted = ANTISPAMWIZARD_Spam_Log::delete_entries_by_comment_ids( $comment_ids );
             if ( $deleted > 0 ) {
                 $items_removed = true;
             }
             foreach ( $comment_ids as $comment_id ) {
-                if ( '' !== (string) get_comment_meta( $comment_id, '_asw_reason', true ) ) {
-                    delete_comment_meta( $comment_id, '_asw_reason' );
+                if ( '' !== (string) get_comment_meta( $comment_id, '_antispamwizard_reason', true ) ) {
+                    delete_comment_meta( $comment_id, '_antispamwizard_reason' );
                     $items_removed = true;
                 }
             }
         }
 
-        $hash = ASW_Detector::hash_email( $email );
+        $hash = ANTISPAMWIZARD_Detector::hash_email( $email );
 
         // Training samples. Erased by both subject keys: this page's comment IDs,
         // and -- on page 1 only, like the form entries below -- the email hash,
@@ -467,9 +467,9 @@ class ASW_Privacy {
         // rows still hold the full comment text, so the response must say so.
         // Reporting completion instead would end the erasure request with the
         // data still stored.
-        $repository      = ASW::get_instance()->get_repository();
+        $repository      = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples_removed = false;
-        if ( $repository instanceof ASW_Sample_Repository ) {
+        if ( $repository instanceof ANTISPAMWIZARD_Sample_Repository ) {
             $erase_by_comment = ! empty( $comment_ids );
             $erase_by_hash    = ( 1 === $page && '' !== $hash );
 
@@ -524,13 +524,13 @@ class ASW_Privacy {
         // above and is reported the same way rather than closing the request
         // over it.
         if ( $samples_removed || 1 === $page ) {
-            if ( ! ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) ) {
+            if ( ! ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) ) {
                 $items_retained = true;
             }
         }
 
         if ( 1 === $page && '' !== $hash ) {
-            $deleted_form = ASW_Spam_Log::delete_entries_by_email_hash( $hash );
+            $deleted_form = ANTISPAMWIZARD_Spam_Log::delete_entries_by_email_hash( $hash );
             if ( $deleted_form > 0 ) {
                 $items_removed = true;
             }

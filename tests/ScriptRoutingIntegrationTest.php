@@ -20,7 +20,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
         $wp_transients   = array();
 
         // Disable all checks except bayesian so we can isolate routing behavior.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_enabled'  => false,
             'links_enabled'       => false,
             'emoji_enabled'       => false,
@@ -36,19 +36,19 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
     /**
      * Build per-script classifiers and a combined fallback from training data files,
-     * reproducing the model composition ASW::build_checks() gets from
-     * ASW_Model_Store -- same per-script sets, same combined classifier and the
+     * reproducing the model composition ANTISPAMWIZARD::build_checks() gets from
+     * ANTISPAMWIZARD_Model_Store -- same per-script sets, same combined classifier and the
      * same narrowed combined similarity corpus -- through the checks' array
      * constructors, so a routing verdict can be asserted without the cache.
      */
-    private function build_detector( bool $enable_similarity = false ): ASW_Detector {
-        $tokenizer     = new ASW_Tokenizer();
-        $training_data = new ASW_Training_Data();
+    private function build_detector( bool $enable_similarity = false ): ANTISPAMWIZARD_Detector {
+        $tokenizer     = new ANTISPAMWIZARD_Tokenizer();
+        $training_data = new ANTISPAMWIZARD_Training_Data();
 
         $script_classifiers   = array();
         $script_sample_tokens = array();
 
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $spam_samples = $training_data->load_script_samples( $script, 'spam' );
             $ham_samples  = $training_data->load_script_samples( $script, 'ham' );
 
@@ -56,8 +56,8 @@ class ScriptRoutingIntegrationTest extends TestCase {
                 continue;
             }
 
-            $script_tokenizer  = new ASW_Tokenizer();
-            $script_classifier = new ASW_Naive_Bayes( $script_tokenizer, $script );
+            $script_tokenizer  = new ANTISPAMWIZARD_Tokenizer();
+            $script_classifier = new ANTISPAMWIZARD_Naive_Bayes( $script_tokenizer, $script );
             $training_data->train_script_classifier( $script_classifier, $script );
             $script_classifiers[ $script ] = $script_classifier;
 
@@ -74,11 +74,11 @@ class ScriptRoutingIntegrationTest extends TestCase {
         }
 
         // Combined classifier for unknown script fallback.
-        $combined_classifier = new ASW_Naive_Bayes( $tokenizer );
+        $combined_classifier = new ANTISPAMWIZARD_Naive_Bayes( $tokenizer );
         $training_data->train_combined_classifier( $combined_classifier );
 
         // Pre-tokenize the combined spam samples for the similarity fallback,
-        // exactly as ASW_Model_Store::build_combined_unit() does: the legacy
+        // exactly as ANTISPAMWIZARD_Model_Store::build_combined_unit() does: the legacy
         // corpus only (plus the repository's unknown-script rows, and there is
         // no repository here), never the ten per-script lists, and tokenised
         // for each sample's own detected script. Merging the per-script lists
@@ -89,39 +89,39 @@ class ScriptRoutingIntegrationTest extends TestCase {
         $data_dir    = dirname( __DIR__ ) . '/antispam-wizard/data/';
         $legacy_spam = $training_data->load_samples( $data_dir . 'spam-samples.txt' );
         foreach ( $legacy_spam as $sample ) {
-            $tokens = $tokenizer->tokenize_for_script( $sample, ASW_Script_Detector::detect( $sample ) );
+            $tokens = $tokenizer->tokenize_for_script( $sample, ANTISPAMWIZARD_Script_Detector::detect( $sample ) );
             if ( ! empty( $tokens ) ) {
                 $combined_sample_tokens[] = $tokens;
             }
         }
 
         if ( $enable_similarity ) {
-            ASW_Settings::update( array_merge(
-                ASW_Settings::get_all(),
+            ANTISPAMWIZARD_Settings::update( array_merge(
+                ANTISPAMWIZARD_Settings::get_all(),
                 array( 'similarity_enabled' => true )
             ) );
         }
 
         $checks = array(
-            new ASW_Stop_Words_Check(),
-            new ASW_Links_Check(),
-            new ASW_Emoji_Check(),
-            new ASW_Spacing_Check(),
-            new ASW_Multi_Lang_Check(),
-            new ASW_Duplicate_Check(),
-            new ASW_Bayesian_Check( $script_classifiers, $combined_classifier ),
-            new ASW_Similarity_Check(
+            new ANTISPAMWIZARD_Stop_Words_Check(),
+            new ANTISPAMWIZARD_Links_Check(),
+            new ANTISPAMWIZARD_Emoji_Check(),
+            new ANTISPAMWIZARD_Spacing_Check(),
+            new ANTISPAMWIZARD_Multi_Lang_Check(),
+            new ANTISPAMWIZARD_Duplicate_Check(),
+            new ANTISPAMWIZARD_Bayesian_Check( $script_classifiers, $combined_classifier ),
+            new ANTISPAMWIZARD_Similarity_Check(
                 $tokenizer,
-                new ASW_Cosine_Similarity(),
+                new ANTISPAMWIZARD_Cosine_Similarity(),
                 array(),
                 $script_sample_tokens,
                 $combined_sample_tokens
             ),
         );
-        return new ASW_Detector( $checks );
+        return new ANTISPAMWIZARD_Detector( $checks );
     }
 
-    private function run_comment( ASW_Detector $detector, string $content ): mixed {
+    private function run_comment( ANTISPAMWIZARD_Detector $detector, string $content ): mixed {
         $detector->register_hooks();
         return apply_filters( 'pre_comment_approved', 1, array(
             'comment_content'   => $content,
@@ -139,7 +139,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log  = ASW_Spam_Log::get_entries();
+        $log  = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -153,7 +153,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log  = ASW_Spam_Log::get_entries();
+        $log  = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -167,7 +167,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log  = ASW_Spam_Log::get_entries();
+        $log  = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -181,7 +181,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log  = ASW_Spam_Log::get_entries();
+        $log  = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -195,7 +195,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log  = ASW_Spam_Log::get_entries();
+        $log  = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -231,7 +231,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log  = ASW_Spam_Log::get_entries();
+        $log  = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -239,7 +239,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
 
     public function test_end_to_end_cyrillic_spam_detected_through_detector(): void {
         // Re-enable all checks for a full end-to-end test.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_enabled'  => true,
             'links_enabled'       => true,
             'emoji_enabled'       => true,
@@ -260,11 +260,11 @@ class ScriptRoutingIntegrationTest extends TestCase {
         $this->assertEquals( 'spam', $result );
 
         // Verify spam was logged.
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
 
         // Verify stats were recorded.
-        $stats = ASW_Stats::get_all();
+        $stats = ANTISPAMWIZARD_Stats::get_all();
         $this->assertEquals( 1, $stats['total_blocked'] );
     }
 

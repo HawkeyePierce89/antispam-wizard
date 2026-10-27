@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Detects duplicate comments from the same IP within a configurable time window.
  */
-class ASW_Duplicate_Check implements ASW_Check {
+class ANTISPAMWIZARD_Duplicate_Check implements ANTISPAMWIZARD_Check {
 
     /**
      * Return the directory used for lock files, creating it if necessary.
@@ -21,7 +21,7 @@ class ASW_Duplicate_Check implements ASW_Check {
      */
     private static function get_lock_dir(): string {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
         if ( ! is_dir( $lock_dir ) ) {
             wp_mkdir_p( $lock_dir );
             $htaccess = $lock_dir . '/.htaccess';
@@ -73,17 +73,17 @@ class ASW_Duplicate_Check implements ASW_Check {
      * Run the duplicate check against comment data.
      *
      * @param array $comment_data WordPress comment data array.
-     * @return ASW_Check_Result
+     * @return ANTISPAMWIZARD_Check_Result
      */
-    public function check( array $comment_data ): ASW_Check_Result {
-        $settings = ASW_Settings::get_all();
+    public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
+        $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['duplicate_enabled'] ) ) {
-            return new ASW_Check_Result( false, 'duplicate', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'duplicate', __( 'check disabled', 'antispam-wizard' ) );
         }
 
         $content = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
-        // Same is_string() rule as ASW_Detector::evaluate(): hash_ip() is typed
+        // Same is_string() rule as ANTISPAMWIZARD_Detector::evaluate(): hash_ip() is typed
         // `string`, this file does not declare strict_types, and an array is a
         // TypeError rather than a coercion. evaluate() deliberately leaves
         // comment_author_IP_hashed unset for exactly that input, so an unguarded
@@ -94,11 +94,11 @@ class ASW_Duplicate_Check implements ASW_Check {
         $ip_hash = isset( $comment_data['comment_author_IP_hashed'] ) && is_string( $comment_data['comment_author_IP_hashed'] )
             ? $comment_data['comment_author_IP_hashed']
             : ( isset( $comment_data['comment_author_IP'] ) && is_string( $comment_data['comment_author_IP'] )
-                ? ASW_Detector::hash_ip( $comment_data['comment_author_IP'] )
+                ? ANTISPAMWIZARD_Detector::hash_ip( $comment_data['comment_author_IP'] )
                 : '' );
 
         if ( '' === $content || '' === $ip_hash ) {
-            return new ASW_Check_Result( false, 'duplicate', __( 'missing data', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'duplicate', __( 'missing data', 'antispam-wizard' ) );
         }
 
         // A /u pattern returns null on a malformed subject and the comment body is
@@ -106,18 +106,18 @@ class ASW_Duplicate_Check implements ASW_Check {
         // effects: trim( null ) writes a plugin-attributable deprecation into debug.log,
         // and the resulting '' normalizes every malformed body from one IP into a single
         // hash bucket, so unrelated comments cross-count as duplicates of each other.
-        // Sanitize first instead, as ASW_Multi_Lang_Check::count_multi_script_words() does.
+        // Sanitize first instead, as ANTISPAMWIZARD_Multi_Lang_Check::count_multi_script_words() does.
         $safe      = $content;
         $collapsed = preg_replace( '/[\s\p{Z}]+/u', ' ', $content );
         if ( null === $collapsed ) {
-            $safe      = ASW_Detector::sanitize_utf8( $content );
+            $safe      = ANTISPAMWIZARD_Detector::sanitize_utf8( $content );
             $collapsed = preg_replace( '/[\s\p{Z}]+/u', ' ', $safe );
         }
 
         // A second failure can no longer be an encoding one, but a PCRE limit/JIT
         // failure would still yield null - and casting that to '' would re-create
         // the very collision described above. Fall back to the uncollapsed body
-        // instead, as ASW_Stop_Words_Check::normalize() does. Fall back to the
+        // instead, as ANTISPAMWIZARD_Stop_Words_Check::normalize() does. Fall back to the
         // sanitized copy rather than the raw one: mb_strtolower() on malformed
         // UTF-8 substitutes bytes using the ambient, process-wide
         // mbstring.substitute_character, which is the very hazard sanitize_utf8()
@@ -131,7 +131,7 @@ class ASW_Duplicate_Check implements ASW_Check {
         $count = self::atomic_increment( $ip_hash, $content_hash, $ttl );
 
         if ( $count >= $threshold ) {
-            return new ASW_Check_Result(
+            return new ANTISPAMWIZARD_Check_Result(
                 true,
                 'duplicate',
                 // translators: 1: Number of identical submissions seen, 2: Configured threshold.
@@ -139,7 +139,7 @@ class ASW_Duplicate_Check implements ASW_Check {
             );
         }
 
-        return new ASW_Check_Result(
+        return new ANTISPAMWIZARD_Check_Result(
             false,
             'duplicate',
             // translators: 1: Number of identical submissions seen, 2: Configured threshold.
@@ -164,9 +164,9 @@ class ASW_Duplicate_Check implements ASW_Check {
      */
     private static function atomic_increment( string $ip_hash, string $content_hash, int $ttl ): int {
         if ( wp_using_ext_object_cache() ) {
-            return self::cache_increment( 'asw_dup_' . substr( hash( 'sha256', $ip_hash . $content_hash ), 0, 32 ), $ttl );
+            return self::cache_increment( 'antispamwizard_dup_' . substr( hash( 'sha256', $ip_hash . $content_hash ), 0, 32 ), $ttl );
         }
-        return self::file_locked_increment( 'asw_dup_' . substr( hash( 'sha256', $ip_hash ), 0, 32 ), $content_hash, $ttl );
+        return self::file_locked_increment( 'antispamwizard_dup_' . substr( hash( 'sha256', $ip_hash ), 0, 32 ), $content_hash, $ttl );
     }
 
     /**
@@ -186,7 +186,7 @@ class ASW_Duplicate_Check implements ASW_Check {
      * @return int The incremented count.
      */
     private static function cache_increment( string $cache_key, int $ttl ): int {
-        $group = 'asw';
+        $group = 'antispamwizard';
 
         // wp_cache_add returns false if the key already exists, true if set.
         if ( wp_cache_add( $cache_key, 1, $group, $ttl ) ) {
@@ -257,17 +257,17 @@ class ASW_Duplicate_Check implements ASW_Check {
         // writers on one IP — the unserialised path, losing the increments this
         // keying exists to preserve.
         $bucket    = substr( $transient_key, -2 );
-        $lock_file = self::get_lock_dir() . '/asw_dup_' . $bucket . '.lock';
+        $lock_file = self::get_lock_dir() . '/antispamwizard_dup_' . $bucket . '.lock';
         $fp        = @fopen( $lock_file, 'c' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.PHP.NoSilencedErrors.Discouraged -- flock() needs a real stream handle; WP_Filesystem exposes no locking primitive. The @ suppresses PHP's own "failed to open stream" warning, which carries the absolute path into the web-readable debug.log; the sanitized diagnostic below reports the failure instead.
         if ( false === $fp ) {
             // The file name only, never the absolute path: this runs on an
             // unauthenticated comment submission, debug.log is web-readable on
             // misconfigured hosts, and the path carries the document root. Same
-            // rule as ASW_Detector::run() and ASW_CF7_Integration::filter_spam(),
+            // rule as ANTISPAMWIZARD_Detector::run() and ANTISPAMWIZARD_CF7_Integration::filter_spam(),
             // which log basename( $e->getFile() ) for that reason; the bucket
             // name still identifies which of the 256 lock files failed.
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: the lock file could not be opened, so this write proceeds unserialised. Silent failure would make concurrent-write corruption undebuggable; the log line carries no user input.
-            error_log( 'ASW: unable to open lock file: ' . basename( $lock_file ) );
+            error_log( 'ANTISPAMWIZARD: unable to open lock file: ' . basename( $lock_file ) );
         }
 
         // Without the lock the read-modify-write proceeds unserialised, and
@@ -280,7 +280,7 @@ class ASW_Duplicate_Check implements ASW_Check {
         // plugin does: increment_stored_count() calls get_transient() and
         // set_transient(), which fire pre_transient_*, option_* and
         // update_option filters, so third-party code runs inside the critical
-        // section and can throw. ASW_Detector::run() catches that Throwable and
+        // section and can throw. ANTISPAMWIZARD_Detector::run() catches that Throwable and
         // carries on to the next check, so a plain release after the call would
         // leave this exclusive lock held for the rest of the request - and
         // because the bucket is now per IP rather than per IP + text, on a
@@ -301,7 +301,7 @@ class ASW_Duplicate_Check implements ASW_Check {
         // this inode and we unlink, request C can create a new file at the same
         // path, acquire a lock on the new inode, and race with B. The bounded
         // pool (256 files max) keeps this safe — files are empty and persist
-        // in the uploads/.asw-locks/ directory.
+        // in the uploads/.antispamwizard-locks/ directory.
 
         return $count;
     }

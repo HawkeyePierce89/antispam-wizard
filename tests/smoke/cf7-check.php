@@ -29,8 +29,8 @@ error_reporting( E_ALL );
 ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
-if ( ! class_exists( 'ASW_Settings' ) ) {
-    fwrite( STDERR, "cf7-check: FAIL plugin not loaded (ASW_Settings missing)\n" );
+if ( ! class_exists( 'ANTISPAMWIZARD_Settings' ) ) {
+    fwrite( STDERR, "cf7-check: FAIL plugin not loaded (ANTISPAMWIZARD_Settings missing)\n" );
     exit( 1 );
 }
 
@@ -39,8 +39,8 @@ if ( ! class_exists( 'WPCF7_ContactForm' ) || ! class_exists( 'WPCF7_Submission'
     exit( 0 );
 }
 
-if ( ! class_exists( 'ASW_CF7_Integration' ) || ! class_exists( 'ASW_Comment_Form' ) ) {
-    fwrite( STDERR, "cf7-check: FAIL ASW_CF7_Integration or ASW_Comment_Form missing\n" );
+if ( ! class_exists( 'ANTISPAMWIZARD_CF7_Integration' ) || ! class_exists( 'ANTISPAMWIZARD_Comment_Form' ) ) {
+    fwrite( STDERR, "cf7-check: FAIL ANTISPAMWIZARD_CF7_Integration or ANTISPAMWIZARD_Comment_Form missing\n" );
     exit( 1 );
 }
 
@@ -49,7 +49,7 @@ if ( ! class_exists( 'ASW_CF7_Integration' ) || ! class_exists( 'ASW_Comment_For
  * All other checks except honeypot/submit_time are disabled so ham verdict depends only on Links.
  * Honeypot and submit_time remain enabled to test rendering and to ensure harmless values don't flag.
  */
-ASW_Settings::update(
+ANTISPAMWIZARD_Settings::update(
     array(
         'enabled'                 => true,
         'cf7_enabled'             => true,
@@ -72,7 +72,7 @@ $failures = array();
 
 // --- Ensure deterministic server environment for CF7 spam() ---
 $_SERVER['REMOTE_ADDR']     = '203.0.113.7';
-$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; ASW Smoke)';
+$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; AntiSpam Wizard Smoke)';
 $_SERVER['REMOTE_PORT']     = '12345';
 
 // Ensure not logged in so nonce check is skipped (verify_nonce returns true).
@@ -81,7 +81,7 @@ wp_set_current_user( 0 );
 /**
  * Reset WPCF7_Submission singleton via reflection so multiple submissions can be driven in one process.
  */
-function asw_cf7_reset_submission(): void {
+function antispamwizard_cf7_reset_submission(): void {
     if ( ! class_exists( 'WPCF7_Submission' ) ) {
         return;
     }
@@ -102,21 +102,21 @@ function asw_cf7_reset_submission(): void {
  *
  * @return WPCF7_ContactForm
  */
-function asw_cf7_get_or_create_form() {
+function antispamwizard_cf7_get_or_create_form() {
     // Try to find existing smoke form first to avoid duplicate creation on reruns.
     $existing = get_posts(
         array(
             'post_type'      => WPCF7_ContactForm::post_type,
             'posts_per_page' => 1,
             'post_status'    => 'any',
-            'title'          => 'ASW Smoke CF7',
+            'title'          => 'AntiSpam Wizard Smoke CF7',
         )
     );
 
     // Search by title via WPCF7 API if available.
     if ( ! empty( $existing ) ) {
         foreach ( $existing as $p ) {
-            if ( 'ASW Smoke CF7' === $p->post_title ) {
+            if ( 'AntiSpam Wizard Smoke CF7' === $p->post_title ) {
                 $form = WPCF7_ContactForm::get_instance( $p->ID );
                 if ( $form ) {
                     return $form;
@@ -129,14 +129,14 @@ function asw_cf7_get_or_create_form() {
     if ( method_exists( 'WPCF7_ContactForm', 'find' ) ) {
         $forms = WPCF7_ContactForm::find( array( 'posts_per_page' => -1 ) );
         foreach ( $forms as $f ) {
-            if ( 'ASW Smoke CF7' === $f->title() ) {
+            if ( 'AntiSpam Wizard Smoke CF7' === $f->title() ) {
                 return $f;
             }
         }
     }
 
     // Create from default template, then override with deterministic fields.
-    $form = WPCF7_ContactForm::get_template( array( 'title' => 'ASW Smoke CF7' ) );
+    $form = WPCF7_ContactForm::get_template( array( 'title' => 'AntiSpam Wizard Smoke CF7' ) );
 
     // Deterministic template: known field names for content collection.
     $det_form = '<label> Your name [text* your-name] </label>' . "\n"
@@ -150,7 +150,7 @@ function asw_cf7_get_or_create_form() {
 
     // Ensure mail is not required to be valid; keep defaults but ensure active.
     $form->set_properties( $props );
-    $form->set_title( 'ASW Smoke CF7' );
+    $form->set_title( 'AntiSpam Wizard Smoke CF7' );
     $save_id = $form->save();
 
     if ( ! $save_id ) {
@@ -167,7 +167,7 @@ function asw_cf7_get_or_create_form() {
     return $saved;
 }
 
-$contact_form = asw_cf7_get_or_create_form();
+$contact_form = antispamwizard_cf7_get_or_create_form();
 $form_id      = (int) $contact_form->id();
 
 if ( $form_id <= 0 ) {
@@ -213,30 +213,30 @@ try {
     $elements   = '';
 }
 
-if ( false === strpos( $elements, ASW_Comment_Form::HONEYPOT_FIELD ) ) {
-    $failures[] = 'form_elements() missing honeypot field name (' . ASW_Comment_Form::HONEYPOT_FIELD . ')';
+if ( false === strpos( $elements, ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ) ) {
+    $failures[] = 'form_elements() missing honeypot field name (' . ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD . ')';
 } else {
     fwrite( STDOUT, "  - form_elements contains honeypot field\n" );
 }
 
-if ( false === strpos( $elements, ASW_Comment_Form::TIMESTAMP_FIELD ) ) {
-    $failures[] = 'form_elements() missing timestamp field name (' . ASW_Comment_Form::TIMESTAMP_FIELD . ')';
+if ( false === strpos( $elements, ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ) ) {
+    $failures[] = 'form_elements() missing timestamp field name (' . ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD . ')';
 } else {
     fwrite( STDOUT, "  - form_elements contains timestamp field\n" );
 }
 
 // Token verification: extract token and verify against form ID.
 $token = '';
-if ( preg_match( '/name="' . preg_quote( ASW_Comment_Form::TIMESTAMP_FIELD, '/' ) . '"[^>]*value="([^"]+)"/', $elements, $m ) ) {
+if ( preg_match( '/name="' . preg_quote( ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD, '/' ) . '"[^>]*value="([^"]+)"/', $elements, $m ) ) {
     $token = $m[1];
-} elseif ( preg_match( '/value="([^"]+)"[^>]*name="' . preg_quote( ASW_Comment_Form::TIMESTAMP_FIELD, '/' ) . '"/', $elements, $m ) ) {
+} elseif ( preg_match( '/value="([^"]+)"[^>]*name="' . preg_quote( ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD, '/' ) . '"/', $elements, $m ) ) {
     $token = $m[1];
 }
 
 if ( '' === $token ) {
     $failures[] = 'Could not extract timestamp token from form_elements()';
 } else {
-    $parsed = ASW_Comment_Form::parse_token( $token, $form_id );
+    $parsed = ANTISPAMWIZARD_Comment_Form::parse_token( $token, $form_id );
     if ( null === $parsed ) {
         $failures[] = 'Token in form_elements() failed to verify against contact-form ID ' . $form_id . ' (token=' . substr( $token, 0, 20 ) . '...)';
     } else {
@@ -244,7 +244,7 @@ if ( '' === $token ) {
     }
 
     // Also assert it does NOT verify against a different ID.
-    $wrong = ASW_Comment_Form::parse_token( $token, $form_id + 9999 );
+    $wrong = ANTISPAMWIZARD_Comment_Form::parse_token( $token, $form_id + 9999 );
     if ( null !== $wrong ) {
         $failures[] = 'Token incorrectly verified against wrong form ID';
     }
@@ -260,10 +260,10 @@ if ( '' === $token ) {
  * @param string|null       $token_value     Value for timestamp field, null to omit.
  * @return string Status string (spam, mail_sent, validation_failed, etc.)
  */
-function asw_cf7_submit( $form, string $unit_tag, string $message_content, string $honeypot_value = '', $token_value = null ): string {
+function antispamwizard_cf7_submit( $form, string $unit_tag, string $message_content, string $honeypot_value = '', $token_value = null ): string {
     $form_id = (int) $form->id();
 
-    asw_cf7_reset_submission();
+    antispamwizard_cf7_reset_submission();
 
     // Ensure current is our form.
     WPCF7_ContactForm::get_instance( $form_id );
@@ -300,15 +300,15 @@ function asw_cf7_submit( $form, string $unit_tag, string $message_content, strin
     // Bot fields – the integration pulls these from $_POST directly.
     // Honeypot: always set (even when empty) to test filled case; for normal cases empty.
     // We set the key even when empty to simulate browser submitting empty field.
-    $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = $honeypot_value;
+    $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = $honeypot_value;
 
     if ( null !== $token_value ) {
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token_value;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token_value;
     }
 
     // Server vars.
     $_SERVER['REMOTE_ADDR']     = '203.0.113.7';
-    $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; ASW Smoke)';
+    $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (compatible; AntiSpam Wizard Smoke)';
     $_SERVER['REMOTE_PORT']     = '12345';
     $_SERVER['REQUEST_URI']     = '/';
 
@@ -323,7 +323,7 @@ function asw_cf7_submit( $form, string $unit_tag, string $message_content, strin
     }
 
     // Cleanup singleton for next call.
-    // The next asw_cf7_reset_submission() will clear before next submit.
+    // The next antispamwizard_cf7_reset_submission() will clear before next submit.
 
     if ( isset( $result['status'] ) ) {
         return (string) $result['status'];
@@ -341,11 +341,11 @@ function asw_cf7_submit( $form, string $unit_tag, string $message_content, strin
 // Only run submission assertions if form ID and elements were sane.
 if ( $form_id > 0 && '' !== $unit_tag ) {
     // Generate a valid token bound to this form, minted in the past (so submit_time doesn't flag).
-    $valid_token_old = ASW_Comment_Form::mint_token( time() - 30, $form_id );
+    $valid_token_old = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, $form_id );
 
     // --- Spam case: 3 links exceeds links_max (2) → must be spam ---
     $spam_content = 'Great deals here: http://example.com and https://example.net plus http://example.org today.';
-    $spam_status  = asw_cf7_submit( $contact_form, $unit_tag, $spam_content, '', $valid_token_old );
+    $spam_status  = antispamwizard_cf7_submit( $contact_form, $unit_tag, $spam_content, '', $valid_token_old );
 
     if ( 'spam' !== $spam_status ) {
         $failures[] = sprintf( "CF7 spam case: expected 'spam', got %s (content with 3 links)", var_export( $spam_status, true ) );
@@ -354,16 +354,16 @@ if ( $form_id > 0 && '' !== $unit_tag ) {
     }
 
     // Regenerate unit_tag for next submission (WPCF7 regenerates each form_html call; reset and get fresh).
-    asw_cf7_reset_submission();
+    antispamwizard_cf7_reset_submission();
     WPCF7_ContactForm::get_instance( $form_id );
     $contact_form->form_html();
     $unit_tag2 = $contact_form->unit_tag();
 
-    $valid_token_old2 = ASW_Comment_Form::mint_token( time() - 30, $form_id );
+    $valid_token_old2 = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, $form_id );
 
     // --- Ham case: neutral, link-free, stop-word-free → must NOT be spam ---
     $ham_content = 'Thank you for this helpful article. I really enjoyed reading it this morning.';
-    $ham_status  = asw_cf7_submit( $contact_form, $unit_tag2, $ham_content, '', $valid_token_old2 );
+    $ham_status  = antispamwizard_cf7_submit( $contact_form, $unit_tag2, $ham_content, '', $valid_token_old2 );
 
     if ( 'spam' === $ham_status ) {
         $failures[] = sprintf( "CF7 ham case: expected NOT 'spam', got %s", var_export( $ham_status, true ) );

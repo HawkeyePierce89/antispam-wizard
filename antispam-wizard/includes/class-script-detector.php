@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Detects the dominant Unicode script group in a text string.
  */
-class ASW_Script_Detector {
+class ANTISPAMWIZARD_Script_Detector {
 
     /**
      * Script groups with display labels.
@@ -79,7 +79,7 @@ class ASW_Script_Detector {
         // the CJK classifier and the bigram tokenizer. The set of such characters
         // widens with every PCRE/Unicode upgrade, which also made the verdict depend
         // on the PCRE build; consuming keeps it stable across them. Same rule and
-        // rationale as ASW_Multi_Lang_Check::is_multi_script_word().
+        // rationale as ANTISPAMWIZARD_Multi_Lang_Check::is_multi_script_word().
         $residue = $letters_only;
 
         foreach ( self::SCRIPT_PATTERNS as $group => $patterns ) {
@@ -90,7 +90,7 @@ class ASW_Script_Detector {
                 // leaving this group's characters in the residue would hand them to
                 // whichever later group claims them, silently routing the comment to
                 // the wrong classifier and tokenizer. 'unknown' is the honest answer,
-                // and it matches ASW_Multi_Lang_Check::is_multi_script_word().
+                // and it matches ANTISPAMWIZARD_Multi_Lang_Check::is_multi_script_word().
                 return 'unknown';
             }
 

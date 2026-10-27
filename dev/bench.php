@@ -3,17 +3,17 @@
  * Model-loading benchmark for the plugin, run on the dev stack.
  *
  * Run against a dev stack that is up (docker compose up -d wordpress; bash dev/reset.sh):
- *   docker compose exec -T wordpress wp --allow-root eval-file /asw-dev/bench.php
+ *   docker compose exec -T wordpress wp --allow-root eval-file /antispamwizard-dev/bench.php
  *
  * Measures what one comment costs the plugin, for a fixed ~300-character
  * Cyrillic spam body:
- *   (a) cold  ASW::build_checks()                — every asw_classifiers_*
+ *   (a) cold  ANTISPAMWIZARD::build_checks()                — every antispamwizard_classifiers_*
  *             transient deleted immediately before the call;
- *   (b) warm  ASW::build_checks()                — the transients left in place;
- *   (c) warm  ASW::build_checks() + one ASW_Detector::evaluate();
- *   (d) cold  ASW::build_checks() + one ASW_Detector::evaluate() — the one-script
+ *   (b) warm  ANTISPAMWIZARD::build_checks()                — the transients left in place;
+ *   (c) warm  ANTISPAMWIZARD::build_checks() + one ANTISPAMWIZARD_Detector::evaluate();
+ *   (d) cold  ANTISPAMWIZARD::build_checks() + one ANTISPAMWIZARD_Detector::evaluate() — the one-script
  *             cold path, which is where the cold cost lives now that
- *             ASW_Model_Store made loading lazy and (a) and (b) read ~0;
+ *             ANTISPAMWIZARD_Model_Store made loading lazy and (a) and (b) read ~0;
  *   (e) the same cold path for a body whose script is 'unknown', which has no
  *             unit of its own and therefore loads the combined unit — the
  *             largest one, and the only one cases (a)–(d) never build.
@@ -22,17 +22,17 @@
  * delta over the baseline captured immediately before the call, averaged over
  * five runs. The script then evaluates both bodies once more — the measured
  * cases flush, so whichever ran last would otherwise be the only unit on disk —
- * and lists every asw_classifiers_* transient's size.
+ * and lists every antispamwizard_classifiers_* transient's size.
  *
  * Two sizes are printed per unit, because a unit has two stored forms and only
  * one of them has a limit. `row` is the bytes in wp_options, where this stack
  * keeps its transients: a `longtext` column with no per-item limit, holding the
- * plain packed unit — ASW_Model_Store does not compress there, since wpdb
+ * plain packed unit — ANTISPAMWIZARD_Model_Store does not compress there, since wpdb
  * refuses a deflate stream into a utf8mb4 column outright. `cached` is what a
  * persistent object cache would be handed for the same unit — the compressed
  * envelope the store writes when one is installed — and is the number checked
  * against the limit a unit is pruned at (the 1 048 576-byte per-item limit less
- * ASW_Model_Store::CACHE_ITEM_OVERHEAD_BYTES), with the ratio between the two
+ * ANTISPAMWIZARD_Model_Store::CACHE_ITEM_OVERHEAD_BYTES), with the ratio between the two
  * alongside so a future corpus edit can see which half moved: more corpus (the
  * row column grows) or worse-compressing content (the ratio moves). On a host
  * with no zlib the store writes the plain array into the cache too, so the two
@@ -68,12 +68,12 @@ error_reporting( E_ALL );
 ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
-if ( ! class_exists( 'ASW' ) || ! class_exists( 'ASW_Settings' ) || ! class_exists( 'ASW_Detector' ) ) {
+if ( ! class_exists( 'ANTISPAMWIZARD' ) || ! class_exists( 'ANTISPAMWIZARD_Settings' ) || ! class_exists( 'ANTISPAMWIZARD_Detector' ) ) {
 	fwrite( STDERR, "bench: FAIL antispam-wizard is not active\n" );
 	exit( 1 );
 }
 
-$settings = ASW_Settings::get_all();
+$settings = ANTISPAMWIZARD_Settings::get_all();
 if ( empty( $settings['enabled'] ) || empty( $settings['bayesian_enabled'] ) || empty( $settings['similarity_enabled'] ) ) {
 	fwrite( STDERR, "bench: FAIL plugin, Bayesian or Similarity check disabled — the numbers would not measure model loading\n" );
 	exit( 1 );
@@ -88,23 +88,23 @@ $body = 'Продам гараж недорого, срочно, пишите и
 	. 'Ремонт квартир под ключ, натяжные потолки, сантехника, электрика. '
 	. 'Заказывайте прямо сейчас, скидка 20 процентов первым клиентам!';
 
-// A body with no letters at all: ASW_Script_Detector::detect() returns
-// 'unknown', which is not a key of SCRIPT_GROUPS, so ASW_Model_Store has no
+// A body with no letters at all: ANTISPAMWIZARD_Script_Detector::detect() returns
+// 'unknown', which is not a key of SCRIPT_GROUPS, so ANTISPAMWIZARD_Model_Store has no
 // per-script unit for it and both model checks fall through to the combined
-// one. Comma-delimited so ASW_Tokenizer's PHONE_PATTERN does not fold the whole
+// one. Comma-delimited so ANTISPAMWIZARD_Tokenizer's PHONE_PATTERN does not fold the whole
 // string into a single marker token.
 $unknown_body = '2019, 2020, 2021, 3005, 4007, 5008, 6009, 7010, 8011, 9012, '
 	. '1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021, 1022, 1023, 1024.';
 
 /**
- * Delete every asw_classifiers_* transient, so the next build is cold.
+ * Delete every antispamwizard_classifiers_* transient, so the next build is cold.
  *
  * @return int Number of transients removed.
  */
-function asw_bench_flush_models() {
+function antispamwizard_bench_flush_models() {
 	global $wpdb;
 
-	$like  = $wpdb->esc_like( '_transient_asw_classifiers_' ) . '%';
+	$like  = $wpdb->esc_like( '_transient_antispamwizard_classifiers_' ) . '%';
 	$names = $wpdb->get_col(
 		$wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $like )
 	);
@@ -119,16 +119,16 @@ function asw_bench_flush_models() {
 }
 
 /**
- * Every asw_classifiers_* transient with its option-row and would-be-cached sizes.
+ * Every antispamwizard_classifiers_* transient with its option-row and would-be-cached sizes.
  *
  * `row` is the byte count of the value as it sits in wp_options, which on a
  * stack with no external object cache is the plain packed unit. `cached` is the
- * same unit in the form ASW_Model_Store would hand a persistent object cache —
+ * same unit in the form ANTISPAMWIZARD_Model_Store would hand a persistent object cache —
  * `serialize( array( 'zlib' => gzcompress( …, 6 ) ) )`, the store's own level —
  * and is the figure the object cache's per-item limit applies to. With no zlib
  * on this host the two are equal and the limit applies to the row.
  *
- * The envelope is encoded here rather than through ASW_Model_Store, whose
+ * The envelope is encoded here rather than through ANTISPAMWIZARD_Model_Store, whose
  * helpers are private: the member name and the level are stable parts of the
  * stored format, and reading the row directly keeps the benchmark a pure
  * observer of it. A row that already carries an envelope is a contradiction of
@@ -137,10 +137,10 @@ function asw_bench_flush_models() {
  *
  * @return array<string,array{row:int,cached:int,compressed:bool}> Transient key => sizes.
  */
-function asw_bench_model_sizes() {
+function antispamwizard_bench_model_sizes() {
 	global $wpdb;
 
-	$like = $wpdb->esc_like( '_transient_asw_classifiers_' ) . '%';
+	$like = $wpdb->esc_like( '_transient_antispamwizard_classifiers_' ) . '%';
 	$rows = $wpdb->get_results(
 		$wpdb->prepare(
 			"SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s ORDER BY option_name",
@@ -196,7 +196,7 @@ function asw_bench_model_sizes() {
  * @param int      $runs   Repetitions.
  * @return array{ms: float, real: float, alloc: float}
  */
-function asw_bench_measure( callable $before, callable $work, $runs ) {
+function antispamwizard_bench_measure( callable $before, callable $work, $runs ) {
 	$total_ms    = 0.0;
 	$total_real  = 0.0;
 	$total_alloc = 0.0;
@@ -233,14 +233,14 @@ function asw_bench_measure( callable $before, callable $work, $runs ) {
  * @param float $bytes Byte count.
  * @return string Human-readable megabytes.
  */
-function asw_bench_mb( $bytes ) {
+function antispamwizard_bench_mb( $bytes ) {
 	return number_format( $bytes / 1048576, 2 ) . ' MB';
 }
 
-$asw   = ASW::get_instance();
+$antispamwizard   = ANTISPAMWIZARD::get_instance();
 $noop  = static function () {};
 $flush = static function () {
-	asw_bench_flush_models();
+	antispamwizard_bench_flush_models();
 };
 
 $verdicts = array();
@@ -255,8 +255,8 @@ $verdicts = array();
  * @param string $text The comment body to classify.
  * @return array The detector result.
  */
-$evaluate_body = static function ( $text ) use ( $asw, &$verdicts ) {
-	$detector = new ASW_Detector( $asw->build_checks() );
+$evaluate_body = static function ( $text ) use ( $antispamwizard, &$verdicts ) {
+	$detector = new ANTISPAMWIZARD_Detector( $antispamwizard->build_checks() );
 	$result   = $detector->evaluate(
 		array(
 			'comment_content'      => $text,
@@ -282,13 +282,13 @@ $evaluate_unknown_once = static function () use ( $evaluate_body, $unknown_body 
 
 // (a) cold build_checks(): every classifier transient deleted first.
 //
-// Since ASW_Model_Store made loading lazy this measures only the construction
+// Since ANTISPAMWIZARD_Model_Store made loading lazy this measures only the construction
 // of the ten checks — no model is touched until a check asks for one — so it is
 // expected to be ~0. The cold cost now lives in case (d).
-$cold = asw_bench_measure(
+$cold = antispamwizard_bench_measure(
 	$flush,
-	static function () use ( $asw ) {
-		return $asw->build_checks();
+	static function () use ( $antispamwizard ) {
+		return $antispamwizard->build_checks();
 	},
 	$runs
 );
@@ -299,30 +299,30 @@ $cold = asw_bench_measure(
 $evaluate_once();
 
 // (b) warm build_checks().
-$warm = asw_bench_measure(
+$warm = antispamwizard_bench_measure(
 	$noop,
-	static function () use ( $asw ) {
-		return $asw->build_checks();
+	static function () use ( $antispamwizard ) {
+		return $antispamwizard->build_checks();
 	},
 	$runs
 );
 
 // (c) warm build_checks() plus one full evaluation of the Cyrillic body.
-$evaluate = asw_bench_measure( $noop, $evaluate_once, $runs );
+$evaluate = antispamwizard_bench_measure( $noop, $evaluate_once, $runs );
 
 // (d) cold build_checks() plus one evaluation: every classifier transient
 // deleted first, so the run pays for building the one writing system's unit.
 // This is the one-script cold path — what a single comment costs on a site
 // whose models have just been invalidated.
-$cold_evaluate = asw_bench_measure( $flush, $evaluate_once, $runs );
+$cold_evaluate = antispamwizard_bench_measure( $flush, $evaluate_once, $runs );
 
 // (e) the same cold path for an 'unknown'-script body. 'unknown' is not a key of
-// ASW_Script_Detector::SCRIPT_GROUPS, so ASW_Model_Store::script_unit() has
+// ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS, so ANTISPAMWIZARD_Model_Store::script_unit() has
 // nothing to hand back and both model checks load the combined unit instead --
 // the largest unit in the system, and the one no Cyrillic body ever builds.
 // Without this case the size listing below could never see it, and the 1 MB
 // flag would be reporting only on units that are not the worst one.
-$cold_combined = asw_bench_measure( $flush, $evaluate_unknown_once, $runs );
+$cold_combined = antispamwizard_bench_measure( $flush, $evaluate_unknown_once, $runs );
 
 // Every measured case flushes, so only the last one's unit is still on disk.
 // Build both before sizing, so the listing covers the per-script and the
@@ -330,13 +330,13 @@ $cold_combined = asw_bench_measure( $flush, $evaluate_unknown_once, $runs );
 $evaluate_body( $body );
 $evaluate_body( $unknown_body );
 
-$sizes = asw_bench_model_sizes();
-// The limit production prunes at, not the raw per-item limit: ASW_Model_Store
+$sizes = antispamwizard_bench_model_sizes();
+// The limit production prunes at, not the raw per-item limit: ANTISPAMWIZARD_Model_Store
 // holds back CACHE_ITEM_OVERHEAD_BYTES because memcached weighs the whole item
 // and stored_size() can only weigh the value. Flagging at the raw figure left a
 // kilobyte-wide band in which a unit passed this benchmark and was pruned on a
 // live site.
-$unit_limit   = ASW_Model_Store::MAX_CACHED_UNIT_BYTES - ASW_Model_Store::CACHE_ITEM_OVERHEAD_BYTES;
+$unit_limit   = ANTISPAMWIZARD_Model_Store::MAX_CACHED_UNIT_BYTES - ANTISPAMWIZARD_Model_Store::CACHE_ITEM_OVERHEAD_BYTES;
 $total_row    = 0;
 $total_cached = 0;
 foreach ( $sizes as $unit_sizes ) {
@@ -349,13 +349,13 @@ if ( ! function_exists( 'memory_reset_peak_usage' ) ) {
 	fwrite( STDOUT, "  ! memory_reset_peak_usage() missing (PHP < 8.2): memory is cumulative, only the cold figure is meaningful\n" );
 }
 fwrite( STDOUT, sprintf( "  %-28s %11s %12s %12s\n", '', 'time', 'peak real', 'peak alloc' ) );
-fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'cold build_checks()', $cold['ms'], asw_bench_mb( $cold['real'] ), asw_bench_mb( $cold['alloc'] ) ) );
-fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'warm build_checks()', $warm['ms'], asw_bench_mb( $warm['real'] ), asw_bench_mb( $warm['alloc'] ) ) );
-fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'warm build_checks() + eval', $evaluate['ms'], asw_bench_mb( $evaluate['real'] ), asw_bench_mb( $evaluate['alloc'] ) ) );
-fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'cold build_checks() + eval', $cold_evaluate['ms'], asw_bench_mb( $cold_evaluate['real'] ), asw_bench_mb( $cold_evaluate['alloc'] ) ) );
-fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'cold + eval (combined unit)', $cold_combined['ms'], asw_bench_mb( $cold_combined['real'] ), asw_bench_mb( $cold_combined['alloc'] ) ) );
+fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'cold build_checks()', $cold['ms'], antispamwizard_bench_mb( $cold['real'] ), antispamwizard_bench_mb( $cold['alloc'] ) ) );
+fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'warm build_checks()', $warm['ms'], antispamwizard_bench_mb( $warm['real'] ), antispamwizard_bench_mb( $warm['alloc'] ) ) );
+fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'warm build_checks() + eval', $evaluate['ms'], antispamwizard_bench_mb( $evaluate['real'] ), antispamwizard_bench_mb( $evaluate['alloc'] ) ) );
+fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'cold build_checks() + eval', $cold_evaluate['ms'], antispamwizard_bench_mb( $cold_evaluate['real'] ), antispamwizard_bench_mb( $cold_evaluate['alloc'] ) ) );
+fwrite( STDOUT, sprintf( "  %-28s %8.2f ms %12s %12s\n", 'cold + eval (combined unit)', $cold_combined['ms'], antispamwizard_bench_mb( $cold_combined['real'] ), antispamwizard_bench_mb( $cold_combined['alloc'] ) ) );
 fwrite( STDOUT, "  verdicts: " . implode( ' | ', array_unique( $verdicts ) ) . "\n" );
-fwrite( STDOUT, "  cached units: " . count( $sizes ) . ", total " . asw_bench_mb( $total_row ) . " in wp_options (" . asw_bench_mb( $total_cached ) . " as object-cache items)\n" );
+fwrite( STDOUT, "  cached units: " . count( $sizes ) . ", total " . antispamwizard_bench_mb( $total_row ) . " in wp_options (" . antispamwizard_bench_mb( $total_cached ) . " as object-cache items)\n" );
 fwrite( STDOUT, sprintf( "    %-32s %14s %14s %8s\n", '', 'row', 'cached', 'ratio' ) );
 foreach ( $sizes as $key => $unit_sizes ) {
 	// The limit belongs to the object cache, so it is checked against the bytes

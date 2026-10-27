@@ -4,13 +4,13 @@ use PHPUnit\Framework\TestCase;
 
 class MultiLangCheckTest extends TestCase {
 
-    private ASW_Multi_Lang_Check $check;
+    private ANTISPAMWIZARD_Multi_Lang_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
         global $wp_options;
         $wp_options = array();
-        $this->check = new ASW_Multi_Lang_Check();
+        $this->check = new ANTISPAMWIZARD_Multi_Lang_Check();
     }
 
     protected function tearDown(): void {
@@ -56,7 +56,7 @@ class MultiLangCheckTest extends TestCase {
     }
 
     public function test_custom_threshold(): void {
-        ASW_Settings::update( array( 'multi_lang_threshold' => 5 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 5 ) );
         // 3 mixed words, threshold 5 - should pass.
         $result = $this->check->check( $this->make_comment( "h\xD0\xB5llo w\xD0\xBErld t\xD0\xB5st" ) );
         $this->assertFalse( $result->is_spam() );
@@ -64,7 +64,7 @@ class MultiLangCheckTest extends TestCase {
     }
 
     public function test_disabled_check_returns_not_spam(): void {
-        ASW_Settings::update( array( 'multi_lang_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_enabled' => false ) );
         $result = $this->check->check( $this->make_comment( "h\xD0\xB5llo w\xD0\xBErld t\xD0\xB5st" ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'check disabled', $result->get_details() );
@@ -123,9 +123,9 @@ class MultiLangCheckTest extends TestCase {
         // implementation its "two scripts seen" short circuit, so the whole word is
         // walked. Quadratic per-character scanning costs ~6.4 s here; a linear
         // whole-word scan costs ~0.001 s.
-        $word = str_repeat( 'a', ASW_Detector::MAX_COMMENT_LENGTH * 3 ) . "\xD0\xB5";
+        $word = str_repeat( 'a', ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH * 3 ) . "\xD0\xB5";
 
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
 
         $started  = microtime( true );
         $result   = $this->check->check( $this->make_comment( $word ) );
@@ -143,7 +143,7 @@ class MultiLangCheckTest extends TestCase {
     public function test_long_single_script_word_is_not_flagged(): void {
         // The same word without the Cyrillic character: a single script, so no verdict
         // change is allowed on long input.
-        $word = str_repeat( 'a', ASW_Detector::MAX_COMMENT_LENGTH * 3 );
+        $word = str_repeat( 'a', ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH * 3 );
 
         $result = $this->check->check( $this->make_comment( $word ) );
 
@@ -166,7 +166,7 @@ class MultiLangCheckTest extends TestCase {
 
         $word = "\u{0915}\u{A8F1}\u{0930}";
 
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "{$word} {$word} {$word}" ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -180,7 +180,7 @@ class MultiLangCheckTest extends TestCase {
         $devanagari = "\u{0915}\u{0951}\u{0930}";
         $arabic     = "\u{0645}\u{064B}\u{0631}";
 
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
 
         $result = $this->check->check( $this->make_comment( $devanagari ) );
         $this->assertFalse( $result->is_spam() );
@@ -194,7 +194,7 @@ class MultiLangCheckTest extends TestCase {
     public function test_non_ascii_digit_ignored(): void {
         // U+0966 DEVANAGARI DIGIT ZERO has Script=Devanagari, not Common, so only the
         // \d term of the ignore pattern keeps it out of the Latin word's script set.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "hello\u{0966}" ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -204,7 +204,7 @@ class MultiLangCheckTest extends TestCase {
     public function test_script_specific_punctuation_belongs_to_its_script(): void {
         // U+05BE HEBREW PUNCTUATION MAQAF is punctuation, but its script is Hebrew:
         // it must be claimed by \p{Hebrew} and never fall through to the Other bucket.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "\u{05E9}\u{05BE}\u{05DC}" ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -214,7 +214,7 @@ class MultiLangCheckTest extends TestCase {
     public function test_unlisted_scripts_share_the_other_bucket(): void {
         // Ethiopic and Cherokee are both outside SCRIPT_PATTERNS, so they collapse
         // into the single Other bucket and a word using both is not mixed-script.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "\u{1200}\u{13A0}" ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -224,7 +224,7 @@ class MultiLangCheckTest extends TestCase {
     public function test_listed_script_mixed_with_unlisted_script_flagged(): void {
         // Latin plus Ethiopic: the Other bucket is the second script. This is the
         // guard that the thirteenth bucket still exists at all.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "hello\u{1200}" ) );
 
         $this->assertTrue( $result->is_spam() );
@@ -236,7 +236,7 @@ class MultiLangCheckTest extends TestCase {
         // belong to no listed script and are neither Common nor Inherited, so they
         // survive the ignore pass and are the only characters that ever reach the
         // Other bucket's \p{P}/\p{S} exclusions. Neither may count as a script.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "hello\u{1361}\u{0F13}" ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -248,7 +248,7 @@ class MultiLangCheckTest extends TestCase {
         // would switch the whole check off for the submission - a one-byte evasion of
         // an attacker-controlled field. The malformed sequences must be dropped and
         // the rest classified: "wоrld" here is Latin + Cyrillic and must still count.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "hello \xC3\x28 \xD0 w\xD0\xBErld" ) );
 
         $this->assertTrue( $result->is_spam() );
@@ -258,7 +258,7 @@ class MultiLangCheckTest extends TestCase {
     public function test_invalid_utf8_alone_is_not_flagged(): void {
         // The substitution character mb_convert_encoding() leaves behind is Common, so
         // a body of nothing but malformed bytes must not become a script bucket.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "\xC3\x28 \xD0 \xF0\x28\x8C\x28" ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -270,7 +270,7 @@ class MultiLangCheckTest extends TestCase {
      * plugin can change. Given a letter codepoint, the bytes dropped from a
      * malformed body would come back as Latin letters and turn a legitimate
      * single-script Cyrillic comment into a Latin+Cyrillic "mixed script" hit.
-     * ASW_Detector::sanitize_utf8() pins the substitute, so the verdict must not
+     * ANTISPAMWIZARD_Detector::sanitize_utf8() pins the substitute, so the verdict must not
      * depend on the ambient setting - and the setting must be restored.
      */
     public function test_verdict_does_not_depend_on_mbstring_substitute_character(): void {
@@ -278,7 +278,7 @@ class MultiLangCheckTest extends TestCase {
         mb_substitute_character( 0x41 ); // 'A' - Latin.
 
         try {
-            ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+            ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
             $result = $this->check->check( $this->make_comment( "\xD0\xBF\xD1\x80\xD0\xB8\xD0\xB2\xC3\xD0\xB5\xD1\x82" ) );
 
             $this->assertFalse( $result->is_spam() );
@@ -307,7 +307,7 @@ class MultiLangCheckTest extends TestCase {
 
     public function test_korean_with_hanja_is_not_flagged(): void {
         // Hangul and Han share the CJK bucket for the same reason.
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( '韓國語댓글입니다' ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -343,7 +343,7 @@ class MultiLangCheckTest extends TestCase {
      * identical false positive; the exemption must cover it too.
      */
     public function test_ordinary_thai_comment_with_embedded_latin_is_not_flagged(): void {
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( 'ผมใช้WordPressครับ' ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -356,7 +356,7 @@ class MultiLangCheckTest extends TestCase {
      * smuggle a homoglyph word past the check.
      */
     public function test_space_less_script_with_latin_and_a_third_script_is_flagged(): void {
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "WordPressで日本\xD0\xBFароль" ) );
 
         $this->assertTrue( $result->is_spam() );
@@ -367,7 +367,7 @@ class MultiLangCheckTest extends TestCase {
      * The attack this check exists to catch is unaffected by the exemption.
      */
     public function test_latin_cyrillic_homoglyph_word_is_still_flagged(): void {
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "p\xD0\xB0ypal" ) );
 
         $this->assertTrue( $result->is_spam() );
@@ -381,7 +381,7 @@ class MultiLangCheckTest extends TestCase {
      * word mixed with an unrelated script from counting as two buckets.
      */
     public function test_cjk_mixed_with_another_script_is_still_flagged(): void {
-        ASW_Settings::update( array( 'multi_lang_threshold' => 1 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'multi_lang_threshold' => 1 ) );
         $result = $this->check->check( $this->make_comment( "\xD0\xBFассворд日本" ) );
 
         $this->assertTrue( $result->is_spam() );
@@ -389,6 +389,6 @@ class MultiLangCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 }

@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Renders bot-check fields into the comment form and mints/verifies the
  * submit-time HMAC token.
  */
-class ASW_Comment_Form {
+class ANTISPAMWIZARD_Comment_Form {
 
     const HONEYPOT_FIELD  = 'comment_url_confirm';
     const TIMESTAMP_FIELD = 'comment_form_token';
@@ -37,13 +37,13 @@ class ASW_Comment_Form {
      * Enqueue the honeypot-hiding stylesheet on pages with an open comment form.
      */
     public function enqueue_styles(): void {
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         if ( ( ! empty( $settings['honeypot_enabled'] ) || ! empty( $settings['submit_time_enabled'] ) ) && is_singular() && comments_open() ) {
             wp_enqueue_style(
-                'asw-comment-form',
-                ASW_URL . 'public/css/comment-form.css',
+                'antispamwizard-comment-form',
+                ANTISPAMWIZARD_URL . 'public/css/comment-form.css',
                 array(),
-                ASW_VERSION
+                ANTISPAMWIZARD_VERSION
             );
         }
     }
@@ -59,7 +59,7 @@ class ASW_Comment_Form {
      * @return string
      */
     public static function render_bot_fields( int $context_id ): string {
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['honeypot_enabled'] ) && empty( $settings['submit_time_enabled'] ) ) {
             return '';
@@ -68,7 +68,7 @@ class ASW_Comment_Form {
         $unique_id = wp_rand();
         ob_start();
         ?>
-            <div class="asw-hp-field" aria-hidden="true" style="position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden;">
+            <div class="antispamwizard-hp-field" aria-hidden="true" style="position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden;">
                 <?php if ( ! empty( $settings['honeypot_enabled'] ) ) : ?>
                     <label for="<?php echo esc_attr( self::HONEYPOT_FIELD . '_' . $unique_id ); ?>"><?php esc_html_e( 'Leave this field empty', 'antispam-wizard' ); ?></label>
                     <input type="text" name="<?php echo esc_attr( self::HONEYPOT_FIELD ); ?>" id="<?php echo esc_attr( self::HONEYPOT_FIELD . '_' . $unique_id ); ?>" value="" tabindex="-1" autocomplete="off" />

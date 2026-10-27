@@ -1,5 +1,5 @@
 {
-    "name": "asw/antispam-wizard-tests",
+    "name": "antispamwizard/antispam-wizard-tests",
     "description": "AntiSpam Wizard WordPress plugin test suite",
     "require-dev": {
         "phpunit/phpunit": "^9.6"

@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * the check detects the dominant script of the comment and compares against
  * the matching script's samples. Falls back to combined samples for unknown scripts.
  */
-class ASW_Similarity_Check implements ASW_Check {
+class ANTISPAMWIZARD_Similarity_Check implements ANTISPAMWIZARD_Check {
 
     /**
      * Scripts that encode more meaning per character and need a lower
@@ -30,14 +30,14 @@ class ASW_Similarity_Check implements ASW_Check {
     private const DENSE_SCRIPT_MIN_LENGTH = 10;
 
     /**
-     * @var ASW_Tokenizer
+     * @var ANTISPAMWIZARD_Tokenizer
      */
-    private ASW_Tokenizer $tokenizer;
+    private ANTISPAMWIZARD_Tokenizer $tokenizer;
 
     /**
-     * @var ASW_Cosine_Similarity
+     * @var ANTISPAMWIZARD_Cosine_Similarity
      */
-    private ASW_Cosine_Similarity $cosine;
+    private ANTISPAMWIZARD_Cosine_Similarity $cosine;
 
     /**
      * Pre-tokenized spam samples for the combined/legacy fallback.
@@ -56,9 +56,9 @@ class ASW_Similarity_Check implements ASW_Check {
     /**
      * Lazy per-writing-system model loader, or null in the array forms.
      *
-     * @var ASW_Model_Store|null
+     * @var ANTISPAMWIZARD_Model_Store|null
      */
-    private ?ASW_Model_Store $store = null;
+    private ?ANTISPAMWIZARD_Model_Store $store = null;
 
     /**
      * Construct the Similarity check.
@@ -73,9 +73,9 @@ class ASW_Similarity_Check implements ASW_Check {
      * the combined sample corpus is loaded only when the detected script turns
      * out to have no samples of its own.
      *
-     * @param ASW_Tokenizer        $tokenizer        Tokenizer instance.
-     * @param ASW_Cosine_Similarity $cosine           Cosine similarity calculator.
-     * @param array<int, string>|ASW_Model_Store $spam_samples
+     * @param ANTISPAMWIZARD_Tokenizer        $tokenizer        Tokenizer instance.
+     * @param ANTISPAMWIZARD_Cosine_Similarity $cosine           Cosine similarity calculator.
+     * @param array<int, string>|ANTISPAMWIZARD_Model_Store $spam_samples
      *     Legacy spam text samples (used as combined fallback), or a model store.
      * @param array<string, array<int, array<int, string>>>|null $script_samples
      *     Per-script pre-tokenized sample arrays keyed by script group.
@@ -83,9 +83,9 @@ class ASW_Similarity_Check implements ASW_Check {
      *     Pre-tokenized combined fallback samples. If provided, overrides legacy tokenization.
      */
     public function __construct(
-        ASW_Tokenizer $tokenizer,
-        ASW_Cosine_Similarity $cosine,
-        array|ASW_Model_Store $spam_samples,
+        ANTISPAMWIZARD_Tokenizer $tokenizer,
+        ANTISPAMWIZARD_Cosine_Similarity $cosine,
+        array|ANTISPAMWIZARD_Model_Store $spam_samples,
         ?array $script_samples = null,
         ?array $combined_samples = null
     ) {
@@ -93,7 +93,7 @@ class ASW_Similarity_Check implements ASW_Check {
         $this->cosine               = $cosine;
         $this->script_sample_tokens = $script_samples ?? array();
 
-        if ( $spam_samples instanceof ASW_Model_Store ) {
+        if ( $spam_samples instanceof ANTISPAMWIZARD_Model_Store ) {
             $this->store              = $spam_samples;
             $this->spam_sample_tokens = array();
         } elseif ( null !== $combined_samples ) {
@@ -113,18 +113,18 @@ class ASW_Similarity_Check implements ASW_Check {
      * Run the similarity check against comment data.
      *
      * @param array $comment_data WordPress comment data array.
-     * @return ASW_Check_Result
+     * @return ANTISPAMWIZARD_Check_Result
      */
-    public function check( array $comment_data ): ASW_Check_Result {
-        $settings = ASW_Settings::get_all();
+    public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
+        $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['similarity_enabled'] ) ) {
-            return new ASW_Check_Result( false, 'similarity', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'check disabled', 'antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ASW_Check_Result( false, 'similarity', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'empty comment', 'antispam-wizard' ) );
         }
 
         $min_length = isset( $settings['min_message_length'] ) ? (int) $settings['min_message_length'] : 50;
@@ -132,12 +132,12 @@ class ASW_Similarity_Check implements ASW_Check {
         // the Bayesian check, which evaluates the same body.
         $detected_script = null !== $this->store
             ? $this->store->script_for( $text )
-            : ASW_Script_Detector::detect( $text );
+            : ANTISPAMWIZARD_Script_Detector::detect( $text );
         if ( in_array( $detected_script, self::DENSE_SCRIPTS, true ) ) {
             $min_length = min( $min_length, self::DENSE_SCRIPT_MIN_LENGTH );
         }
         if ( mb_strlen( $text, 'UTF-8' ) < $min_length ) {
-            return new ASW_Check_Result( false, 'similarity', __( 'comment too short for similarity', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'comment too short for similarity', 'antispam-wizard' ) );
         }
 
         $threshold = isset( $settings['similarity_threshold'] ) ? (float) $settings['similarity_threshold'] : 0.6;
@@ -152,7 +152,7 @@ class ASW_Similarity_Check implements ASW_Check {
         $comment_tokens = $this->tokenize_for_comment( $text, $script );
 
         if ( empty( $comment_tokens ) ) {
-            return new ASW_Check_Result( false, 'similarity', sprintf( 'similarity 0.00/%.2f', $threshold ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', sprintf( 'similarity 0.00/%.2f', $threshold ) );
         }
 
         $max_score = 0.0;
@@ -170,10 +170,10 @@ class ASW_Similarity_Check implements ASW_Check {
         $details = sprintf( 'similarity %.2f/%.2f', $max_score, $threshold );
 
         if ( $max_score > $threshold ) {
-            return new ASW_Check_Result( true, 'similarity', $details );
+            return new ANTISPAMWIZARD_Check_Result( true, 'similarity', $details );
         }
 
-        return new ASW_Check_Result( false, 'similarity', $details );
+        return new ANTISPAMWIZARD_Check_Result( false, 'similarity', $details );
     }
 
     /**

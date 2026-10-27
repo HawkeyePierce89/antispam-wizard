@@ -21,7 +21,7 @@ class StatsDisplayTest extends TestCase {
 
     public function test_enabled_checks_with_zero_counts_appear_in_breakdown(): void {
         // Record stats for only one check.
-        ASW_Stats::record( array( 'links' ) );
+        ANTISPAMWIZARD_Stats::record( array( 'links' ) );
 
         // All checks enabled by default — render should show all 8.
         $html = $this->render_stats_view();
@@ -43,7 +43,7 @@ class StatsDisplayTest extends TestCase {
 
     public function test_disabled_checks_with_zero_counts_do_not_appear(): void {
         // Disable all checks except links.
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $settings['stop_words_enabled'] = false;
         $settings['emoji_enabled']      = false;
         $settings['spacing_enabled']    = false;
@@ -51,9 +51,9 @@ class StatsDisplayTest extends TestCase {
         $settings['duplicate_enabled']  = false;
         $settings['bayesian_enabled']   = false;
         $settings['similarity_enabled'] = false;
-        update_option( ASW_Settings::OPTION_KEY, $settings );
+        update_option( ANTISPAMWIZARD_Settings::OPTION_KEY, $settings );
 
-        ASW_Stats::record( array( 'links' ) );
+        ANTISPAMWIZARD_Stats::record( array( 'links' ) );
 
         $html = $this->render_stats_view();
 
@@ -65,11 +65,11 @@ class StatsDisplayTest extends TestCase {
 
     public function test_disabled_checks_with_existing_counts_still_appear(): void {
         // Record stats, then disable the check.
-        ASW_Stats::record( array( 'links', 'emoji' ) );
+        ANTISPAMWIZARD_Stats::record( array( 'links', 'emoji' ) );
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $settings['emoji_enabled'] = false;
-        update_option( ASW_Settings::OPTION_KEY, $settings );
+        update_option( ANTISPAMWIZARD_Settings::OPTION_KEY, $settings );
 
         $html = $this->render_stats_view();
 
@@ -80,17 +80,17 @@ class StatsDisplayTest extends TestCase {
     public function test_matches_clarification_note_is_displayed(): void {
         $html = $this->render_stats_view();
 
-        $this->assertStringContainsString( 'asw-stats-note', $html );
+        $this->assertStringContainsString( 'antispamwizard-stats-note', $html );
         $this->assertStringContainsString( 'can trigger multiple checks', $html );
     }
 
     public function test_zero_count_checks_show_zero_value(): void {
-        ASW_Stats::record( array( 'links' ) );
+        ANTISPAMWIZARD_Stats::record( array( 'links' ) );
 
         $html = $this->render_stats_view();
 
         // Find the stop_words row — it should have count 0.
-        preg_match( '/data-check="stop_words".*?asw-bar-count">(.*?)<\/div>/s', $html, $matches );
+        preg_match( '/data-check="stop_words".*?antispamwizard-bar-count">(.*?)<\/div>/s', $html, $matches );
         $this->assertNotEmpty( $matches, 'stop_words row should exist' );
         $this->assertSame( '0', trim( $matches[1] ) );
     }

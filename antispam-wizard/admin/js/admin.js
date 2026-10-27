@@ -9,10 +9,10 @@
 (function () {
     'use strict';
 
-    var addButton = document.getElementById('asw-add-word');
-    var input = document.getElementById('asw-new-word');
-    var wordsList = document.getElementById('asw-words-list');
-    var status = document.getElementById('asw-add-status');
+    var addButton = document.getElementById('antispamwizard-add-word');
+    var input = document.getElementById('antispamwizard-new-word');
+    var wordsList = document.getElementById('antispamwizard-words-list');
+    var status = document.getElementById('antispamwizard-add-status');
 
     if (!addButton || !input || !wordsList) {
         return;
@@ -21,24 +21,24 @@
     function showStatus(message, isError) {
         if (!status) return;
         status.textContent = message;
-        status.className = 'asw-status ' + (isError ? 'error' : 'success');
+        status.className = 'antispamwizard-status ' + (isError ? 'error' : 'success');
         setTimeout(function () {
             status.textContent = '';
-            status.className = 'asw-status';
+            status.className = 'antispamwizard-status';
         }, 3000);
     }
 
     function createWordTag(word) {
         var isExact = word.length > 0 && word.charAt(0) === '=';
         var tag = document.createElement('span');
-        tag.className = 'asw-word-tag asw-pill' + (isExact ? ' asw-pill--exact' : '');
+        tag.className = 'antispamwizard-word-tag antispamwizard-pill' + (isExact ? ' antispamwizard-pill--exact' : '');
         tag.setAttribute('data-word', word);
         tag.textContent = word;
 
         var removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'asw-remove-word asw-pill-remove';
-        removeBtn.title = aswAdmin.remove_text || 'Remove';
+        removeBtn.className = 'antispamwizard-remove-word antispamwizard-pill-remove';
+        removeBtn.title = antispamwizardAdmin.remove_text || 'Remove';
         removeBtn.innerHTML = '&times;';
         removeBtn.addEventListener('click', function () {
             removeWord(word, tag);
@@ -55,22 +55,22 @@
         }
 
         var data = new FormData();
-        data.append('action', 'asw_add_stop_word');
-        data.append('nonce', aswAdmin.nonce);
+        data.append('action', 'antispamwizard_add_stop_word');
+        data.append('nonce', antispamwizardAdmin.nonce);
         data.append('word', word);
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', aswAdmin.ajax_url);
+        xhr.open('POST', antispamwizardAdmin.ajax_url);
         xhr.onload = function () {
             var response;
             try {
                 response = JSON.parse(xhr.responseText);
             } catch (e) {
-                showStatus(aswAdmin.error_text || 'Error', true);
+                showStatus(antispamwizardAdmin.error_text || 'Error', true);
                 return;
             }
             if (response.success) {
-                var noWords = wordsList.querySelector('.asw-no-words');
+                var noWords = wordsList.querySelector('.antispamwizard-no-words');
                 if (noWords) {
                     noWords.remove();
                 }
@@ -82,41 +82,41 @@
             }
         };
         xhr.onerror = function () {
-            showStatus(aswAdmin.error_text || 'Error', true);
+            showStatus(antispamwizardAdmin.error_text || 'Error', true);
         };
         xhr.send(data);
     }
 
     function removeWord(word, tagElement) {
         var data = new FormData();
-        data.append('action', 'asw_remove_stop_word');
-        data.append('nonce', aswAdmin.nonce);
+        data.append('action', 'antispamwizard_remove_stop_word');
+        data.append('nonce', antispamwizardAdmin.nonce);
         data.append('word', word);
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', aswAdmin.ajax_url);
+        xhr.open('POST', antispamwizardAdmin.ajax_url);
         xhr.onload = function () {
             var response;
             try {
                 response = JSON.parse(xhr.responseText);
             } catch (e) {
-                showStatus(aswAdmin.error_text || 'Error', true);
+                showStatus(antispamwizardAdmin.error_text || 'Error', true);
                 return;
             }
             if (response.success) {
                 tagElement.remove();
-                if (!wordsList.querySelector('.asw-word-tag')) {
+                if (!wordsList.querySelector('.antispamwizard-word-tag')) {
                     var p = document.createElement('p');
-                    p.className = 'asw-no-words';
-                    p.textContent = aswAdmin.no_words_text || 'No stop-words configured.';
+                    p.className = 'antispamwizard-no-words';
+                    p.textContent = antispamwizardAdmin.no_words_text || 'No stop-words configured.';
                     wordsList.appendChild(p);
                 }
             } else {
-                showStatus((response.data && response.data.message) || aswAdmin.error_text || 'Error', true);
+                showStatus((response.data && response.data.message) || antispamwizardAdmin.error_text || 'Error', true);
             }
         };
         xhr.onerror = function () {
-            showStatus(aswAdmin.error_text || 'Error', true);
+            showStatus(antispamwizardAdmin.error_text || 'Error', true);
         };
         xhr.send(data);
     }
@@ -130,7 +130,7 @@
         }
     });
 
-    var removeBtns = wordsList.querySelectorAll('.asw-remove-word');
+    var removeBtns = wordsList.querySelectorAll('.antispamwizard-remove-word');
     for (var i = 0; i < removeBtns.length; i++) {
         (function (btn) {
             var tag = btn.parentElement;
@@ -148,10 +148,10 @@
 (function () {
     'use strict';
 
-    var addButton = document.getElementById('asw-add-token');
-    var input = document.getElementById('asw-new-token');
-    var tokensList = document.getElementById('asw-tokens-list');
-    var status = document.getElementById('asw-token-status');
+    var addButton = document.getElementById('antispamwizard-add-token');
+    var input = document.getElementById('antispamwizard-new-token');
+    var tokensList = document.getElementById('antispamwizard-tokens-list');
+    var status = document.getElementById('antispamwizard-token-status');
 
     if (!addButton || !input || !tokensList) {
         return;
@@ -160,23 +160,23 @@
     function showStatus(message, isError) {
         if (!status) return;
         status.textContent = message;
-        status.className = 'asw-status ' + (isError ? 'error' : 'success');
+        status.className = 'antispamwizard-status ' + (isError ? 'error' : 'success');
         setTimeout(function () {
             status.textContent = '';
-            status.className = 'asw-status';
+            status.className = 'antispamwizard-status';
         }, 3000);
     }
 
     function createTokenTag(token) {
         var tag = document.createElement('span');
-        tag.className = 'asw-word-tag asw-pill asw-pill--token';
+        tag.className = 'antispamwizard-word-tag antispamwizard-pill antispamwizard-pill--token';
         tag.setAttribute('data-word', token);
         tag.textContent = token;
 
         var removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'asw-remove-token asw-pill-remove';
-        removeBtn.title = aswAdmin.remove_text || 'Remove';
+        removeBtn.className = 'antispamwizard-remove-token antispamwizard-pill-remove';
+        removeBtn.title = antispamwizardAdmin.remove_text || 'Remove';
         removeBtn.innerHTML = '&times;';
         removeBtn.addEventListener('click', function () {
             removeToken(token, tag);
@@ -193,22 +193,22 @@
         }
 
         var data = new FormData();
-        data.append('action', 'asw_add_excluded_token');
-        data.append('nonce', aswAdmin.excluded_tokens_nonce);
+        data.append('action', 'antispamwizard_add_excluded_token');
+        data.append('nonce', antispamwizardAdmin.excluded_tokens_nonce);
         data.append('token', token);
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', aswAdmin.ajax_url);
+        xhr.open('POST', antispamwizardAdmin.ajax_url);
         xhr.onload = function () {
             var response;
             try {
                 response = JSON.parse(xhr.responseText);
             } catch (e) {
-                showStatus(aswAdmin.error_text || 'Error', true);
+                showStatus(antispamwizardAdmin.error_text || 'Error', true);
                 return;
             }
             if (response.success) {
-                var noTokens = tokensList.querySelector('.asw-no-tokens');
+                var noTokens = tokensList.querySelector('.antispamwizard-no-tokens');
                 if (noTokens) {
                     noTokens.remove();
                 }
@@ -220,41 +220,41 @@
             }
         };
         xhr.onerror = function () {
-            showStatus(aswAdmin.error_text || 'Error', true);
+            showStatus(antispamwizardAdmin.error_text || 'Error', true);
         };
         xhr.send(data);
     }
 
     function removeToken(token, tagElement) {
         var data = new FormData();
-        data.append('action', 'asw_remove_excluded_token');
-        data.append('nonce', aswAdmin.excluded_tokens_nonce);
+        data.append('action', 'antispamwizard_remove_excluded_token');
+        data.append('nonce', antispamwizardAdmin.excluded_tokens_nonce);
         data.append('token', token);
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', aswAdmin.ajax_url);
+        xhr.open('POST', antispamwizardAdmin.ajax_url);
         xhr.onload = function () {
             var response;
             try {
                 response = JSON.parse(xhr.responseText);
             } catch (e) {
-                showStatus(aswAdmin.error_text || 'Error', true);
+                showStatus(antispamwizardAdmin.error_text || 'Error', true);
                 return;
             }
             if (response.success) {
                 tagElement.remove();
-                if (!tokensList.querySelector('.asw-word-tag')) {
+                if (!tokensList.querySelector('.antispamwizard-word-tag')) {
                     var p = document.createElement('p');
-                    p.className = 'asw-no-tokens';
-                    p.textContent = aswAdmin.no_tokens_text || 'No excluded tokens configured.';
+                    p.className = 'antispamwizard-no-tokens';
+                    p.textContent = antispamwizardAdmin.no_tokens_text || 'No excluded tokens configured.';
                     tokensList.appendChild(p);
                 }
             } else {
-                showStatus((response.data && response.data.message) || aswAdmin.error_text || 'Error', true);
+                showStatus((response.data && response.data.message) || antispamwizardAdmin.error_text || 'Error', true);
             }
         };
         xhr.onerror = function () {
-            showStatus(aswAdmin.error_text || 'Error', true);
+            showStatus(antispamwizardAdmin.error_text || 'Error', true);
         };
         xhr.send(data);
     }
@@ -268,7 +268,7 @@
         }
     });
 
-    var removeBtns = tokensList.querySelectorAll('.asw-remove-token');
+    var removeBtns = tokensList.querySelectorAll('.antispamwizard-remove-token');
     for (var i = 0; i < removeBtns.length; i++) {
         (function (btn) {
             var tag = btn.parentElement;
@@ -287,16 +287,16 @@
     'use strict';
 
     function showNotice(anchor, message) {
-        var container = anchor.closest('.asw-log-actions') || anchor.parentElement;
+        var container = anchor.closest('.antispamwizard-log-actions') || anchor.parentElement;
         if (!container || !container.parentElement) {
             return;
         }
-        var existing = container.querySelector('.asw-notice');
+        var existing = container.querySelector('.antispamwizard-notice');
         if (existing) {
             existing.remove();
         }
         var notice = document.createElement('span');
-        notice.className = 'asw-notice asw-notice--error';
+        notice.className = 'antispamwizard-notice antispamwizard-notice--error';
         notice.textContent = message;
         container.appendChild(notice);
         setTimeout(function () {
@@ -307,56 +307,56 @@
     }
 
     function markComment(commentId, category, button) {
-        var actions = button.closest('.asw-log-actions') || button.parentElement;
+        var actions = button.closest('.antispamwizard-log-actions') || button.parentElement;
         var siblings = actions ? actions.querySelectorAll('button') : [button];
         for (var s = 0; s < siblings.length; s++) {
             siblings[s].disabled = true;
         }
 
         var data = new FormData();
-        data.append('action', 'asw_mark_comment');
-        data.append('nonce', aswAdmin.mark_nonce);
+        data.append('action', 'antispamwizard_mark_comment');
+        data.append('nonce', antispamwizardAdmin.mark_nonce);
         data.append('comment_id', commentId);
         data.append('category', category);
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', aswAdmin.ajax_url);
+        xhr.open('POST', antispamwizardAdmin.ajax_url);
         xhr.onload = function () {
             var response;
             try {
                 response = JSON.parse(xhr.responseText);
             } catch (e) {
                 for (var r = 0; r < siblings.length; r++) { siblings[r].disabled = false; }
-                showNotice(button, aswAdmin.error_text || 'Invalid response');
+                showNotice(button, antispamwizardAdmin.error_text || 'Invalid response');
                 return;
             }
             if (response.success) {
                 var pill = document.createElement('span');
-                pill.className = 'asw-pill asw-pill--trained';
-                pill.textContent = (aswAdmin.trained_as_text || 'Trained as ') + category;
+                pill.className = 'antispamwizard-pill antispamwizard-pill--trained';
+                pill.textContent = (antispamwizardAdmin.trained_as_text || 'Trained as ') + category;
                 actions.innerHTML = '';
                 actions.appendChild(pill);
                 if (response.data && response.data.script_label) {
                     var scriptPill = document.createElement('span');
-                    scriptPill.className = 'asw-pill asw-pill--script';
+                    scriptPill.className = 'antispamwizard-pill antispamwizard-pill--script';
                     scriptPill.textContent = response.data.script_label;
                     actions.appendChild(scriptPill);
                 }
             } else {
                 for (var r = 0; r < siblings.length; r++) { siblings[r].disabled = false; }
-                var msg = (response.data && response.data.message) || (aswAdmin.error_text || 'Error');
+                var msg = (response.data && response.data.message) || (antispamwizardAdmin.error_text || 'Error');
                 showNotice(button, msg);
             }
         };
         xhr.onerror = function () {
             for (var r = 0; r < siblings.length; r++) { siblings[r].disabled = false; }
-            showNotice(button, aswAdmin.error_text || 'Network error');
+            showNotice(button, antispamwizardAdmin.error_text || 'Network error');
         };
         xhr.send(data);
     }
 
-    var hamBtns = document.querySelectorAll('.asw-mark-ham');
-    var spamBtns = document.querySelectorAll('.asw-mark-spam');
+    var hamBtns = document.querySelectorAll('.antispamwizard-mark-ham');
+    var spamBtns = document.querySelectorAll('.antispamwizard-mark-spam');
 
     for (var i = 0; i < hamBtns.length; i++) {
         (function (btn) {
@@ -382,11 +382,11 @@
     'use strict';
 
     // Collapsible section headers.
-    var headers = document.querySelectorAll('[data-asw-collapsible]');
+    var headers = document.querySelectorAll('[data-antispamwizard-collapsible]');
     for (var i = 0; i < headers.length; i++) {
         (function (header) {
             header.addEventListener('click', function () {
-                var section = header.closest('.asw-section');
+                var section = header.closest('.antispamwizard-section');
                 if (!section) return;
                 var collapsed = section.classList.toggle('is-collapsed');
                 header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
@@ -395,12 +395,12 @@
     }
 
     // Range sliders mirroring their value into a sibling readout.
-    var sliders = document.querySelectorAll('[data-asw-slider]');
+    var sliders = document.querySelectorAll('[data-antispamwizard-slider]');
     for (var k = 0; k < sliders.length; k++) {
         (function (slider) {
-            var wrap = slider.closest('.asw-slider');
+            var wrap = slider.closest('.antispamwizard-slider');
             if (!wrap) return;
-            var readout = wrap.querySelector('[data-asw-slider-value]');
+            var readout = wrap.querySelector('[data-antispamwizard-slider-value]');
             if (!readout) return;
             var update = function () {
                 var v = parseFloat(slider.value);

@@ -15,16 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Seed corpus remains in data/*.txt files; this repository handles samples added
  * via the admin UI (mark as spam/ham). The classifier merges both sources.
  */
-class ASW_Sample_Repository {
+class ANTISPAMWIZARD_Sample_Repository {
 
     /** @var string Option name for the revision counter. */
-    const REVISION_OPTION = 'asw_samples_revision';
+    const REVISION_OPTION = 'antispamwizard_samples_revision';
 
     /**
      * @var string Schema version of get_create_table_sql(). '1' is the layout
      * 1.0.0 ships: the table with both subject keys (comment_id, email_hash)
      * and their indexes. Bump whenever the DDL changes so
-     * ASW::maybe_upgrade_schema() re-runs dbDelta() on sites that already have
+     * ANTISPAMWIZARD::maybe_upgrade_schema() re-runs dbDelta() on sites that already have
      * the table.
      */
     const DB_VERSION = '1';
@@ -48,7 +48,7 @@ class ASW_Sample_Repository {
     const VERSIONED_INDEXES = array( 'idx_comment_id', 'idx_email_hash' );
 
     /** @var string Option name holding the installed schema version. */
-    const DB_VERSION_OPTION = 'asw_samples_db_version';
+    const DB_VERSION_OPTION = 'antispamwizard_samples_db_version';
 
     /** @var string[] Allowed MySQL character sets. */
     const ALLOWED_CHARSETS = array(
@@ -72,7 +72,7 @@ class ASW_Sample_Repository {
      * failed SELECT hands back the empty array wpdb::query()'s flush() left in
      * last_result, byte-identical to "this script has no rows" -- the same
      * indistinguishability script_fingerprint() reads last_error to resolve. The
-     * flag is what lets ASW_Model_Store tell the two apart, because a unit built
+     * flag is what lets ANTISPAMWIZARD_Model_Store tell the two apart, because a unit built
      * while the sample read failed carries the corpus files alone while its
      * fingerprint asserts the rows are in it, and caching that would drop every
      * user-added sample out of the Bayesian and Similarity models for a day.
@@ -108,7 +108,7 @@ class ASW_Sample_Repository {
      * @return string
      */
     public function get_table_name(): string {
-        return $this->wpdb->prefix . 'asw_samples';
+        return $this->wpdb->prefix . 'antispamwizard_samples';
     }
 
     /**
@@ -163,7 +163,7 @@ class ASW_Sample_Repository {
         // the spam queue hard-deletes the very comments samples are trained from —
         // after that the full comment text would live on here, undiscoverable by a
         // personal-data export or erasure request. The salted SHA-256 hash (see
-        // ASW_Detector::hash_email()) survives that deletion; it is the same hash
+        // ANTISPAMWIZARD_Detector::hash_email()) survives that deletion; it is the same hash
         // the form-entry spam-log rows use, so no new kind of data is stored. It is
         // empty when the comment carried no author email, in which case comment_id
         // remains the only key.
@@ -192,7 +192,7 @@ class ASW_Sample_Repository {
      * @param int    $comment_id ID of the comment the sample was trained from. Required
      *                           subject key for the Privacy API exporter and eraser.
      * @param string $email_hash Salted SHA-256 hash of the comment author's email
-     *                           (ASW_Detector::hash_email()); '' when the comment
+     *                           (ANTISPAMWIZARD_Detector::hash_email()); '' when the comment
      *                           carried no address. Secondary subject key that keeps
      *                           the sample reachable after the comment is deleted.
      * @return string|false 'inserted' when a new row is created, 'exists' when the
@@ -303,9 +303,9 @@ class ASW_Sample_Repository {
      * One query answers for both categories, so a caller cannot see a half-failed
      * read: a query the database refused comes back as an empty array, exactly
      * like "nothing stored". Both callers are written so that reading is the safe
-     * direction -- ASW_Moderation::training_is_settled() reports "not settled" and
+     * direction -- ANTISPAMWIZARD_Moderation::training_is_settled() reports "not settled" and
      * costs a redundant insert(), which deduplicates, never a skipped one, and
-     * ASW_Admin_Page::ajax_mark_comment() issues its flip delete only on the
+     * ANTISPAMWIZARD_Admin_Page::ajax_mark_comment() issues its flip delete only on the
      * positive evidence of both categories being present, so no row is ever
      * removed on the strength of a read that failed.
      *
@@ -359,7 +359,7 @@ class ASW_Sample_Repository {
         try {
             $sql = $this->wpdb->prepare(
                 // ORDER BY id ASC: without it MySQL may hand the rows back in
-                // any order, and ASW_Model_Store spends its learned-similarity
+                // any order, and ANTISPAMWIZARD_Model_Store spends its learned-similarity
                 // budget from the newest end of this list, so "newest" has to
                 // mean something. The autoincrement is the only column that
                 // gives it. created_at cannot: it is second-granular, so every
@@ -430,9 +430,9 @@ class ASW_Sample_Repository {
      *
      * The column list matches find_by_email_hash() exactly, including the
      * comment_id and email_hash keys the export itself never renders:
-     * ASW_Privacy merges the rows from both lookups into one array keyed by row
+     * ANTISPAMWIZARD_Privacy merges the rows from both lookups into one array keyed by row
      * ID, so a row fetched by either key must carry the same keys. (comment_id
-     * is read as well -- ASW_Privacy::comment_ids_on_later_pages() decides the
+     * is read as well -- ANTISPAMWIZARD_Privacy::comment_ids_on_later_pages() decides the
      * page-1/later-page split from the hash rows' comment_id, never from the
      * row IDs another page's hash query returned.)
      *
@@ -453,7 +453,7 @@ class ASW_Sample_Repository {
         $sql = $this->wpdb->prepare(
             // ORDER BY id keeps the export deterministic: without it MySQL may
             // return the rows in any order, so a subject's export items would
-            // shuffle between runs (ASW_Privacy::get_comment_ids() pins its own
+            // shuffle between runs (ANTISPAMWIZARD_Privacy::get_comment_ids() pins its own
             // ordering for the same reason). Keep this note above the
             // suppression below rather than between it and the SQL: a phpcs
             // suppression is anchored on the line that follows it, so anything
@@ -532,7 +532,7 @@ class ASW_Sample_Repository {
      * example by "Empty Spam"), which is when the sample text would otherwise
      * become undiscoverable.
      *
-     * @param string $email_hash Salted SHA-256 hash from ASW_Detector::hash_email().
+     * @param string $email_hash Salted SHA-256 hash from ANTISPAMWIZARD_Detector::hash_email().
      * @return array<int, array<string, mixed>> Rows keyed by column name; empty
      *                                          for an empty hash.
      */
@@ -544,7 +544,7 @@ class ASW_Sample_Repository {
         $table = $this->get_table_name();
         $sql   = $this->wpdb->prepare(
             // ORDER BY id keeps the export deterministic, as in find_by_comment_ids().
-            // The column list matches find_by_comment_ids() exactly: ASW_Privacy
+            // The column list matches find_by_comment_ids() exactly: ANTISPAMWIZARD_Privacy
             // merges rows from both lookups into one array keyed by row ID, so a
             // row fetched by either key must carry the same keys.
             'SELECT id, comment_id, email_hash, script, category, content, created_at FROM %i WHERE email_hash = %s ORDER BY id ASC',
@@ -572,7 +572,7 @@ class ASW_Sample_Repository {
      * delete_by_comment_ids() it returns false rather than 0 when the query
      * failed, so the eraser can report the data as retained.
      *
-     * @param string $email_hash Salted SHA-256 hash from ASW_Detector::hash_email().
+     * @param string $email_hash Salted SHA-256 hash from ANTISPAMWIZARD_Detector::hash_email().
      * @return int|false Number of rows removed (0 when nothing matched or the
      *                   hash was empty), or false when the query failed.
      */
@@ -813,7 +813,7 @@ class ASW_Sample_Repository {
      * that, but only as a *second* write: bump_revision() fires an UPDATE on
      * wp_options after the statement it follows and cannot report a refusal, so
      * a delete whose bump the database refused leaves the revision standing
-     * still. ASW_Model_Store's post-write supersession check -- the guard that
+     * still. ANTISPAMWIZARD_Model_Store's post-write supersession check -- the guard that
      * stops a request which loaded its samples before an erasure from writing
      * them back after it -- is built on the fingerprint moving when rows go, so
      * it needs a component read from the table itself. COUNT(*) moves when rows

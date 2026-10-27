@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Tracks and retrieves spam detection statistics stored in wp_options.
  */
-class ASW_Stats {
+class ANTISPAMWIZARD_Stats {
 
-    const OPTION_KEY = 'asw_stats';
+    const OPTION_KEY = 'antispamwizard_stats';
 
     /**
      * Return the directory used for lock files, creating it if necessary.
@@ -23,7 +23,7 @@ class ASW_Stats {
      */
     private static function get_lock_dir(): string {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
         if ( ! is_dir( $lock_dir ) ) {
             wp_mkdir_p( $lock_dir );
             $htaccess = $lock_dir . '/.htaccess';
@@ -92,11 +92,11 @@ class ASW_Stats {
      * @param array $check_names List of check names that flagged the comment.
      */
     public static function record( array $check_names ): void {
-        $lock_file = self::get_lock_dir() . '/asw_stats_' . md5( ABSPATH ) . '.lock';
+        $lock_file = self::get_lock_dir() . '/antispamwizard_stats_' . md5( ABSPATH ) . '.lock';
         $fp        = @fopen( $lock_file, 'c' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.PHP.NoSilencedErrors.Discouraged -- flock() needs a real stream handle; WP_Filesystem exposes no locking primitive. The @ suppresses PHP's own "failed to open stream" warning, which carries the absolute path into the web-readable debug.log; the sanitized diagnostic below reports the failure instead.
         if ( false === $fp ) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: the lock file could not be opened, so this write proceeds unserialised. Silent failure would make concurrent-write corruption undebuggable; the log line carries no user input.
-            error_log( 'ASW: unable to open lock file: ' . basename( $lock_file ) );
+            error_log( 'ANTISPAMWIZARD: unable to open lock file: ' . basename( $lock_file ) );
         }
         $locked = $fp && flock( $fp, LOCK_EX );
 
@@ -130,11 +130,11 @@ class ASW_Stats {
      * Reset all statistics.
      */
     public static function clear(): void {
-        $lock_file = self::get_lock_dir() . '/asw_stats_' . md5( ABSPATH ) . '.lock';
+        $lock_file = self::get_lock_dir() . '/antispamwizard_stats_' . md5( ABSPATH ) . '.lock';
         $fp        = @fopen( $lock_file, 'c' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.PHP.NoSilencedErrors.Discouraged -- flock() needs a real stream handle; WP_Filesystem exposes no locking primitive. The @ suppresses PHP's own "failed to open stream" warning, which carries the absolute path into the web-readable debug.log; the sanitized diagnostic below reports the failure instead.
         if ( false === $fp ) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: the lock file could not be opened, so this write proceeds unserialised. Silent failure would make concurrent-write corruption undebuggable; the log line carries no user input.
-            error_log( 'ASW: unable to open lock file: ' . basename( $lock_file ) );
+            error_log( 'ANTISPAMWIZARD: unable to open lock file: ' . basename( $lock_file ) );
         }
         $locked = $fp && flock( $fp, LOCK_EX );
 

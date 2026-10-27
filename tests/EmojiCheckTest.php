@@ -4,13 +4,13 @@ use PHPUnit\Framework\TestCase;
 
 class EmojiCheckTest extends TestCase {
 
-    private ASW_Emoji_Check $check;
+    private ANTISPAMWIZARD_Emoji_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
         global $wp_options;
         $wp_options = array();
-        $this->check = new ASW_Emoji_Check();
+        $this->check = new ANTISPAMWIZARD_Emoji_Check();
     }
 
     protected function tearDown(): void {
@@ -58,14 +58,14 @@ class EmojiCheckTest extends TestCase {
     }
 
     public function test_custom_threshold(): void {
-        ASW_Settings::update( array( 'emoji_max' => 10 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'emoji_max' => 10 ) );
         $result = $this->check->check( $this->make_comment( 'Wow! 😀👍🎉🔥💯' ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'emoji 5/10', $result->get_details() );
     }
 
     public function test_disabled_check_returns_not_spam(): void {
-        ASW_Settings::update( array( 'emoji_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'emoji_enabled' => false ) );
         $result = $this->check->check( $this->make_comment( '😀😀😀😀😀😀😀😀😀😀' ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'check disabled', $result->get_details() );
@@ -78,7 +78,7 @@ class EmojiCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 
     public function test_misc_symbols_counted(): void {

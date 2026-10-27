@@ -4,13 +4,13 @@ use PHPUnit\Framework\TestCase;
 
 class SpacingCheckTest extends TestCase {
 
-    private ASW_Spacing_Check $check;
+    private ANTISPAMWIZARD_Spacing_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
         global $wp_options;
         $wp_options = array();
-        $this->check = new ASW_Spacing_Check();
+        $this->check = new ANTISPAMWIZARD_Spacing_Check();
     }
 
     protected function tearDown(): void {
@@ -53,7 +53,7 @@ class SpacingCheckTest extends TestCase {
     }
 
     public function test_disabled_check(): void {
-        ASW_Settings::update( array( 'spacing_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'spacing_enabled' => false ) );
         $result = $this->check->check( $this->make_comment( 'п р и в е т к а к д е л а' ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'check disabled', $result->get_details() );
@@ -79,7 +79,7 @@ class SpacingCheckTest extends TestCase {
 
     public function test_custom_thresholds(): void {
         // Set very permissive thresholds so spaced text passes.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'spacing_space_ratio'      => 5.0,
             'spacing_short_word_ratio' => 1.0,
         ) );
@@ -88,7 +88,7 @@ class SpacingCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 
     public function test_edge_case_no_letters(): void {

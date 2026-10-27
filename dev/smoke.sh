@@ -12,8 +12,8 @@
 #   SCHEMA   the live samples table carries every column/index of DB_VERSION.
 #
 # Fully isolated: runs under a per-run, per-image compose project
-# (asw-smoke-<image>-<pid>) with ephemeral volumes (prefixed
-# asw-smoke-<image>-<pid>_*), no published host ports, and a teardown trap that
+# (antispamwizard-smoke-<image>-<pid>) with ephemeral volumes (prefixed
+# antispamwizard-smoke-<image>-<pid>_*), no published host ports, and a teardown trap that
 # runs `down -v` on success or failure — the user's persistent dev env (project
 # antispam-wizard_*) is never read or destroyed. Deriving the project from the
 # image *and* this process's PID means no two runs — different images, or two
@@ -36,11 +36,11 @@ cd "$ROOT_DIR"
 # Per-run, per-image compose project: sanitize the image ref (lowercase, any run
 # of non-alphanumeric chars → a single "-") and append this process's PID so each
 # WORDPRESS_IMAGE — and each concurrent invocation of it — gets its own isolated
-# volumes/containers/network, e.g. asw-smoke-6-4-php8-1-apache-12345. The PID
+# volumes/containers/network, e.g. antispamwizard-smoke-6-4-php8-1-apache-12345. The PID
 # component stops two same-image runs on one Docker daemon (parallel CI jobs, or
 # two local runs) from sharing a project and tearing down each other's stack.
 PROJECT_SLUG="$(printf '%s' "$WORDPRESS_IMAGE" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
-PROJECT="asw-smoke-${PROJECT_SLUG}-$$"
+PROJECT="antispamwizard-smoke-${PROJECT_SLUG}-$$"
 
 # Expected core major.minor: the leading token of WORDPRESS_IMAGE before the
 # first "-", reduced to its first two dot-components (e.g. "6.4" from
@@ -53,13 +53,13 @@ EXPECTED_WP_TOKEN="${WORDPRESS_IMAGE%%-*}"
 EXPECTED_WP_VERSION="$(printf '%s' "$EXPECTED_WP_TOKEN" | cut -d. -f1,2)"
 SERVICE="wordpress"
 DEBUG_LOG="/var/www/html/wp-content/debug.log"
-TESTS_MOUNT="/asw-smoke-tests"
+TESTS_MOUNT="/antispamwizard-smoke-tests"
 PLUGIN_PATH_NEEDLE="wp-content/plugins/antispam-wizard"
 
 # Inline override: enable debug logging, drop published ports (exec-only access),
 # and mount the smoke test scripts into the container. The base docker-compose.yml
 # is never mutated.
-OVERRIDE="$(mktemp -t asw-smoke-override.XXXXXX.yml)"
+OVERRIDE="$(mktemp -t antispamwizard-smoke-override.XXXXXX.yml)"
 cat > "$OVERRIDE" <<YAML
 services:
   wordpress:
@@ -156,7 +156,7 @@ done
 echo "Installing throwaway WordPress site..."
 wpcli core install \
   --url="http://localhost" \
-  --title="ASW Smoke" \
+  --title="AntiSpam Wizard Smoke" \
   --admin_user="admin" \
   --admin_password="admin" \
   --admin_email="admin@example.com" \
@@ -174,7 +174,7 @@ echo "Asserting WP core version matches the requested image (expected ${EXPECTED
 # the command substitution and exit the script silently, bypassing the actionable
 # diagnostic below. Capture stderr to a temp file so the underlying error is
 # surfaced in the failure message instead of discarded.
-CORE_VERSION_ERR="$(mktemp -t asw-smoke-coreversion.XXXXXX)"
+CORE_VERSION_ERR="$(mktemp -t antispamwizard-smoke-coreversion.XXXXXX)"
 if ! ACTUAL_WP_VERSION="$(wpcli core version 2>"$CORE_VERSION_ERR" | tr -d '\r' | tr -d '[:space:]')"; then
   CORE_VERSION_DIAG="$(sed 's/^/    /' "$CORE_VERSION_ERR")"
   rm -f "$CORE_VERSION_ERR"
@@ -197,9 +197,9 @@ echo "  - activation exit 0"
 # --- CF7 setup: install/activate Contact Form 7 (soft dependency) -----------
 echo "CF7: attempting to install Contact Form 7..."
 CF7_AVAILABLE=0
-CF7_SKIP="${ASW_SMOKE_SKIP_CF7:-}"
+CF7_SKIP="${ANTISPAMWIZARD_SMOKE_SKIP_CF7:-}"
 if [ -n "$CF7_SKIP" ] && [ "$CF7_SKIP" != "0" ]; then
-  echo "SKIP: CF7 smoke skipped via ASW_SMOKE_SKIP_CF7 — proving inert path."
+  echo "SKIP: CF7 smoke skipped via ANTISPAMWIZARD_SMOKE_SKIP_CF7 — proving inert path."
 else
   if wpcli plugin is-installed contact-form-7 >/dev/null 2>&1; then
     if wpcli plugin is-active contact-form-7 >/dev/null 2>&1; then
@@ -247,14 +247,14 @@ require_once ABSPATH . 'wp-admin/includes/plugin.php';
 require_once ABSPATH . 'wp-admin/includes/template.php';
 require_once ABSPATH . 'wp-admin/includes/screen.php';
 
-if ( ! class_exists( 'ASW_Admin_Page' ) ) {
-    fwrite( STDERR, "admin-check: FAIL ASW_Admin_Page missing — plugin not loaded?\n" );
+if ( ! class_exists( 'ANTISPAMWIZARD_Admin_Page' ) ) {
+    fwrite( STDERR, "admin-check: FAIL ANTISPAMWIZARD_Admin_Page missing — plugin not loaded?\n" );
     exit( 1 );
 }
 
 // Derive the page slugs from the plugin's canonical constant so the smoke test
 // can never drift from the real submenu set.
-$slugs = array_values( ASW_Admin_Page::SUBMENU_SLUGS );
+$slugs = array_values( ANTISPAMWIZARD_Admin_Page::SUBMENU_SLUGS );
 
 $admins = get_users( array( 'role' => 'administrator', 'number' => 1 ) );
 $uid    = $admins ? (int) $admins[0]->ID : 1;
@@ -264,7 +264,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
     exit( 1 );
 }
 
-$admin_page = new ASW_Admin_Page();
+$admin_page = new ANTISPAMWIZARD_Admin_Page();
 $admin_page->init();
 do_action( 'admin_menu' );
 
@@ -329,7 +329,7 @@ if ! wpcli eval-file "${TESTS_MOUNT}/shadow-check.php"; then
 fi
 
 # --- SCHEMA assertion: the samples-table DDL really landed --------------------
-# Activation stamps asw_samples_db_version only after schema_is_current() confirms
+# Activation stamps antispamwizard_samples_db_version only after schema_is_current() confirms
 # the layout against the live database, and that probe is the one part of the
 # plugin that cannot be exercised by the unit suite's $wpdb stub: dbDelta() has to
 # produce the real ALTERs and MySQL has to answer the real SHOW COLUMNS/SHOW INDEX.
@@ -344,26 +344,26 @@ ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
 global $wpdb;
 
-if ( ! class_exists( 'ASW_Sample_Repository' ) ) {
-    fwrite( STDERR, "schema-check: FAIL ASW_Sample_Repository missing — plugin not loaded?\n" );
+if ( ! class_exists( 'ANTISPAMWIZARD_Sample_Repository' ) ) {
+    fwrite( STDERR, "schema-check: FAIL ANTISPAMWIZARD_Sample_Repository missing — plugin not loaded?\n" );
     exit( 1 );
 }
 
-$repo     = new ASW_Sample_Repository( $wpdb );
+$repo     = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 $table    = $repo->get_table_name();
 $failures = array();
 
 // These two loops exist only to name *which* key is missing -- the
 // schema_is_current() call below is the authoritative verdict. Keep the
-// "absent" test identical to ASW_Sample_Repository::probe_versioned_schema(),
+// "absent" test identical to ANTISPAMWIZARD_Sample_Repository::probe_versioned_schema(),
 // or a divergence here reports a passing column against a failing verdict.
-foreach ( ASW_Sample_Repository::VERSIONED_COLUMNS as $column ) {
+foreach ( ANTISPAMWIZARD_Sample_Repository::VERSIONED_COLUMNS as $column ) {
     $found = $wpdb->get_var( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $table, $wpdb->esc_like( $column ) ) );
     if ( null === $found || '' === (string) $found ) {
         $failures[] = 'missing column ' . $column;
     }
 }
-foreach ( ASW_Sample_Repository::VERSIONED_INDEXES as $index ) {
+foreach ( ANTISPAMWIZARD_Sample_Repository::VERSIONED_INDEXES as $index ) {
     $found = $wpdb->get_var( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, $index ) );
     if ( null === $found || '' === (string) $found ) {
         $failures[] = 'missing index ' . $index;
@@ -373,9 +373,9 @@ if ( ! $repo->schema_is_current() ) {
     $failures[] = 'schema_is_current() returned false';
 }
 
-$stored = (string) get_option( ASW_Sample_Repository::DB_VERSION_OPTION, '' );
-if ( ASW_Sample_Repository::DB_VERSION !== $stored ) {
-    $failures[] = sprintf( 'stored version %s != DB_VERSION %s', '' === $stored ? '(unset)' : $stored, ASW_Sample_Repository::DB_VERSION );
+$stored = (string) get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '' );
+if ( ANTISPAMWIZARD_Sample_Repository::DB_VERSION !== $stored ) {
+    $failures[] = sprintf( 'stored version %s != DB_VERSION %s', '' === $stored ? '(unset)' : $stored, ANTISPAMWIZARD_Sample_Repository::DB_VERSION );
 }
 
 if ( ! empty( $failures ) ) {
@@ -387,7 +387,7 @@ if ( ! empty( $failures ) ) {
 }
 
 // Now the upgrade path, which activation never exercises: register_activation_hook
-// does not fire on a plugin update, so ASW::maybe_upgrade_schema() is what has to
+// does not fire on a plugin update, so ANTISPAMWIZARD::maybe_upgrade_schema() is what has to
 // migrate an existing table -- through a real dbDelta() ALTER, not the unit
 // suite's stub. Roll the live table back to a pre-release layout that carried
 // neither subject key, mark the stored version as behind, and seed a row first:
@@ -411,7 +411,7 @@ $wpdb->insert(
         'created_at'   => current_time( 'mysql' ),
     )
 );
-update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
 if ( $repo->schema_is_current() ) {
     fwrite( STDERR, "schema-check: FAIL rollback did not take — the probe cannot be trusted\n" );
@@ -420,14 +420,14 @@ if ( $repo->schema_is_current() ) {
 
 $admins = get_users( array( 'role' => 'administrator', 'number' => 1 ) );
 wp_set_current_user( $admins ? (int) $admins[0]->ID : 1 );
-ASW::get_instance()->maybe_upgrade_schema();
+ANTISPAMWIZARD::get_instance()->maybe_upgrade_schema();
 
 if ( ! $repo->schema_is_current() ) {
     fwrite( STDERR, "schema-check: FAIL dbDelta() did not restore the DB_VERSION layout on an existing table\n" );
     exit( 1 );
 }
-$stored = (string) get_option( ASW_Sample_Repository::DB_VERSION_OPTION, '' );
-if ( ASW_Sample_Repository::DB_VERSION !== $stored ) {
+$stored = (string) get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '' );
+if ( ANTISPAMWIZARD_Sample_Repository::DB_VERSION !== $stored ) {
     fwrite( STDERR, sprintf( "schema-check: FAIL upgrade left the version at %s\n", '' === $stored ? '(unset)' : $stored ) );
     exit( 1 );
 }
@@ -442,7 +442,7 @@ if ( 0 !== $survivors ) {
     exit( 1 );
 }
 
-echo "schema-check: OK — DB_VERSION " . ASW_Sample_Repository::DB_VERSION . " confirmed on the live table, on activation and after an upgrade from a table without the subject keys\n";
+echo "schema-check: OK — DB_VERSION " . ANTISPAMWIZARD_Sample_Repository::DB_VERSION . " confirmed on the live table, on activation and after an upgrade from a table without the subject keys\n";
 exit( 0 );
 PHP
 
@@ -461,7 +461,7 @@ echo "LOADS A: scanning debug.log for plugin-attributable problems..."
 # Emit a sentinel so we can tell a genuinely clean boot apart from one where
 # debug logging never engaged — otherwise an empty/absent debug.log would let
 # LOADS A pass vacuously, defeating the whole point of the scan.
-SENTINEL="ASW_SMOKE_DEBUG_SENTINEL"
+SENTINEL="ANTISPAMWIZARD_SMOKE_DEBUG_SENTINEL"
 wpcli eval "ini_set('log_errors','1'); ini_set('error_log', WP_CONTENT_DIR . '/debug.log'); error_log('${SENTINEL}');" >/dev/null 2>&1 || true
 
 DEBUG_CONTENT="$(dc_exec sh -c "cat '$DEBUG_LOG' 2>/dev/null" || true)"

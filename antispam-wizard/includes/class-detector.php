@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Runs registered spam checks against comment data and integrates with WordPress comment flow.
  */
-class ASW_Detector {
+class ANTISPAMWIZARD_Detector {
 
     /**
      * Maximum comment length in characters (64 KB).
@@ -20,14 +20,14 @@ class ASW_Detector {
      */
     const MAX_COMMENT_LENGTH = 65536;
 
-    /** @var ASW_Check[]|null */
+    /** @var ANTISPAMWIZARD_Check[]|null */
     private $checks;
 
     /** @var callable|null */
     private $checks_builder;
 
     /**
-     * @param ASW_Check[]|callable $checks Array of check instances or a callable that returns them.
+     * @param ANTISPAMWIZARD_Check[]|callable $checks Array of check instances or a callable that returns them.
      */
     public function __construct( $checks ) {
         if ( is_callable( $checks ) ) {
@@ -41,7 +41,7 @@ class ASW_Detector {
     /**
      * Get checks, building them lazily if a builder was provided.
      *
-     * @return ASW_Check[]
+     * @return ANTISPAMWIZARD_Check[]
      */
     private function get_checks(): array {
         if ( null === $this->checks ) {
@@ -58,7 +58,7 @@ class ASW_Detector {
      * it is logged and skipped (fail-open).
      *
      * @param array $comment_data WordPress comment data array.
-     * @return ASW_Check_Result[] Array of results from all checks.
+     * @return ANTISPAMWIZARD_Check_Result[] Array of results from all checks.
      */
     public function run( array $comment_data ): array {
         $results = array();
@@ -128,7 +128,7 @@ class ASW_Detector {
      * compiled default is '?', but mbstring.substitute_character is a
      * process-wide runtime setting any other plugin can change with
      * mb_substitute_character(): given a letter codepoint (e.g. 65) a stray byte
-     * in a Cyrillic body becomes 'A', which makes ASW_Multi_Lang_Check see
+     * in a Cyrillic body becomes 'A', which makes ANTISPAMWIZARD_Multi_Lang_Check see
      * Latin + Cyrillic and flag a legitimate single-script comment. (The named
      * settings are all safe: 'none' drops the invalid bytes outright, and
      * 'long' and 'entity' both fall back to '?' for this conversion; only a
@@ -162,7 +162,7 @@ class ASW_Detector {
      */
     public function evaluate( array $data ): array {
         // Global kill switch — skip all checks when plugin is disabled.
-        if ( ! ASW_Settings::get( 'enabled' ) ) {
+        if ( ! ANTISPAMWIZARD_Settings::get( 'enabled' ) ) {
             return array(
                 'is_spam'     => false,
                 'check_names' => array(),
@@ -176,7 +176,7 @@ class ASW_Detector {
         // subject, so one stray byte anywhere in attacker-controlled text (the
         // comment body, or a Contact Form 7 field joined into it) would otherwise
         // switch off Emoji, Spacing, Bayesian and Similarity at once, blank the
-        // Stop Words obfuscation stripping and make ASW_Script_Detector::detect()
+        // Stop Words obfuscation stripping and make ANTISPAMWIZARD_Script_Detector::detect()
         // return 'unknown'. This is the single choke point both the comment and
         // the CF7 path pass through, so sanitizing here covers every check.
         // sanitize_utf8() substitutes the invalid sequences with '?', which
@@ -273,7 +273,7 @@ class ASW_Detector {
         $excerpt = isset( $data['comment_content'] ) && is_string( $data['comment_content'] )
             ? $data['comment_content']
             : '';
-        $entry_id = ASW_Spam_Log::add_entry(
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry(
             $excerpt,
             $check_names,
             $ip_hash
@@ -284,15 +284,15 @@ class ASW_Detector {
         // Capture $entry_id so the correct log row is updated even under concurrent requests.
         $sanitized_reasons = array_map( 'wp_strip_all_tags', $reasons );
         $save_reason = function ( $comment_id ) use ( $sanitized_reasons, $entry_id, &$save_reason ) {
-            update_comment_meta( $comment_id, '_asw_reason', implode( '; ', $sanitized_reasons ) );
-            ASW_Shadow_Display::record_flag( (int) $comment_id );
-            ASW_Spam_Log::update_entry_comment_id( $entry_id, (int) $comment_id );
+            update_comment_meta( $comment_id, '_antispamwizard_reason', implode( '; ', $sanitized_reasons ) );
+            ANTISPAMWIZARD_Shadow_Display::record_flag( (int) $comment_id );
+            ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, (int) $comment_id );
             remove_action( 'comment_post', $save_reason );
         };
         add_action( 'comment_post', $save_reason );
 
         // Record statistics.
-        ASW_Stats::record( $check_names );
+        ANTISPAMWIZARD_Stats::record( $check_names );
 
         return 'spam';
     }

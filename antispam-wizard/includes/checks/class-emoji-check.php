@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Checks comment text for excessive emoji usage.
  */
-class ASW_Emoji_Check implements ASW_Check {
+class ANTISPAMWIZARD_Emoji_Check implements ANTISPAMWIZARD_Check {
 
     /**
      * Unicode emoji regex pattern.
@@ -33,25 +33,25 @@ class ASW_Emoji_Check implements ASW_Check {
      * Run the emoji check against comment data.
      *
      * @param array $comment_data WordPress comment data array.
-     * @return ASW_Check_Result
+     * @return ANTISPAMWIZARD_Check_Result
      */
-    public function check( array $comment_data ): ASW_Check_Result {
-        $settings = ASW_Settings::get_all();
+    public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
+        $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['emoji_enabled'] ) ) {
-            return new ASW_Check_Result( false, 'emoji', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'emoji', __( 'check disabled', 'antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ASW_Check_Result( false, 'emoji', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'emoji', __( 'empty comment', 'antispam-wizard' ) );
         }
 
         $max_emoji = (int) $settings['emoji_max'];
         $count     = self::count_emoji( $text );
 
         if ( $count > $max_emoji ) {
-            return new ASW_Check_Result(
+            return new ANTISPAMWIZARD_Check_Result(
                 true,
                 'emoji',
                 // translators: 1: Number of emoji found, 2: Configured maximum.
@@ -59,7 +59,7 @@ class ASW_Emoji_Check implements ASW_Check {
             );
         }
 
-        return new ASW_Check_Result(
+        return new ANTISPAMWIZARD_Check_Result(
             false,
             'emoji',
             // translators: 1: Number of emoji found, 2: Configured maximum.

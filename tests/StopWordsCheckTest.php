@@ -4,13 +4,13 @@ use PHPUnit\Framework\TestCase;
 
 class StopWordsCheckTest extends TestCase {
 
-    private ASW_Stop_Words_Check $check;
+    private ANTISPAMWIZARD_Stop_Words_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
         global $wp_options;
         $wp_options = array();
-        $this->check = new ASW_Stop_Words_Check();
+        $this->check = new ANTISPAMWIZARD_Stop_Words_Check();
     }
 
     protected function tearDown(): void {
@@ -20,7 +20,7 @@ class StopWordsCheckTest extends TestCase {
     }
 
     private function set_stop_words( array $words, bool $enabled = true ): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_enabled' => $enabled,
             'stop_words_list'    => $words,
         ) );
@@ -129,7 +129,7 @@ class StopWordsCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 
     // --- Script-aware stop words tests ---
@@ -137,7 +137,7 @@ class StopWordsCheckTest extends TestCase {
     public function test_script_aware_detects_cyrillic_stop_word(): void {
         // User has no custom stop words, but script-aware mode adds Cyrillic defaults.
         $this->set_stop_words( array() );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'Играйте в виагра онлайн' ) );
         $this->assertTrue( $result->is_spam() );
         $this->assertSame( 'виагра', $result->get_details() );
@@ -145,7 +145,7 @@ class StopWordsCheckTest extends TestCase {
 
     public function test_script_aware_detects_cjk_stop_word(): void {
         $this->set_stop_words( array() );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( '欢迎来到赌场游戏' ) );
         $this->assertTrue( $result->is_spam() );
         $this->assertSame( '赌场', $result->get_details() );
@@ -153,7 +153,7 @@ class StopWordsCheckTest extends TestCase {
 
     public function test_script_aware_detects_arabic_stop_word(): void {
         $this->set_stop_words( array() );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'العب في كازينو اليوم' ) );
         $this->assertTrue( $result->is_spam() );
         $this->assertSame( 'كازينو', $result->get_details() );
@@ -161,7 +161,7 @@ class StopWordsCheckTest extends TestCase {
 
     public function test_script_aware_detects_devanagari_stop_word(): void {
         $this->set_stop_words( array() );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'यहां मुफ्त में खेलो' ) );
         $this->assertTrue( $result->is_spam() );
         $this->assertSame( 'मुफ्त', $result->get_details() );
@@ -170,7 +170,7 @@ class StopWordsCheckTest extends TestCase {
     public function test_script_aware_merges_user_custom_words(): void {
         // User has custom word, script-aware also adds defaults.
         $this->set_stop_words( array( 'my_custom_spam' ) );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'This contains my_custom_spam text' ) );
         $this->assertTrue( $result->is_spam() );
         $this->assertSame( 'my_custom_spam', $result->get_details() );
@@ -179,7 +179,7 @@ class StopWordsCheckTest extends TestCase {
     public function test_script_aware_user_words_apply_to_all_scripts(): void {
         // Custom stop word should still match even for non-Latin text.
         $this->set_stop_words( array( 'спам' ) );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'Это СПАМ сообщение' ) );
         $this->assertTrue( $result->is_spam() );
     }
@@ -187,14 +187,14 @@ class StopWordsCheckTest extends TestCase {
     public function test_script_aware_no_script_words_fallback(): void {
         // Greek has no script-specific defaults, but user words still apply.
         $this->set_stop_words( array( 'spam' ) );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'Ελληνικά spam κείμενο' ) );
         $this->assertTrue( $result->is_spam() );
     }
 
     public function test_script_aware_clean_text_passes(): void {
         $this->set_stop_words( array() );
-        $check  = new ASW_Stop_Words_Check( true );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( true );
         $result = $check->check( $this->make_comment( 'Обычный нормальный комментарий без спама' ) );
         $this->assertFalse( $result->is_spam() );
     }
@@ -202,7 +202,7 @@ class StopWordsCheckTest extends TestCase {
     public function test_non_script_aware_mode_unchanged(): void {
         // Without script_aware, Cyrillic defaults should NOT be added.
         $this->set_stop_words( array() );
-        $check  = new ASW_Stop_Words_Check( false );
+        $check  = new ANTISPAMWIZARD_Stop_Words_Check( false );
         $result = $check->check( $this->make_comment( 'Играйте в виагра онлайн' ) );
         $this->assertFalse( $result->is_spam() );
     }

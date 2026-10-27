@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Registers and renders the AntiSpam Wizard admin settings page.
  */
-class ASW_Admin_Page {
+class ANTISPAMWIZARD_Admin_Page {
 
     /** The plugin's website; the Plugin URI header and readme.txt carry the same address. */
     public const WEBSITE_URL = 'https://antispamwizard.com/';
@@ -20,11 +20,11 @@ class ASW_Admin_Page {
     /** The public source repository and issue tracker, linked from the Plugins screen row. */
     public const SOURCE_URL = 'https://github.com/HawkeyePierce89/antispam-wizard';
 
-    const NONCE_ACTION = 'asw_save_settings';
-    const NONCE_FIELD  = 'asw_nonce';
-    const AJAX_NONCE   = 'asw_stop_words';
-    const EXCLUDED_TOKENS_NONCE = 'asw_excluded_tokens';
-    const MARK_NONCE   = 'asw_mark_comment';
+    const NONCE_ACTION = 'antispamwizard_save_settings';
+    const NONCE_FIELD  = 'antispamwizard_nonce';
+    const AJAX_NONCE   = 'antispamwizard_stop_words';
+    const EXCLUDED_TOKENS_NONCE = 'antispamwizard_excluded_tokens';
+    const MARK_NONCE   = 'antispamwizard_mark_comment';
     const IMPORT_MAX_ENTRIES = 10000;
 
     const SUBMENU_SLUGS = array(
@@ -61,11 +61,11 @@ class ASW_Admin_Page {
         add_action( 'admin_init', array( $this, 'handle_clear_log' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
         add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
-        add_action( 'wp_ajax_asw_add_stop_word', array( $this, 'ajax_add_stop_word' ) );
-        add_action( 'wp_ajax_asw_remove_stop_word', array( $this, 'ajax_remove_stop_word' ) );
-        add_action( 'wp_ajax_asw_add_excluded_token', array( $this, 'ajax_add_excluded_token' ) );
-        add_action( 'wp_ajax_asw_remove_excluded_token', array( $this, 'ajax_remove_excluded_token' ) );
-        add_action( 'wp_ajax_asw_mark_comment', array( $this, 'ajax_mark_comment' ) );
+        add_action( 'wp_ajax_antispamwizard_add_stop_word', array( $this, 'ajax_add_stop_word' ) );
+        add_action( 'wp_ajax_antispamwizard_remove_stop_word', array( $this, 'ajax_remove_stop_word' ) );
+        add_action( 'wp_ajax_antispamwizard_add_excluded_token', array( $this, 'ajax_add_excluded_token' ) );
+        add_action( 'wp_ajax_antispamwizard_remove_excluded_token', array( $this, 'ajax_remove_excluded_token' ) );
+        add_action( 'wp_ajax_antispamwizard_mark_comment', array( $this, 'ajax_mark_comment' ) );
     }
 
     /**
@@ -124,19 +124,19 @@ class ASW_Admin_Page {
             return;
         }
         wp_enqueue_style(
-            'asw-admin',
-            ASW_URL . 'admin/css/admin.css',
+            'antispamwizard-admin',
+            ANTISPAMWIZARD_URL . 'admin/css/admin.css',
             array( 'dashicons' ),
-            ASW_VERSION
+            ANTISPAMWIZARD_VERSION
         );
         wp_enqueue_script(
-            'asw-admin',
-            ASW_URL . 'admin/js/admin.js',
+            'antispamwizard-admin',
+            ANTISPAMWIZARD_URL . 'admin/js/admin.js',
             array(),
-            ASW_VERSION,
+            ANTISPAMWIZARD_VERSION,
             true
         );
-        wp_localize_script( 'asw-admin', 'aswAdmin', array(
+        wp_localize_script( 'antispamwizard-admin', 'antispamwizardAdmin', array(
             'ajax_url'             => admin_url( 'admin-ajax.php' ),
             'nonce'                => wp_create_nonce( self::AJAX_NONCE ),
             'excluded_tokens_nonce' => wp_create_nonce( self::EXCLUDED_TOKENS_NONCE ),
@@ -183,7 +183,7 @@ class ASW_Admin_Page {
      * @return array
      */
     public function plugin_row_meta( $links, $plugin_file ) {
-        if ( ! is_array( $links ) || plugin_basename( ASW_FILE ) !== $plugin_file ) {
+        if ( ! is_array( $links ) || plugin_basename( ANTISPAMWIZARD_FILE ) !== $plugin_file ) {
             return $links;
         }
 
@@ -204,15 +204,15 @@ class ASW_Admin_Page {
 
         $brand_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248zM12 18.75a3.75 3.75 0 0 0 1.875-7.001c.21.166.42.34.628.523a.75.75 0 0 0 1.012-.022 6.726 6.726 0 0 0 1.852-2.41 6.752 6.752 0 0 1-7.367 8.91z"/></svg>';
 
-        echo '<div class="wrap asw-admin">';
-        echo '<header class="asw-header"><div class="asw-brand">';
-        echo '<span class="asw-brand-icon">' . $brand_icon . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $brand_icon is the hard-coded inline SVG literal defined above with no dynamic input; escaping would render the markup as visible text.
-        echo '<h1 class="asw-brand-title">' . esc_html__( 'AntiSpam Wizard Settings', 'antispam-wizard' ) . '</h1>';
-        echo '<span class="asw-version">v' . esc_html( ASW_VERSION ) . '</span>';
+        echo '<div class="wrap antispamwizard-admin">';
+        echo '<header class="antispamwizard-header"><div class="antispamwizard-brand">';
+        echo '<span class="antispamwizard-brand-icon">' . $brand_icon . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $brand_icon is the hard-coded inline SVG literal defined above with no dynamic input; escaping would render the markup as visible text.
+        echo '<h1 class="antispamwizard-brand-title">' . esc_html__( 'AntiSpam Wizard Settings', 'antispam-wizard' ) . '</h1>';
+        echo '<span class="antispamwizard-version">v' . esc_html( ANTISPAMWIZARD_VERSION ) . '</span>';
         echo '</div></header>';
 
-        echo '<main class="asw-page-content">';
-        $view_file = ASW_PATH . 'admin/views/settings-' . $current_tab . '.php';
+        echo '<main class="antispamwizard-page-content">';
+        $view_file = ANTISPAMWIZARD_PATH . 'admin/views/settings-' . $current_tab . '.php';
         if ( file_exists( $view_file ) ) {
             include $view_file;
         }
@@ -241,10 +241,10 @@ class ASW_Admin_Page {
 
         if ( 'main' === $tab ) {
             $settings = array( 'enabled' => isset( $_POST['enabled'] ) );
-            ASW_Settings::update( $settings );
+            ANTISPAMWIZARD_Settings::update( $settings );
         } else {
             $settings = array();
-            $defaults = ASW_Settings::get_defaults();
+            $defaults = ANTISPAMWIZARD_Settings::get_defaults();
 
             // Boolean toggles - unchecked checkboxes won't appear in POST.
             $bool_keys = array(
@@ -260,7 +260,7 @@ class ASW_Admin_Page {
                 'similarity_enabled',
                 'shadow_display_enabled',
             );
-            if ( class_exists( 'ASW_CF7_Integration' ) && ASW_CF7_Integration::is_available() ) {
+            if ( class_exists( 'ANTISPAMWIZARD_CF7_Integration' ) && ANTISPAMWIZARD_CF7_Integration::is_available() ) {
                 $bool_keys[] = 'cf7_enabled';
             }
             foreach ( $bool_keys as $key ) {
@@ -279,7 +279,7 @@ class ASW_Admin_Page {
                 'spacing_short_word_len',
                 'min_message_length',
             );
-            $int_bounds = ASW_Settings::get_integer_bounds();
+            $int_bounds = ANTISPAMWIZARD_Settings::get_integer_bounds();
             foreach ( $int_keys as $key ) {
                 $raw     = isset( $_POST[ $key ] ) ? intval( $_POST[ $key ] ) : $defaults[ $key ];
                 $min     = isset( $int_bounds[ $key ] ) ? $int_bounds[ $key ][0] : 1;
@@ -306,7 +306,7 @@ class ASW_Admin_Page {
                     : $defaults[ $key ];
             }
 
-            ASW_Settings::update( $settings );
+            ANTISPAMWIZARD_Settings::update( $settings );
         }
 
         $redirect_url = add_query_arg(
@@ -316,7 +316,7 @@ class ASW_Admin_Page {
         wp_safe_redirect( $redirect_url );
 
         // @codeCoverageIgnoreStart
-        if ( ! defined( 'ASW_TESTING' ) ) {
+        if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
             exit;
         }
         // @codeCoverageIgnoreEnd
@@ -363,14 +363,14 @@ class ASW_Admin_Page {
             return;
         }
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         if ( in_array( $word, $list, true ) ) {
             wp_send_json_error( array( 'message' => __( 'Word already exists.', 'antispam-wizard' ) ) );
             return;
         }
 
         $list[] = $word;
-        ASW_Settings::update( array( 'stop_words_list' => $list ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => $list ) );
 
         wp_send_json_success( array( 'message' => __( 'Word added.', 'antispam-wizard' ) ) );
     }
@@ -390,7 +390,7 @@ class ASW_Admin_Page {
         }
 
         $word = isset( $_POST['word'] ) ? sanitize_text_field( wp_unslash( $_POST['word'] ) ) : '';
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $key  = array_search( $word, $list, true );
 
         if ( false === $key ) {
@@ -399,7 +399,7 @@ class ASW_Admin_Page {
         }
 
         array_splice( $list, $key, 1 );
-        ASW_Settings::update( array( 'stop_words_list' => $list ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => $list ) );
 
         wp_send_json_success( array( 'message' => __( 'Word removed.', 'antispam-wizard' ) ) );
     }
@@ -430,14 +430,14 @@ class ASW_Admin_Page {
             return;
         }
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         if ( in_array( $token, $list, true ) ) {
             wp_send_json_error( array( 'message' => __( 'Token already exists.', 'antispam-wizard' ) ) );
             return;
         }
 
         $list[] = $token;
-        ASW_Settings::update( array( 'excluded_tokens_list' => $list ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => $list ) );
 
         wp_send_json_success( array( 'message' => __( 'Token added.', 'antispam-wizard' ) ) );
     }
@@ -458,7 +458,7 @@ class ASW_Admin_Page {
 
         $token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
         $token = mb_strtolower( $token, 'UTF-8' );
-        $list  = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list  = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $key   = array_search( $token, $list, true );
 
         if ( false === $key ) {
@@ -467,7 +467,7 @@ class ASW_Admin_Page {
         }
 
         array_splice( $list, $key, 1 );
-        ASW_Settings::update( array( 'excluded_tokens_list' => $list ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => $list ) );
 
         wp_send_json_success( array( 'message' => __( 'Token removed.', 'antispam-wizard' ) ) );
     }
@@ -510,14 +510,14 @@ class ASW_Admin_Page {
         $content = trim( null !== $normalized ? $normalized : $content );
 
         // Detect the script group of the comment content.
-        $script       = ASW_Script_Detector::detect( $content );
+        $script       = ANTISPAMWIZARD_Script_Detector::detect( $content );
         $content_hash = hash( 'sha256', $content );
         $opposite     = ( 'spam' === $category ) ? 'ham' : 'spam';
 
         // Store sample in the database via Sample_Repository.
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
 
-        // Serialise the claim and the sample write against ASW_Moderation's
+        // Serialise the claim and the sample write against ANTISPAMWIZARD_Moderation's
         // transition writer and against any other request training the same text:
         // insert() and delete_by_hash() address rows by (script, category,
         // content_hash), so two requests carrying identical bodies -- routine for
@@ -525,14 +525,14 @@ class ASW_Admin_Page {
         // their category and then delete the other's.
         //
         // The status change further down must stay *outside* the lock: it fires
-        // transition_comment_status, ASW_Moderation's handler takes this same lock
+        // transition_comment_status, ANTISPAMWIZARD_Moderation's handler takes this same lock
         // through a second file handle, and flock() locks an open file description
         // rather than a process, so holding it across the call would deadlock.
-        $claim = ASW_Moderation::with_body_lock(
+        $claim = ANTISPAMWIZARD_Moderation::with_body_lock(
             $content,
             function () use ( $comment, $comment_id, $category, $content, $script, $repository ) {
                 // Atomically claim the training slot under lock to prevent duplicate training.
-                $mark_result = ASW_Spam_Log::mark_trained( $comment_id, $category );
+                $mark_result = ANTISPAMWIZARD_Spam_Log::mark_trained( $comment_id, $category );
                 if ( 'ok' !== $mark_result ) {
                     return $mark_result;
                 }
@@ -549,7 +549,7 @@ class ASW_Admin_Page {
                 // comment_id alone would then no longer reach the stored text. Never the
                 // raw address -- the same salted hash the form spam-log entries carry.
                 $author_email = isset( $comment->comment_author_email ) ? (string) $comment->comment_author_email : '';
-                $email_hash   = ASW_Detector::hash_email( $author_email );
+                $email_hash   = ANTISPAMWIZARD_Detector::hash_email( $author_email );
 
                 $insert_result = $repository->insert( $script, $category, $content, $comment_id, $email_hash );
 
@@ -610,20 +610,20 @@ class ASW_Admin_Page {
         // presenting the comment to its author -- including the common case of
         // confirming a comment the plugin already put in the spam queue, and a
         // Ham verdict that restores a trashed comment, neither of which fires the
-        // overruling transition ASW_Shadow_Display watches.
+        // overruling transition ANTISPAMWIZARD_Shadow_Display watches.
         if ( $status_changed ) {
-            ASW_Shadow_Display::forget_verdict( $comment_id );
+            ANTISPAMWIZARD_Shadow_Display::forget_verdict( $comment_id );
         }
 
         // Leave the text stored under exactly one category, and release the claim
         // if the status change failed. Both run under the body lock again, which
         // could not be held across the status change above.
-        $outcome = ASW_Moderation::with_body_lock(
+        $outcome = ANTISPAMWIZARD_Moderation::with_body_lock(
             $content,
             function () use ( $status_changed, $repository, $script, $category, $opposite, $content_hash, $comment_id ) {
                 // The same text must never be stored as both spam and ham: the
                 // classifier would then count it as evidence for and against at
-                // once, which is the state ASW_Moderation's flip delete exists to
+                // once, which is the state ANTISPAMWIZARD_Moderation's flip delete exists to
                 // prevent. The transition the status change above fires reconciles
                 // that itself, but it does not fire when the comment is already at
                 // the target status -- the common case on this screen, where the
@@ -638,7 +638,7 @@ class ASW_Admin_Page {
                 //
                 // The lock could not be held across the status change, so this
                 // section is a second acquisition: another moderation of the same
-                // text -- ASW_Moderation handling a transition, or a second pill --
+                // text -- ANTISPAMWIZARD_Moderation handling a transition, or a second pill --
                 // can have committed the opposite category in between, inserting
                 // its row and deleting with its own flip the row this request
                 // stored. Deleting the opposite unconditionally would then leave
@@ -656,7 +656,7 @@ class ASW_Admin_Page {
                 // would re-open the very "trained as neither" race this re-read
                 // exists to close. That leaves at most a contradiction standing, and
                 // the next moderation of either comment clears it, since
-                // ASW_Moderation::training_is_settled() refuses a claim whose
+                // ANTISPAMWIZARD_Moderation::training_is_settled() refuses a claim whose
                 // opposite row is present.
                 $stored  = $repository->find_categories_by_hash( $script, $content_hash );
                 $flip_ok = true;
@@ -669,7 +669,7 @@ class ASW_Admin_Page {
                 if ( ! $status_changed ) {
                     // The claim goes back so the moderator's retry can take it
                     // again, but the stored sample is deliberately *kept* -- the
-                    // same rule ASW_Moderation::roll_back_claim() follows, which
+                    // same rule ANTISPAMWIZARD_Moderation::roll_back_claim() follows, which
                     // never deletes the row its own commit inserted either.
                     //
                     // The sample table is deduplicated by content, so that row is
@@ -736,8 +736,8 @@ class ASW_Admin_Page {
             return;
         }
 
-        $script_label = ( 'unknown' !== $script && isset( ASW_Script_Detector::SCRIPT_GROUPS[ $script ] ) )
-            ? ASW_Script_Detector::SCRIPT_GROUPS[ $script ]
+        $script_label = ( 'unknown' !== $script && isset( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS[ $script ] ) )
+            ? ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS[ $script ]
             : __( 'Legacy', 'antispam-wizard' );
 
         wp_send_json_success( array(
@@ -762,7 +762,7 @@ class ASW_Admin_Page {
      * recorded in the _wp_trash_meta_status meta, falling back to '0'. For a
      * spam comment that is never 'spam' again, but trashing a comment from the
      * spam queue records exactly 'spam', so restoring it would put the comment
-     * back in the queue -- training spam through ASW_Moderation over the ham this
+     * back in the queue -- training spam through ANTISPAMWIZARD_Moderation over the ham this
      * request just stored. A trashed comment whose recorded status is 'spam' is
      * therefore restored as unapproved, and the recorded status is put back if
      * the restore is refused. A comment already out of the spam queue is left
@@ -801,7 +801,7 @@ class ASW_Admin_Page {
             if ( 'spam' !== (string) get_comment_meta( $comment_id, '_wp_trash_meta_status', true ) ) {
                 // The id is an int and carries no user input.
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: a refused rollback silently changes where the comment's own Restore puts it.
-                error_log( 'ASW: trash status rollback failed for comment ' . $comment_id );
+                error_log( 'ANTISPAMWIZARD: trash status rollback failed for comment ' . $comment_id );
             }
         }
         return false;
@@ -817,22 +817,22 @@ class ASW_Admin_Page {
      * pill offers a retry, but mark_trained() refuses an entry that already
      * carries a category, so every later click answers 'already_trained'. There
      * is no second write to attempt either, the option store being what just
-     * refused one, so it is logged exactly as ASW_Moderation::roll_back_claim()
+     * refused one, so it is logged exactly as ANTISPAMWIZARD_Moderation::roll_back_claim()
      * logs its own. What recovers it is the verification in
-     * ASW_Moderation::commit_training(): the next moderation of this comment
+     * ANTISPAMWIZARD_Moderation::commit_training(): the next moderation of this comment
      * reads 'already_trained', finds no sample behind the flag and trains anyway.
      *
      * @param int $comment_id The comment whose claim is being cleared.
      * @return bool False when the write was refused.
      */
     private static function clear_training_claim( int $comment_id ): bool {
-        if ( ASW_Spam_Log::unmark_trained( $comment_id ) ) {
+        if ( ANTISPAMWIZARD_Spam_Log::unmark_trained( $comment_id ) ) {
             return true;
         }
 
         // The id is an int and carries no user input.
         // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: a refused rollback silently blocks all further training of one comment from this screen, which is otherwise invisible.
-        error_log( 'ASW: training rollback failed for comment ' . $comment_id );
+        error_log( 'ANTISPAMWIZARD: training rollback failed for comment ' . $comment_id );
         return false;
     }
 
@@ -856,12 +856,12 @@ class ASW_Admin_Page {
      * Handle stop-words import from file upload or textarea.
      */
     public function handle_stop_words_import(): void {
-        if ( ! isset( $_POST['asw_import'] ) ) {
+        if ( ! isset( $_POST['antispamwizard_import'] ) ) {
             return;
         }
 
-        if ( ! isset( $_POST['asw_import_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['asw_import_nonce'] ) ), 'asw_import_stop_words' ) ) {
+        if ( ! isset( $_POST['antispamwizard_import_nonce'] )
+            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['antispamwizard_import_nonce'] ) ), 'antispamwizard_import_stop_words' ) ) {
             return;
         }
 
@@ -899,7 +899,7 @@ class ASW_Admin_Page {
             return;
         }
 
-        $list   = ASW_Settings::get( 'stop_words_list', array() );
+        $list   = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $merged = array_values( array_unique( array_merge( $list, $new_words ) ) );
 
         if ( count( $merged ) > self::IMPORT_MAX_ENTRIES ) {
@@ -917,19 +917,19 @@ class ASW_Admin_Page {
             } );
         }
 
-        ASW_Settings::update( array( 'stop_words_list' => $merged ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => $merged ) );
     }
 
     /**
      * Handle stop-words export as text file download.
      */
     public function handle_stop_words_export(): void {
-        if ( ! isset( $_POST['asw_export'] ) ) {
+        if ( ! isset( $_POST['antispamwizard_export'] ) ) {
             return;
         }
 
-        if ( ! isset( $_POST['asw_export_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['asw_export_nonce'] ) ), 'asw_export_stop_words' ) ) {
+        if ( ! isset( $_POST['antispamwizard_export_nonce'] )
+            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['antispamwizard_export_nonce'] ) ), 'antispamwizard_export_stop_words' ) ) {
             return;
         }
 
@@ -937,15 +937,15 @@ class ASW_Admin_Page {
             return;
         }
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
 
         nocache_headers();
         header( 'Content-Type: text/plain; charset=utf-8' );
-        header( 'Content-Disposition: attachment; filename="asw-stop-words.txt"' );
+        header( 'Content-Disposition: attachment; filename="antispamwizard-stop-words.txt"' );
         echo implode( "\n", $list ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Body of a text/plain Content-Disposition: attachment download; entries are sanitized on save and wp_kses() would corrupt the exported bytes.
 
         // @codeCoverageIgnoreStart
-        if ( ! defined( 'ASW_TESTING' ) ) {
+        if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
             exit;
         }
         // @codeCoverageIgnoreEnd
@@ -955,12 +955,12 @@ class ASW_Admin_Page {
      * Handle excluded tokens import from file upload or textarea.
      */
     public function handle_excluded_tokens_import(): void {
-        if ( ! isset( $_POST['asw_import_excluded_tokens'] ) ) {
+        if ( ! isset( $_POST['antispamwizard_import_excluded_tokens'] ) ) {
             return;
         }
 
-        if ( ! isset( $_POST['asw_import_excluded_tokens_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['asw_import_excluded_tokens_nonce'] ) ), 'asw_import_excluded_tokens' ) ) {
+        if ( ! isset( $_POST['antispamwizard_import_excluded_tokens_nonce'] )
+            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['antispamwizard_import_excluded_tokens_nonce'] ) ), 'antispamwizard_import_excluded_tokens' ) ) {
             return;
         }
 
@@ -1009,7 +1009,7 @@ class ASW_Admin_Page {
             return;
         }
 
-        $list   = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list   = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $merged = array_values( array_unique( array_merge( $list, $new_tokens ) ) );
 
         if ( count( $merged ) > self::IMPORT_MAX_ENTRIES ) {
@@ -1027,19 +1027,19 @@ class ASW_Admin_Page {
             } );
         }
 
-        ASW_Settings::update( array( 'excluded_tokens_list' => $merged ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => $merged ) );
     }
 
     /**
      * Handle excluded tokens export as text file download.
      */
     public function handle_excluded_tokens_export(): void {
-        if ( ! isset( $_POST['asw_export_excluded_tokens'] ) ) {
+        if ( ! isset( $_POST['antispamwizard_export_excluded_tokens'] ) ) {
             return;
         }
 
-        if ( ! isset( $_POST['asw_export_excluded_tokens_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['asw_export_excluded_tokens_nonce'] ) ), 'asw_export_excluded_tokens' ) ) {
+        if ( ! isset( $_POST['antispamwizard_export_excluded_tokens_nonce'] )
+            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['antispamwizard_export_excluded_tokens_nonce'] ) ), 'antispamwizard_export_excluded_tokens' ) ) {
             return;
         }
 
@@ -1047,15 +1047,15 @@ class ASW_Admin_Page {
             return;
         }
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
 
         nocache_headers();
         header( 'Content-Type: text/plain; charset=utf-8' );
-        header( 'Content-Disposition: attachment; filename="asw-excluded-tokens.txt"' );
+        header( 'Content-Disposition: attachment; filename="antispamwizard-excluded-tokens.txt"' );
         echo implode( "\n", $list ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Body of a text/plain Content-Disposition: attachment download; entries are sanitized on save and wp_kses() would corrupt the exported bytes.
 
         // @codeCoverageIgnoreStart
-        if ( ! defined( 'ASW_TESTING' ) ) {
+        if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
             exit;
         }
         // @codeCoverageIgnoreEnd
@@ -1065,12 +1065,12 @@ class ASW_Admin_Page {
      * Handle clearing the spam log.
      */
     public function handle_clear_log(): void {
-        if ( ! isset( $_POST['asw_clear_log'] ) ) {
+        if ( ! isset( $_POST['antispamwizard_clear_log'] ) ) {
             return;
         }
 
-        if ( ! isset( $_POST['asw_clear_log_nonce'] )
-            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['asw_clear_log_nonce'] ) ), 'asw_clear_log' ) ) {
+        if ( ! isset( $_POST['antispamwizard_clear_log_nonce'] )
+            || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['antispamwizard_clear_log_nonce'] ) ), 'antispamwizard_clear_log' ) ) {
             return;
         }
 
@@ -1078,12 +1078,12 @@ class ASW_Admin_Page {
             return;
         }
 
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
 
         wp_safe_redirect( self::get_submenu_url( 'log' ) );
 
         // @codeCoverageIgnoreStart
-        if ( ! defined( 'ASW_TESTING' ) ) {
+        if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
             exit;
         }
         // @codeCoverageIgnoreEnd

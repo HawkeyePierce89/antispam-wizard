@@ -24,7 +24,7 @@ class BootstrapStubsTest extends TestCase {
         $wp_is_feed       = false;
         $_REQUEST         = array();
         $_GET             = array();
-        asw_test_reset_comment_query_stubs();
+        antispamwizard_test_reset_comment_query_stubs();
     }
 
     protected function tearDown(): void {
@@ -34,7 +34,7 @@ class BootstrapStubsTest extends TestCase {
         $wp_actions = array();
         $_REQUEST   = array();
         $_GET       = array();
-        asw_test_reset_comment_query_stubs();
+        antispamwizard_test_reset_comment_query_stubs();
     }
 
     /**
@@ -90,7 +90,7 @@ class BootstrapStubsTest extends TestCase {
         );
         $wp_comment_cache[12] = $wp_comments[12];
 
-        asw_test_set_comment_status( 12, 'spam' );
+        antispamwizard_test_set_comment_status( 12, 'spam' );
 
         $this->assertSame( array(), $wp_comment_cache );
         $this->assertSame( 'spam', get_comment( 12 )->comment_approved );
@@ -108,7 +108,7 @@ class BootstrapStubsTest extends TestCase {
         $seen = array();
         $this->listen( $seen );
 
-        $this->assertTrue( asw_test_set_comment_status( 7, 'spam' ) );
+        $this->assertTrue( antispamwizard_test_set_comment_status( 7, 'spam' ) );
 
         $this->assertCount( 1, $seen );
         $this->assertSame( 'spam', $seen[0][0] );
@@ -130,10 +130,10 @@ class BootstrapStubsTest extends TestCase {
         $seen = array();
         $this->listen( $seen );
 
-        asw_test_set_comment_status( 8, 'spam' );
-        asw_test_set_comment_status( 8, 'trash' );
-        asw_test_set_comment_status( 8, '1' );
-        asw_test_set_comment_status( 8, '0' );
+        antispamwizard_test_set_comment_status( 8, 'spam' );
+        antispamwizard_test_set_comment_status( 8, 'trash' );
+        antispamwizard_test_set_comment_status( 8, '1' );
+        antispamwizard_test_set_comment_status( 8, '0' );
 
         $this->assertSame(
             array(
@@ -162,13 +162,13 @@ class BootstrapStubsTest extends TestCase {
         $seen = array();
         $this->listen( $seen );
 
-        $this->assertTrue( asw_test_set_comment_status( 9, 'spam' ) );
+        $this->assertTrue( antispamwizard_test_set_comment_status( 9, 'spam' ) );
         $this->assertSame( array(), $seen );
 
         // '1' and 'approve' both normalize to 'approved', so this is not a change either.
-        asw_test_set_comment_status( 9, '1' );
+        antispamwizard_test_set_comment_status( 9, '1' );
         $seen = array();
-        asw_test_set_comment_status( 9, 'approve' );
+        antispamwizard_test_set_comment_status( 9, 'approve' );
         $this->assertSame( array(), $seen );
     }
 
@@ -224,15 +224,15 @@ class BootstrapStubsTest extends TestCase {
     public function test_delete_comment_meta_can_be_made_to_refuse(): void {
         global $wp_comment_meta;
 
-        $wp_comment_meta[13] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[13] = array( '_antispamwizard_reason' => 'links' );
         $GLOBALS['wp_delete_comment_meta_fails'] = true;
         try {
-            $this->assertFalse( delete_comment_meta( 13, '_asw_reason' ) );
+            $this->assertFalse( delete_comment_meta( 13, '_antispamwizard_reason' ) );
         } finally {
             $GLOBALS['wp_delete_comment_meta_fails'] = false;
         }
-        $this->assertSame( 'links', $wp_comment_meta[13]['_asw_reason'] );
-        $this->assertTrue( delete_comment_meta( 13, '_asw_reason' ) );
+        $this->assertSame( 'links', $wp_comment_meta[13]['_antispamwizard_reason'] );
+        $this->assertTrue( delete_comment_meta( 13, '_antispamwizard_reason' ) );
     }
 
     public function test_update_comment_meta_can_be_made_to_refuse(): void {
@@ -260,7 +260,7 @@ class BootstrapStubsTest extends TestCase {
         $seen = array();
         $this->listen( $seen );
 
-        $this->assertFalse( asw_test_set_comment_status( 4242, 'spam' ) );
+        $this->assertFalse( antispamwizard_test_set_comment_status( 4242, 'spam' ) );
         $this->assertFalse( wp_spam_comment( 4242 ) );
         $this->assertSame( array(), $seen );
     }
@@ -272,7 +272,7 @@ class BootstrapStubsTest extends TestCase {
         try {
             wp_die( 'Nope.', '', array( 'response' => 403 ) );
             $reached_the_end = true;
-        } catch ( ASW_Test_WP_Die_Exception $e ) {
+        } catch ( ANTISPAMWIZARD_Test_WP_Die_Exception $e ) {
             $this->assertSame( 403, $e->response );
             $this->assertSame( 'Nope.', $e->getMessage() );
         }
@@ -284,34 +284,34 @@ class BootstrapStubsTest extends TestCase {
     public function test_check_admin_referer_accepts_a_matching_nonce_and_dies_otherwise(): void {
         global $wp_died, $wp_nonces;
 
-        wp_create_nonce( 'asw_action_5' );
-        $_REQUEST['_wpnonce'] = $wp_nonces['asw_action_5'];
+        wp_create_nonce( 'antispamwizard_action_5' );
+        $_REQUEST['_wpnonce'] = $wp_nonces['antispamwizard_action_5'];
 
-        $this->assertSame( 1, check_admin_referer( 'asw_action_5' ) );
+        $this->assertSame( 1, check_admin_referer( 'antispamwizard_action_5' ) );
         $this->assertSame( array(), $wp_died );
 
         $_REQUEST['_wpnonce'] = 'not-the-nonce';
-        $this->expectException( ASW_Test_WP_Die_Exception::class );
-        check_admin_referer( 'asw_action_5' );
+        $this->expectException( ANTISPAMWIZARD_Test_WP_Die_Exception::class );
+        check_admin_referer( 'antispamwizard_action_5' );
     }
 
     public function test_wp_nonce_url_appends_a_nonce_check_admin_referer_accepts(): void {
         global $wp_nonces;
 
-        $url = wp_nonce_url( 'http://example.com/wp-admin/admin-post.php?action=asw_mark_spam', 'asw_mark_spam_5' );
+        $url = wp_nonce_url( 'http://example.com/wp-admin/admin-post.php?action=antispamwizard_mark_spam', 'antispamwizard_mark_spam_5' );
 
         $this->assertStringContainsString( '&_wpnonce=', $url );
-        $this->assertArrayHasKey( 'asw_mark_spam_5', $wp_nonces );
+        $this->assertArrayHasKey( 'antispamwizard_mark_spam_5', $wp_nonces );
 
         $query = array();
         parse_str( (string) parse_url( $url, PHP_URL_QUERY ), $query );
-        $this->assertSame( 'asw_mark_spam', $query['action'] );
+        $this->assertSame( 'antispamwizard_mark_spam', $query['action'] );
 
         $_REQUEST['_wpnonce'] = $query['_wpnonce'];
-        $this->assertSame( 1, check_admin_referer( 'asw_mark_spam_5' ) );
+        $this->assertSame( 1, check_admin_referer( 'antispamwizard_mark_spam_5' ) );
 
         // A URL with no query string yet gets the '?' separator.
-        $this->assertStringContainsString( '?_wpnonce=', wp_nonce_url( 'http://example.com/', 'asw_mark_spam_6' ) );
+        $this->assertStringContainsString( '?_wpnonce=', wp_nonce_url( 'http://example.com/', 'antispamwizard_mark_spam_6' ) );
     }
 
     public function test_permalink_feed_and_home_url_stubs(): void {
@@ -333,23 +333,23 @@ class BootstrapStubsTest extends TestCase {
         global $wp_transient_reads;
         $wp_transient_reads = array();
 
-        set_transient( 'asw_classifiers_cyrillic_abc', array( 'classifier' => 'x' ) );
+        set_transient( 'antispamwizard_classifiers_cyrillic_abc', array( 'classifier' => 'x' ) );
 
         try {
-            $this->assertIsArray( get_transient( 'asw_classifiers_cyrillic_abc' ) );
-            $this->assertFalse( get_transient( 'asw_classifiers_latin_def' ) );
-            $this->assertIsArray( get_transient( 'asw_classifiers_cyrillic_abc' ) );
+            $this->assertIsArray( get_transient( 'antispamwizard_classifiers_cyrillic_abc' ) );
+            $this->assertFalse( get_transient( 'antispamwizard_classifiers_latin_def' ) );
+            $this->assertIsArray( get_transient( 'antispamwizard_classifiers_cyrillic_abc' ) );
 
             $this->assertSame(
                 array(
-                    'asw_classifiers_cyrillic_abc',
-                    'asw_classifiers_latin_def',
-                    'asw_classifiers_cyrillic_abc',
+                    'antispamwizard_classifiers_cyrillic_abc',
+                    'antispamwizard_classifiers_latin_def',
+                    'antispamwizard_classifiers_cyrillic_abc',
                 ),
                 $wp_transient_reads
             );
         } finally {
-            delete_transient( 'asw_classifiers_cyrillic_abc' );
+            delete_transient( 'antispamwizard_classifiers_cyrillic_abc' );
         }
     }
 
@@ -358,15 +358,15 @@ class BootstrapStubsTest extends TestCase {
         $wpdb->reset_tables();
 
         // ids 1..3 cyrillic, 4 latin, 5 cyrillic.
-        $wpdb->insert( 'wp_asw_samples', array( 'script' => 'cyrillic', 'category' => 'spam' ) );
-        $wpdb->insert( 'wp_asw_samples', array( 'script' => 'cyrillic', 'category' => 'spam' ) );
-        $wpdb->insert( 'wp_asw_samples', array( 'script' => 'cyrillic', 'category' => 'ham' ) );
-        $wpdb->insert( 'wp_asw_samples', array( 'script' => 'latin', 'category' => 'spam' ) );
-        $wpdb->insert( 'wp_asw_samples', array( 'script' => 'cyrillic', 'category' => 'spam' ) );
+        $wpdb->insert( 'wp_antispamwizard_samples', array( 'script' => 'cyrillic', 'category' => 'spam' ) );
+        $wpdb->insert( 'wp_antispamwizard_samples', array( 'script' => 'cyrillic', 'category' => 'spam' ) );
+        $wpdb->insert( 'wp_antispamwizard_samples', array( 'script' => 'cyrillic', 'category' => 'ham' ) );
+        $wpdb->insert( 'wp_antispamwizard_samples', array( 'script' => 'latin', 'category' => 'spam' ) );
+        $wpdb->insert( 'wp_antispamwizard_samples', array( 'script' => 'cyrillic', 'category' => 'spam' ) );
 
         $rows = $wpdb->get_results( $wpdb->prepare(
             'SELECT category, COUNT(*) AS sample_count, MAX(id) AS max_id FROM %i WHERE script = %s GROUP BY category',
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             'cyrillic'
         ) );
 
@@ -386,19 +386,19 @@ class BootstrapStubsTest extends TestCase {
         // A script with no rows groups nothing at all -- never a zero row.
         $this->assertSame( array(), $wpdb->get_results( $wpdb->prepare(
             'SELECT category, COUNT(*) AS sample_count, MAX(id) AS max_id FROM %i WHERE script = %s GROUP BY category',
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             'greek'
         ) ) );
 
         // A forced DB error reports itself the way the real wpdb does: the empty
         // array flush() left in last_result, plus a non-empty last_error. The
         // return value alone cannot be told apart from the no-rows case above,
-        // which is why ASW_Sample_Repository::script_fingerprint() reads
+        // which is why ANTISPAMWIZARD_Sample_Repository::script_fingerprint() reads
         // last_error rather than guarding on is_array().
         $wpdb->get_results_result = false;
         $this->assertSame( array(), $wpdb->get_results( $wpdb->prepare(
             'SELECT category, COUNT(*) AS sample_count, MAX(id) AS max_id FROM %i WHERE script = %s GROUP BY category',
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             'cyrillic'
         ) ) );
         $this->assertNotSame( '', $wpdb->last_error );
@@ -407,7 +407,7 @@ class BootstrapStubsTest extends TestCase {
         $wpdb->get_results_result = null;
         $wpdb->get_results( $wpdb->prepare(
             'SELECT category, COUNT(*) AS sample_count, MAX(id) AS max_id FROM %i WHERE script = %s GROUP BY category',
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             'cyrillic'
         ) );
         $this->assertSame( '', $wpdb->last_error );
@@ -428,12 +428,12 @@ class BootstrapStubsTest extends TestCase {
 
         $previous = $wpdb->suppress_errors( true );
         try {
-            $wpdb->get_results( 'SELECT id FROM `wp_asw_samples`' );
+            $wpdb->get_results( 'SELECT id FROM `wp_antispamwizard_samples`' );
         } finally {
             $wpdb->suppress_errors( $previous );
         }
 
-        $this->assertSame( array( array( 'SELECT id FROM `wp_asw_samples`', true ) ), $seen );
+        $this->assertSame( array( array( 'SELECT id FROM `wp_antispamwizard_samples`', true ) ), $seen );
         $this->assertFalse( $wpdb->suppress_errors );
 
         // The hook is cleared with the rest of the injected state.
@@ -444,13 +444,13 @@ class BootstrapStubsTest extends TestCase {
     public function test_seeded_rows_come_back_in_the_order_the_table_holds_them(): void {
         // insert() always appends with an ascending auto-increment, so a table
         // built through it can never express rows that are not already in id
-        // order -- which would make ASW_Sample_Repository::find_all()'s ORDER BY
+        // order -- which would make ANTISPAMWIZARD_Sample_Repository::find_all()'s ORDER BY
         // look honoured whether the clause were there or not.
         global $wpdb;
         $wpdb->reset_tables();
 
         $wpdb->seed_table_rows(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 array( 'id' => 30, 'content' => 'c' ),
                 array( 'id' => 10, 'content' => 'a' ),
@@ -458,7 +458,7 @@ class BootstrapStubsTest extends TestCase {
             )
         );
 
-        $unordered = $wpdb->get_results( 'SELECT id, content FROM `wp_asw_samples`' );
+        $unordered = $wpdb->get_results( 'SELECT id, content FROM `wp_antispamwizard_samples`' );
         $this->assertSame( array( 30, 10, 20 ), array_column( $unordered, 'id' ) );
     }
 
@@ -470,7 +470,7 @@ class BootstrapStubsTest extends TestCase {
         $wpdb->reset_tables();
 
         $wpdb->seed_table_rows(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 array( 'id' => 9, 'content' => 'c' ),
                 array( 'id' => 2, 'content' => 'a' ),
@@ -478,12 +478,12 @@ class BootstrapStubsTest extends TestCase {
             )
         );
 
-        $wpdb->insert( 'wp_asw_samples', array( 'content' => 'd' ) );
+        $wpdb->insert( 'wp_antispamwizard_samples', array( 'content' => 'd' ) );
 
         $this->assertSame( 10, $wpdb->insert_id );
         $this->assertSame(
             array( 9, 2, 7, 10 ),
-            array_column( $wpdb->get_results( 'SELECT id FROM `wp_asw_samples`' ), 'id' )
+            array_column( $wpdb->get_results( 'SELECT id FROM `wp_antispamwizard_samples`' ), 'id' )
         );
     }
 
@@ -492,7 +492,7 @@ class BootstrapStubsTest extends TestCase {
         $wpdb->reset_tables();
 
         $wpdb->seed_table_rows(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 array( 'id' => 30, 'content' => 'c' ),
                 array( 'id' => 10, 'content' => 'a' ),
@@ -504,16 +504,16 @@ class BootstrapStubsTest extends TestCase {
         // unquoted, so an id column arrives as a bare number either way.
         $this->assertSame(
             array( 10, 20, 30 ),
-            array_column( $wpdb->get_results( 'SELECT id FROM `wp_asw_samples` ORDER BY id ASC' ), 'id' )
+            array_column( $wpdb->get_results( 'SELECT id FROM `wp_antispamwizard_samples` ORDER BY id ASC' ), 'id' )
         );
         $this->assertSame(
             array( 30, 20, 10 ),
-            array_column( $wpdb->get_results( 'SELECT id FROM `wp_asw_samples` ORDER BY id DESC' ), 'id' )
+            array_column( $wpdb->get_results( 'SELECT id FROM `wp_antispamwizard_samples` ORDER BY id DESC' ), 'id' )
         );
         $this->assertSame(
             array( 'a', 'b', 'c' ),
             array_column(
-                $wpdb->get_results( 'SELECT content FROM `wp_asw_samples` ORDER BY content' ),
+                $wpdb->get_results( 'SELECT content FROM `wp_antispamwizard_samples` ORDER BY content' ),
                 'content'
             )
         );
@@ -556,7 +556,7 @@ class BootstrapStubsTest extends TestCase {
     public function test_ref_array_hooks_hand_callbacks_the_reference_and_honour_accepted_args(): void {
         $seen = array();
         add_action(
-            'asw_ref_action',
+            'antispamwizard_ref_action',
             static function ( $first ) use ( &$seen ) {
                 $seen[] = func_get_args();
             },
@@ -564,7 +564,7 @@ class BootstrapStubsTest extends TestCase {
             1
         );
         add_filter(
-            'asw_ref_filter',
+            'antispamwizard_ref_filter',
             static function ( $value, $holder ) {
                 $holder->touched = true;
                 return $value . '-a';
@@ -573,20 +573,20 @@ class BootstrapStubsTest extends TestCase {
             2
         );
         add_filter(
-            'asw_ref_filter',
+            'antispamwizard_ref_filter',
             static function ( $value ) {
                 return $value . '-b';
             }
         );
 
         $holder = new stdClass();
-        do_action_ref_array( 'asw_ref_action', array( 'one', 'two' ) );
+        do_action_ref_array( 'antispamwizard_ref_action', array( 'one', 'two' ) );
         $this->assertSame( array( array( 'one' ) ), $seen, 'accepted_args = 1 hands over the first argument only' );
 
         // Each callback receives the value returned so far, in registration order.
-        $this->assertSame( 'v-a-b', apply_filters_ref_array( 'asw_ref_filter', array( 'v', &$holder ) ) );
+        $this->assertSame( 'v-a-b', apply_filters_ref_array( 'antispamwizard_ref_filter', array( 'v', &$holder ) ) );
         $this->assertTrue( $holder->touched );
-        $this->assertSame( 'untouched', apply_filters_ref_array( 'asw_no_such_filter', array( 'untouched' ) ) );
+        $this->assertSame( 'untouched', apply_filters_ref_array( 'antispamwizard_no_such_filter', array( 'untouched' ) ) );
     }
 
     public function test_identity_stubs_follow_their_switches(): void {
@@ -729,7 +729,7 @@ class BootstrapStubsTest extends TestCase {
         $GLOBALS['wp_comment_query_cache_keys'] = array( 'k' );
         $GLOBALS['wp_comment_query_log']        = array( 'w' );
 
-        asw_test_reset_comment_query_stubs();
+        antispamwizard_test_reset_comment_query_stubs();
 
         $this->assertSame( array(), $GLOBALS['wp_current_commenter'] );
         $this->assertFalse( $GLOBALS['wp_current_commenter_throws'] );
@@ -865,7 +865,7 @@ class BootstrapStubsTest extends TestCase {
         );
 
         $approved = "( ( comment_approved = '1' ) OR ( comment_author_email = 'me@example.com' AND comment_approved = '0' ) )";
-        $this->assertSame( $approved, asw_test_get_sql_clauses( $query )['where']['approved'] );
+        $this->assertSame( $approved, antispamwizard_test_get_sql_clauses( $query )['where']['approved'] );
         $this->assertSame( array( $approved . ' AND comment_post_ID = 7' ), $GLOBALS['wp_comment_query_log'] );
         // The visitor's held comment joins the approved ones; a stranger's held
         // comment, the visitor's spam and another post's comment stay out.
@@ -910,8 +910,8 @@ class BootstrapStubsTest extends TestCase {
         add_action(
             'pre_get_comments',
             static function ( $query ) {
-                $query->query_var_defaults['asw_marker'] = '';
-                $query->query_vars['asw_marker']         = 'on';
+                $query->query_var_defaults['antispamwizard_marker'] = '';
+                $query->query_vars['antispamwizard_marker']         = 'on';
             }
         );
         $this->query_ids( $args );
@@ -930,10 +930,10 @@ class BootstrapStubsTest extends TestCase {
         add_filter(
             'comments_clauses',
             static function ( $clauses, $query ) {
-                $approved                               = asw_test_get_sql_clauses( $query )['where']['approved'];
+                $approved                               = antispamwizard_test_get_sql_clauses( $query )['where']['approved'];
                 $widened                                = '( ' . $approved . ' OR comment_karma = 1 )';
                 $clauses['where']                       = str_replace( $approved, $widened, $clauses['where'] );
-                asw_test_set_approved_clause( $query, $widened );
+                antispamwizard_test_set_approved_clause( $query, $widened );
                 return $clauses;
             },
             10,
@@ -953,8 +953,8 @@ class BootstrapStubsTest extends TestCase {
         add_filter(
             'comments_clauses',
             static function ( $clauses, $query ) {
-                $approved                                = asw_test_get_sql_clauses( $query )['where']['approved'];
-                asw_test_set_approved_clause( $query, '( ' . $approved . " OR comment_approved = 'spam' )" );
+                $approved                                = antispamwizard_test_get_sql_clauses( $query )['where']['approved'];
+                antispamwizard_test_set_approved_clause( $query, '( ' . $approved . " OR comment_approved = 'spam' )" );
                 return $clauses;
             },
             10,
@@ -971,18 +971,18 @@ class BootstrapStubsTest extends TestCase {
         $this->seed_comment_thread();
         $wp_comments[9]  = array( 'comment_ID' => 9, 'comment_post_ID' => 7, 'comment_approved' => 'spam', 'comment_type' => 'pingback', 'comment_author_email' => 'me@example.com' );
         $wp_comments[10] = array( 'comment_ID' => 10, 'comment_post_ID' => 7, 'comment_approved' => 'spam', 'comment_type' => 'comment', 'comment_author_email' => 'me@example.com' );
-        $wp_comment_meta[5]['_asw_reason']  = 'bayesian';
-        $wp_comment_meta[9]['_asw_reason']  = 'links';
-        $wp_comment_meta[10]['_asw_reason'] = 'links';
-        // 11: same author, spam, no _asw_reason -- a moderator's verdict.
+        $wp_comment_meta[5]['_antispamwizard_reason']  = 'bayesian';
+        $wp_comment_meta[9]['_antispamwizard_reason']  = 'links';
+        $wp_comment_meta[10]['_antispamwizard_reason'] = 'links';
+        // 11: same author, spam, no _antispamwizard_reason -- a moderator's verdict.
         $wp_comments[11] = array( 'comment_ID' => 11, 'comment_post_ID' => 7, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com' );
 
         add_filter(
             'comments_clauses',
             static function ( $clauses, $query ) use ( $wpdb ) {
-                $approved = asw_test_get_sql_clauses( $query )['where']['approved'];
+                $approved = antispamwizard_test_get_sql_clauses( $query )['where']['approved'];
                 $shadow   = $wpdb->prepare(
-                    "( comment_author_email = %s AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND %i.comment_ID > %d AND EXISTS ( SELECT 1 FROM %i WHERE comment_id = %i.comment_ID AND meta_key = '_asw_reason' ) )",
+                    "( comment_author_email = %s AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND %i.comment_ID > %d AND EXISTS ( SELECT 1 FROM %i WHERE comment_id = %i.comment_ID AND meta_key = '_antispamwizard_reason' ) )",
                     'me@example.com',
                     $wpdb->comments,
                     5,
@@ -991,7 +991,7 @@ class BootstrapStubsTest extends TestCase {
                 );
                 $widened                                 = '( ' . $approved . ' OR ' . $shadow . ' )';
                 $clauses['where']                        = str_replace( $approved, $widened, $clauses['where'] );
-                asw_test_set_approved_clause( $query, $widened );
+                antispamwizard_test_set_approved_clause( $query, $widened );
                 return $clauses;
             },
             10,

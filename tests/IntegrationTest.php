@@ -22,19 +22,19 @@ class IntegrationTest extends TestCase {
      * Build a Detector with all 8 real checks wired, matching the main plugin class.
      *
      * Uses per-script classifiers and a combined fallback, reproducing the model
-     * composition ASW::build_checks() gets from ASW_Model_Store -- including the
+     * composition ANTISPAMWIZARD::build_checks() gets from ANTISPAMWIZARD_Model_Store -- including the
      * combined similarity corpus, which is the legacy samples only -- through
      * the checks' array constructors.
      */
-    private function build_detector(): ASW_Detector {
-        $tokenizer     = new ASW_Tokenizer();
-        $training_data = new ASW_Training_Data();
+    private function build_detector(): ANTISPAMWIZARD_Detector {
+        $tokenizer     = new ANTISPAMWIZARD_Tokenizer();
+        $training_data = new ANTISPAMWIZARD_Training_Data();
 
         // Build per-script classifiers and pre-tokenized samples.
         $script_classifiers   = array();
         $script_sample_tokens = array();
 
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $spam_samples = $training_data->load_script_samples( $script, 'spam' );
             $ham_samples  = $training_data->load_script_samples( $script, 'ham' );
 
@@ -42,8 +42,8 @@ class IntegrationTest extends TestCase {
                 continue;
             }
 
-            $script_classifier = new ASW_Naive_Bayes(
-                new ASW_Tokenizer(),
+            $script_classifier = new ANTISPAMWIZARD_Naive_Bayes(
+                new ANTISPAMWIZARD_Tokenizer(),
                 $script
             );
             $training_data->train_script_classifier( $script_classifier, $script );
@@ -62,11 +62,11 @@ class IntegrationTest extends TestCase {
         }
 
         // Combined classifier for unknown script fallback.
-        $combined_classifier = new ASW_Naive_Bayes( $tokenizer );
+        $combined_classifier = new ANTISPAMWIZARD_Naive_Bayes( $tokenizer );
         $training_data->train_combined_classifier( $combined_classifier );
 
         // Pre-tokenize the combined spam samples for the similarity fallback,
-        // exactly as ASW_Model_Store::build_combined_unit() does: the legacy
+        // exactly as ANTISPAMWIZARD_Model_Store::build_combined_unit() does: the legacy
         // corpus only (plus the repository's unknown-script rows, and there is
         // no repository here), never the ten per-script lists, and tokenised
         // for each sample's own detected script. Merging the per-script lists
@@ -77,29 +77,29 @@ class IntegrationTest extends TestCase {
         $data_dir    = dirname( __DIR__ ) . '/antispam-wizard/data/';
         $legacy_spam = $training_data->load_samples( $data_dir . 'spam-samples.txt' );
         foreach ( $legacy_spam as $sample ) {
-            $tokens = $tokenizer->tokenize_for_script( $sample, ASW_Script_Detector::detect( $sample ) );
+            $tokens = $tokenizer->tokenize_for_script( $sample, ANTISPAMWIZARD_Script_Detector::detect( $sample ) );
             if ( ! empty( $tokens ) ) {
                 $combined_sample_tokens[] = $tokens;
             }
         }
 
         $checks = array(
-            new ASW_Stop_Words_Check(),
-            new ASW_Links_Check(),
-            new ASW_Emoji_Check(),
-            new ASW_Spacing_Check(),
-            new ASW_Multi_Lang_Check(),
-            new ASW_Duplicate_Check(),
-            new ASW_Bayesian_Check( $script_classifiers, $combined_classifier ),
-            new ASW_Similarity_Check(
+            new ANTISPAMWIZARD_Stop_Words_Check(),
+            new ANTISPAMWIZARD_Links_Check(),
+            new ANTISPAMWIZARD_Emoji_Check(),
+            new ANTISPAMWIZARD_Spacing_Check(),
+            new ANTISPAMWIZARD_Multi_Lang_Check(),
+            new ANTISPAMWIZARD_Duplicate_Check(),
+            new ANTISPAMWIZARD_Bayesian_Check( $script_classifiers, $combined_classifier ),
+            new ANTISPAMWIZARD_Similarity_Check(
                 $tokenizer,
-                new ASW_Cosine_Similarity(),
+                new ANTISPAMWIZARD_Cosine_Similarity(),
                 array(),
                 $script_sample_tokens,
                 $combined_sample_tokens
             ),
         );
-        return new ASW_Detector( $checks );
+        return new ANTISPAMWIZARD_Detector( $checks );
     }
 
     public function test_legitimate_comment_passes_through(): void {
@@ -126,14 +126,14 @@ class IntegrationTest extends TestCase {
         $this->assertEquals( 'spam', $result );
 
         // Verify spam log was recorded.
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $log );
         $this->assertContains( 'links', $log[0]['checks_triggered'] );
     }
 
     public function test_comment_with_stop_word_marked_spam(): void {
         // Configure stop words.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_list' => array( 'buy viagra' ),
         ) );
 
@@ -147,7 +147,7 @@ class IntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $log );
         $this->assertContains( 'stop_words', $log[0]['checks_triggered'] );
     }
@@ -161,7 +161,7 @@ class IntegrationTest extends TestCase {
             'comment_author_IP' => '10.0.0.3',
         ) );
 
-        $stats = ASW_Stats::get_all();
+        $stats = ANTISPAMWIZARD_Stats::get_all();
         $this->assertEquals( 1, $stats['total_blocked'] );
         $this->assertArrayHasKey( 'links', $stats['per_check'] );
         $this->assertEquals( 1, $stats['per_check']['links'] );
@@ -183,7 +183,7 @@ class IntegrationTest extends TestCase {
         $this->assertArrayHasKey( 'comment_post', $wp_actions );
         do_action( 'comment_post', 123 );
 
-        $reason = get_comment_meta( 123, '_asw_reason', true );
+        $reason = get_comment_meta( 123, '_antispamwizard_reason', true );
         $this->assertStringContainsString( 'links', $reason );
     }
 
@@ -196,11 +196,11 @@ class IntegrationTest extends TestCase {
             'comment_author_IP' => '203.0.113.50',
         ) );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $log );
         // IP should be hashed, not raw.
         $this->assertNotEquals( '203.0.113.50', $log[0]['ip_hash'] );
-        $this->assertEquals( ASW_Detector::hash_ip( '203.0.113.50' ), $log[0]['ip_hash'] );
+        $this->assertEquals( ANTISPAMWIZARD_Detector::hash_ip( '203.0.113.50' ), $log[0]['ip_hash'] );
     }
 
     public function test_duplicate_comments_from_same_ip_marked_spam(): void {
@@ -233,7 +233,7 @@ class IntegrationTest extends TestCase {
 
     public function test_multiple_checks_can_trigger_simultaneously(): void {
         // Configure stop words to also match.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_list' => array( 'buy now' ),
         ) );
 
@@ -247,13 +247,13 @@ class IntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $log );
         // With short-circuit, only the first matching check (stop_words) is reported.
         $this->assertContains( 'stop_words', $log[0]['checks_triggered'] );
 
         // Stats should reflect the first matching check.
-        $stats = ASW_Stats::get_all();
+        $stats = ANTISPAMWIZARD_Stats::get_all();
         $this->assertArrayHasKey( 'stop_words', $stats['per_check'] );
     }
 
@@ -268,7 +268,7 @@ class IntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'emoji', $last['checks_triggered'] );
@@ -285,14 +285,14 @@ class IntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'spacing', $last['checks_triggered'] );
     }
 
     public function test_comment_with_mixed_scripts_marked_spam(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'multi_lang_threshold' => 2,
         ) );
 
@@ -307,7 +307,7 @@ class IntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'multi_lang', $last['checks_triggered'] );
@@ -315,7 +315,7 @@ class IntegrationTest extends TestCase {
 
     public function test_disabled_checks_do_not_trigger(): void {
         // Disable the links check.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'links_enabled' => false,
         ) );
 
@@ -333,7 +333,7 @@ class IntegrationTest extends TestCase {
 
     public function test_bayesian_check_flags_spam_comment(): void {
         // Disable all other checks so only bayesian triggers.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_enabled'  => false,
             'links_enabled'       => false,
             'emoji_enabled'       => false,
@@ -355,7 +355,7 @@ class IntegrationTest extends TestCase {
 
         $this->assertEquals( 'spam', $result );
 
-        $log = ASW_Spam_Log::get_entries();
+        $log = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertNotEmpty( $log );
         $last = end( $log );
         $this->assertContains( 'bayesian', $last['checks_triggered'] );
@@ -363,7 +363,7 @@ class IntegrationTest extends TestCase {
 
     public function test_bayesian_check_disabled_does_not_flag(): void {
         // Disable all checks including bayesian.
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'stop_words_enabled'  => false,
             'links_enabled'       => false,
             'emoji_enabled'       => false,

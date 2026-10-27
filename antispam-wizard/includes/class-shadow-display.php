@@ -18,28 +18,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  * wp_list_comments()) are covered alike. A listing qualifies only when core
  * already put the current visitor's own identifier into `include_unapproved`;
  * the query's existing "approved" condition then gets one extra OR branch that
- * matches this visitor's `spam` comments carrying `_asw_reason`. The rows that
+ * matches this visitor's `spam` comments carrying `_antispamwizard_reason`. The rows that
  * branch returned are presented to rendering as a per-request clone with
  * `comment_approved = '0'`; the stored row and the comment object cache keep
  * `spam`.
  */
-class ASW_Shadow_Display {
+class ANTISPAMWIZARD_Shadow_Display {
 
     /**
      * Query var (and query_var_defaults key) that carries the visitor identity
      * into WP_Comment_Query's result-cache key.
      */
-    const QUERY_VAR = 'asw_shadow';
+    const QUERY_VAR = 'antispamwizard_shadow';
 
     /**
-     * Option holding the highest comment ID whose `_asw_reason` predates the
+     * Option holding the highest comment ID whose `_antispamwizard_reason` predates the
      * moderator rule: every flag above it was written by a version that drops
      * the meta once a moderator decides. Versions before this feature never
      * did, so their spam can carry the flag after a moderator confirmed it;
      * only comments above the cutoff are ever shown. Unset until the plugin
      * flags its first comment, and while unset nothing is shown.
      */
-    const CUTOFF_OPTION = 'asw_shadow_display_after';
+    const CUTOFF_OPTION = 'antispamwizard_shadow_display_after';
 
     /**
      * The queries pre_get_comments approved, keyed by the query object, each
@@ -109,7 +109,7 @@ class ASW_Shadow_Display {
      * Decide whether this query is the current visitor's own front-end listing,
      * and if so, put the identity into the query's result-cache key.
      *
-     * Whatever an earlier run or a caller left in `asw_shadow` is removed first,
+     * Whatever an earlier run or a caller left in `antispamwizard_shadow` is removed first,
      * so the marker only ever reflects this run's own decision.
      *
      * @param mixed $query The WP_Comment_Query about to run.
@@ -143,7 +143,7 @@ class ASW_Shadow_Display {
             // dropping the approval is all that is left to undo.
             unset( $this->approved[ $query ] );
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
         }
     }
 
@@ -187,7 +187,7 @@ class ASW_Shadow_Display {
         } catch ( \Throwable $e ) {
             unset( $this->approved[ $query ] );
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
             return $clauses;
         }
     }
@@ -232,7 +232,7 @@ class ASW_Shadow_Display {
         } catch ( \Throwable $e ) {
             unset( $this->approved[ $query ] );
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
             return $comments;
         }
     }
@@ -269,7 +269,7 @@ class ASW_Shadow_Display {
             return $presented;
         } catch ( \Throwable $e ) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
             return $comment;
         }
     }
@@ -327,7 +327,7 @@ class ASW_Shadow_Display {
             );
         } catch ( \Throwable $e ) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
             return $location;
         }
     }
@@ -355,7 +355,7 @@ class ASW_Shadow_Display {
             self::forget_verdict( (int) $comment->comment_ID );
         } catch ( \Throwable $e ) {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
         }
     }
 
@@ -375,18 +375,18 @@ class ASW_Shadow_Display {
      * @return bool False when the flag is still present.
      */
     public static function forget_verdict( int $comment_id ): bool {
-        delete_comment_meta( $comment_id, '_asw_reason' );
-        if ( empty( get_comment_meta( $comment_id, '_asw_reason' ) ) ) {
+        delete_comment_meta( $comment_id, '_antispamwizard_reason' );
+        if ( empty( get_comment_meta( $comment_id, '_antispamwizard_reason' ) ) ) {
             return true;
         }
         // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a refused meta delete; names the comment ID only.
-        error_log( 'ASW: shadow display flag could not be removed from comment ' . $comment_id );
+        error_log( 'ANTISPAMWIZARD: shadow display flag could not be removed from comment ' . $comment_id );
         return false;
     }
 
     /**
      * Record the cutoff the first time this version flags a comment: every
-     * `_asw_reason` on a lower ID was written before moderator decisions
+     * `_antispamwizard_reason` on a lower ID was written before moderator decisions
      * started removing it (see CUTOFF_OPTION). add_option() never overwrites,
      * so later flags leave the first cutoff in place; a refused write is
      * retried on the next flag, and until then nothing is shown.
@@ -402,7 +402,7 @@ class ASW_Shadow_Display {
     /**
      * Whether a `spam` comment is the own plugin-flagged comment of a visitor
      * one of this request's threaded queries was approved for: the same test
-     * the SQL branch applies (post, identity, type, cutoff, `_asw_reason`).
+     * the SQL branch applies (post, identity, type, cutoff, `_antispamwizard_reason`).
      *
      * @param object $comment The comment.
      * @return bool
@@ -429,7 +429,7 @@ class ASW_Shadow_Display {
     /**
      * The PHP mirror of shadow_fragment()'s comment conditions: a plain
      * comment (type `''` or `comment`) above the cutoff that still carries
-     * the plugin's `_asw_reason` flag. Identity and status are the caller's.
+     * the plugin's `_antispamwizard_reason` flag. Identity and status are the caller's.
      *
      * @param object $comment The comment.
      * @param int    $after   The CUTOFF_OPTION value.
@@ -444,7 +444,7 @@ class ASW_Shadow_Display {
         if ( $comment_id <= $after ) {
             return false;
         }
-        return ! empty( get_comment_meta( $comment_id, '_asw_reason' ) );
+        return ! empty( get_comment_meta( $comment_id, '_antispamwizard_reason' ) );
     }
 
     /**
@@ -455,7 +455,7 @@ class ASW_Shadow_Display {
      * @return int|null
      */
     private static function shadow_cutoff(): ?int {
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         if ( empty( $settings['enabled'] ) || empty( $settings['shadow_display_enabled'] ) ) {
             return null;
         }
@@ -543,7 +543,7 @@ class ASW_Shadow_Display {
 
         if ( 'user' === $identity['type'] ) {
             return $wpdb->prepare(
-                "( user_id = %d AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND %i.comment_ID > %d AND EXISTS ( SELECT 1 FROM %i WHERE comment_id = %i.comment_ID AND meta_key = '_asw_reason' ) )",
+                "( user_id = %d AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND %i.comment_ID > %d AND EXISTS ( SELECT 1 FROM %i WHERE comment_id = %i.comment_ID AND meta_key = '_antispamwizard_reason' ) )",
                 (int) $identity['value'],
                 $wpdb->comments,
                 (int) $identity['after'],
@@ -552,7 +552,7 @@ class ASW_Shadow_Display {
             );
         }
         return $wpdb->prepare(
-            "( comment_author_email = %s AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND %i.comment_ID > %d AND EXISTS ( SELECT 1 FROM %i WHERE comment_id = %i.comment_ID AND meta_key = '_asw_reason' ) )",
+            "( comment_author_email = %s AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND %i.comment_ID > %d AND EXISTS ( SELECT 1 FROM %i WHERE comment_id = %i.comment_ID AND meta_key = '_antispamwizard_reason' ) )",
             (string) $identity['value'],
             $wpdb->comments,
             (int) $identity['after'],

@@ -248,7 +248,7 @@ class PluginMetadataTest extends TestCase {
     /**
      * bench.php reports what an object cache would be handed for each unit, and
      * checks *that* figure against the 1 048 576-byte item limit. It cannot ask
-     * ASW_Model_Store for the envelope — both constants are private — so it
+     * ANTISPAMWIZARD_Model_Store for the envelope — both constants are private — so it
      * spells them out, and a change to either would make its `cached` column
      * and its limit flag silently disagree with what the plugin really stores
      * and with the numbers CorpusQualityTest reports off the store's own
@@ -256,18 +256,18 @@ class PluginMetadataTest extends TestCase {
      */
     public function test_bench_measures_the_envelope_the_store_actually_writes(): void {
         $source = file_get_contents( dirname( __DIR__ ) . '/dev/bench.php' );
-        $member = ( new ReflectionClassConstant( ASW_Model_Store::class, 'COMPRESSED_MEMBER' ) )->getValue();
-        $level  = ( new ReflectionClassConstant( ASW_Model_Store::class, 'COMPRESSION_LEVEL' ) )->getValue();
+        $member = ( new ReflectionClassConstant( ANTISPAMWIZARD_Model_Store::class, 'COMPRESSED_MEMBER' ) )->getValue();
+        $level  = ( new ReflectionClassConstant( ANTISPAMWIZARD_Model_Store::class, 'COMPRESSION_LEVEL' ) )->getValue();
 
         $this->assertStringContainsString(
             'gzcompress( $serialized, ' . $level . ' )',
             $source,
-            'bench.php must deflate at the level ASW_Model_Store::COMPRESSION_LEVEL writes at'
+            'bench.php must deflate at the level ANTISPAMWIZARD_Model_Store::COMPRESSION_LEVEL writes at'
         );
         $this->assertStringContainsString(
             "array( '" . $member . "' => \$deflated )",
             $source,
-            'bench.php must weigh the envelope member ASW_Model_Store::COMPRESSED_MEMBER writes'
+            'bench.php must weigh the envelope member ANTISPAMWIZARD_Model_Store::COMPRESSED_MEMBER writes'
         );
     }
 
@@ -338,13 +338,13 @@ class PluginMetadataTest extends TestCase {
 
         // The helper's first statement is the approved-text guard.
         $this->assertMatchesRegularExpression(
-            '/function asw_shadow_smoke_assert\([^)]*\): array \{\s*if \( false === strpos\( \$html, \$texts\[\'approved\'\] \) \) \{\s*return array\(/',
+            '/function antispamwizard_shadow_smoke_assert\([^)]*\): array \{\s*if \( false === strpos\( \$html, \$texts\[\'approved\'\] \) \) \{\s*return array\(/',
             $source,
-            'asw_shadow_smoke_assert() must bail out with a failure when the approved comment did not render'
+            'antispamwizard_shadow_smoke_assert() must bail out with a failure when the approved comment did not render'
         );
         foreach ( array( 'classic, author', 'block, author', 'classic, anonymous', 'block, anonymous' ) as $pass ) {
-            $render = 0 === strpos( $pass, 'block' ) ? 'asw_shadow_smoke_render_blocks()' : 'asw_shadow_smoke_render_classic()';
-            $this->assertStringContainsString( "asw_shadow_smoke_assert( '" . $pass . "', " . $render, $source, "the $pass pass must go through the guarded helper" );
+            $render = 0 === strpos( $pass, 'block' ) ? 'antispamwizard_shadow_smoke_render_blocks()' : 'antispamwizard_shadow_smoke_render_classic()';
+            $this->assertStringContainsString( "antispamwizard_shadow_smoke_assert( '" . $pass . "', " . $render, $source, "the $pass pass must go through the guarded helper" );
         }
         $this->assertStringContainsString( '<!-- wp:comments --><!-- wp:comment-template --><!-- wp:comment-content /-->', $source, 'the block path must render core/comments + comment-template + comment-content' );
         $this->assertStringContainsString( 'comments_template();', $source, 'the classic path must render through comments_template()' );
@@ -377,8 +377,8 @@ class PluginMetadataTest extends TestCase {
             'expired window'     => '0',
         );
         foreach ( $passes as $pass => $notes ) {
-            foreach ( array( 'classic' => 'asw_shadow_smoke_render_classic()', 'block' => 'asw_shadow_smoke_render_blocks()' ) as $path => $render ) {
-                $call = "asw_shadow_smoke_assert( '" . $path . ', ' . $pass . "', " . $render;
+            foreach ( array( 'classic' => 'antispamwizard_shadow_smoke_render_classic()', 'block' => 'antispamwizard_shadow_smoke_render_blocks()' ) as $path => $render ) {
+                $call = "antispamwizard_shadow_smoke_assert( '" . $path . ', ' . $pass . "', " . $render;
                 $this->assertStringContainsString( $call, $source, "the $path $pass pass must go through the guarded helper" );
                 $at   = strpos( $source, $call );
                 $line = substr( $source, $at, strpos( $source, "\n", $at ) - $at );
@@ -513,7 +513,7 @@ class PluginMetadataTest extends TestCase {
      *
      * `PluginCheck.Security.DirectDB.UnescapedDBParameter` is held to the same
      * rule: it too reports at the `$wpdb->query( … )` call, which is why
-     * `ASW_Model_Store::delete_stray_rows()`'s suppression names it and its
+     * `ANTISPAMWIZARD_Model_Store::delete_stray_rows()`'s suppression names it and its
      * reason says the call must stay on one line.
      *
      * The match is deliberately exact. `WordPress.DB.PreparedSQL.InterpolatedNotPrepared`
@@ -591,13 +591,13 @@ class PluginMetadataTest extends TestCase {
      * Every lock-file fopen() must be silenced and every lock-failure
      * diagnostic must name only the file, never the absolute path.
      *
-     * The four lock-taking classes (ASW_Duplicate_Check, ASW_Spam_Log,
-     * ASW_Stats, ASW_Moderation) all run on an unauthenticated request and debug.log is
+     * The four lock-taking classes (ANTISPAMWIZARD_Duplicate_Check, ANTISPAMWIZARD_Spam_Log,
+     * ANTISPAMWIZARD_Stats, ANTISPAMWIZARD_Moderation) all run on an unauthenticated request and debug.log is
      * web-readable on misconfigured hosts, so either half of the pair leaks the
      * document root on its own: an unsuppressed fopen() emits PHP's own "failed
      * to open stream" warning naming the absolute path, and the plugin's own
      * diagnostic names it too without basename(). Same rule as
-     * ASW_Detector::run() and ASW_CF7_Integration::filter_spam().
+     * ANTISPAMWIZARD_Detector::run() and ANTISPAMWIZARD_CF7_Integration::filter_spam().
      *
      * DuplicateCheckTest::test_duplicate_check_still_counts_when_the_lock_file_cannot_be_opened()
      * pins one of the fourteen sites behaviourally, but the branch is reachable only
@@ -698,11 +698,11 @@ class PluginMetadataTest extends TestCase {
      * The critical sections these locks bracket all run third-party code:
      * update_option()/get_transient() fire the option_*, update_option and
      * pre_transient_* filters, so any plugin on the site can throw from inside
-     * the section. ASW_Detector::run() catches that Throwable and continues to
+     * the section. ANTISPAMWIZARD_Detector::run() catches that Throwable and continues to
      * the next check, and the CF7 integration catches it too, so the request
      * does *not* end there -- a release placed after the call instead of in a
      * finally would leave the exclusive lock held and the descriptor open for
-     * the rest of the request. For ASW_Duplicate_Check that is now one lock per
+     * the rest of the request. For ANTISPAMWIZARD_Duplicate_Check that is now one lock per
      * hashed IP rather than per IP + text, so on a shared comment_author_IP (a
      * CDN that does not restore the real address, CGNAT, the CF7 remote_ip
      * meta) it blocks every other submitter site-wide, and LOCK_EX is
@@ -787,5 +787,120 @@ class PluginMetadataTest extends TestCase {
             'Every flock( LOCK_EX ) must be released by a flock( LOCK_UN ) inside a finally block'
         );
         $this->assertGreaterThan( 0, $acquisitions, 'Expected the plugin to take exclusive locks' );
+    }
+
+    /**
+     * The WordPress.org review rejected the three-letter prefix, so every
+     * plugin-owned identifier is `antispamwizard` / `ANTISPAMWIZARD`. The token
+     * is matched case-insensitively after any non-alphanumeric character, `_`
+     * included, so `_x_reason`-style meta keys and `wp_ajax_x_*` actions are
+     * caught too, in file contents and in path names. The scan covers every
+     * tracked text location — the plugin, the dev scripts (`dev/bench.php` and
+     * the smoke/Plugin Check harnesses run outside PHPUnit), the tests, the docs
+     * and the root config — except the seed corpus (text, not identifiers: its
+     * Thai file carries made-up Line IDs) and `docs/plans/` (the record of the
+     * rename itself). The bracketed `a[s]w` keeps this file out of a residual
+     * grep for the old prefix.
+     */
+    public function test_no_plugin_file_carries_the_retired_three_letter_prefix(): void {
+        $root       = dirname( __DIR__ );
+        $plugin_dir = $root . '/antispam-wizard';
+        $pattern    = '/(?<![A-Za-z0-9])a[s]w/i';
+        $text_ext   = array( 'php', 'js', 'css', 'md', 'txt', 'po', 'pot', 'sh', 'yml', 'json', 'xml' );
+        $excluded   = array( 'antispam-wizard/data/', 'docs/plans/' );
+
+        $paths = array();
+        foreach ( array( 'antispam-wizard', 'dev', 'tests', 'docs', '.github' ) as $dir ) {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator( $root . '/' . $dir, FilesystemIterator::SKIP_DOTS )
+            );
+            foreach ( $iterator as $file ) {
+                $paths[] = substr( $file->getPathname(), strlen( $root ) + 1 );
+            }
+        }
+        foreach ( array( 'CLAUDE.md', 'README.md', 'CONTRIBUTING.md', 'composer.json', 'docker-compose.yml', 'phpunit.xml', '.gitignore' ) as $file ) {
+            $paths[] = $file;
+        }
+
+        $scanned  = 0;
+        $offences = array();
+        foreach ( $paths as $relative ) {
+            foreach ( $excluded as $prefix ) {
+                if ( str_starts_with( $relative, $prefix ) ) {
+                    continue 2;
+                }
+            }
+            if ( preg_match( $pattern, $relative ) ) {
+                $offences[] = $relative . ' (path)';
+            }
+            if ( '.gitignore' !== basename( $relative ) && ! in_array( strtolower( pathinfo( $relative, PATHINFO_EXTENSION ) ), $text_ext, true ) ) {
+                continue;
+            }
+            ++$scanned;
+            foreach ( file( $root . '/' . $relative ) as $index => $line ) {
+                if ( preg_match( $pattern, $line ) ) {
+                    $offences[] = $relative . ':' . ( $index + 1 ) . ': ' . trim( $line );
+                }
+            }
+        }
+
+        $this->assertGreaterThan( 100, $scanned, 'Expected the plugin, dev, test and doc files to be scanned' );
+        $this->assertSame( array(), $offences, 'The retired three-letter prefix is back' );
+
+        // The localized-script object name is a contract between PHP and JS:
+        // StopWordsTabTest pins the wp_localize_script() side, this pins the reader.
+        $this->assertStringContainsString(
+            'antispamwizardAdmin.',
+            file_get_contents( $plugin_dir . '/admin/js/admin.js' )
+        );
+    }
+
+    /**
+     * The names shared between PHP and the shipped JS/CSS are string contracts
+     * no PHP test exercises end to end: the smoke run renders the admin pages
+     * but never executes admin.js. Pin both sides statically — every AJAX
+     * action admin.js posts is a registered `wp_ajax_*` hook and every hook has
+     * a caller, every `antispamwizardAdmin.*` key it reads is localized, every
+     * `antispamwizard-*` class or data attribute it touches exists in the admin
+     * markup or stylesheet (admin.js builds the notice and pill modifiers itself,
+     * admin.css styles them), and the honeypot wrapper class the comment form
+     * renders is the selector its stylesheet hides.
+     */
+    public function test_admin_js_and_comment_form_css_names_match_the_php_side(): void {
+        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $js         = file_get_contents( $plugin_dir . '/admin/js/admin.js' );
+        $admin_page = file_get_contents( $plugin_dir . '/admin/class-admin-page.php' );
+
+        preg_match_all( "/data\\.append\\(\\s*'action',\\s*'([a-z_]+)'\\s*\\)/", $js, $js_actions );
+        preg_match_all( "/add_action\\(\\s*'wp_ajax_([a-z_]+)'/", $admin_page, $php_actions );
+        $js_actions  = array_values( array_unique( $js_actions[1] ) );
+        $php_actions = $php_actions[1];
+        sort( $js_actions );
+        sort( $php_actions );
+        $this->assertNotEmpty( $php_actions );
+        $this->assertSame( $php_actions, $js_actions, 'admin.js AJAX actions must equal the registered wp_ajax_* hooks' );
+
+        preg_match_all( '/antispamwizardAdmin\\.([a-z_]+)/', $js, $keys );
+        $this->assertNotEmpty( $keys[1] );
+        foreach ( array_unique( $keys[1] ) as $key ) {
+            $this->assertMatchesRegularExpression( "/'" . $key . "'\\s*=>/", $admin_page, "antispamwizardAdmin.$key is not localized" );
+        }
+
+        $markup = $admin_page . file_get_contents( $plugin_dir . '/admin/css/admin.css' );
+        foreach ( glob( $plugin_dir . '/admin/views/*.php' ) as $view ) {
+            $markup .= file_get_contents( $view );
+        }
+        preg_match_all( '/antispamwizard-[a-z0-9-]+/', $js, $dom_names );
+        $this->assertNotEmpty( $dom_names[0] );
+        foreach ( array_unique( $dom_names[0] ) as $name ) {
+            $this->assertStringContainsString( $name, $markup, "admin.js names $name, which no admin view, class-admin-page.php or admin.css carries" );
+        }
+
+        $form = file_get_contents( $plugin_dir . '/includes/class-comment-form.php' );
+        $this->assertSame( 1, preg_match( '/<div class="(antispamwizard-[a-z-]+)"/', $form, $wrapper ) );
+        $this->assertStringContainsString(
+            '.' . $wrapper[1] . ' {',
+            file_get_contents( $plugin_dir . '/public/css/comment-form.css' )
+        );
     }
 }

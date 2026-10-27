@@ -1,4 +1,4 @@
-# Shadow display (`ASW_Shadow_Display`)
+# Shadow display (`ANTISPAMWIZARD_Shadow_Display`)
 
 A comment the plugin flags is shown to its own author as "awaiting moderation" and to nobody
 else. This file explains why each rule exists and names the test that pins it. The class is
@@ -18,10 +18,10 @@ screens and counts.
 
 The setting is `shadow_display_enabled` (default `true`) on the General tab ("Show flagged
 comments to their author"). The master `enabled` switch turns it off too. No personal data is
-stored: the feature only changes what one visitor's own page render shows, so `ASW_Privacy`, the
+stored: the feature only changes what one visitor's own page render shows, so `ANTISPAMWIZARD_Privacy`, the
 readme's Privacy section and its "What personal data does it store?" FAQ are unchanged. It writes
-two things: `_asw_reason` is dropped when a moderator overrules the verdict (below), and the
-cutoff option `asw_shadow_display_after` (a comment ID, removed by `uninstall.php`) is recorded
+two things: `_antispamwizard_reason` is dropped when a moderator overrules the verdict (below), and the
+cutoff option `antispamwizard_shadow_display_after` (a comment ID, removed by `uninstall.php`) is recorded
 once (below).
 
 ## Why the query layer
@@ -35,8 +35,8 @@ moderation-hash pair the post-comment redirect carries, else the commenter cooki
 shows a held comment to its author. Hooking `WP_Comment_Query` covers both paths with one
 mechanism and reuses core's own identification of "this visitor's comments".
 
-Hook sequence, all registered from `ASW::init()` and not gated on `is_admin()` because the
-hooks gate themselves (`ASWTest::test_init_registers_the_shadow_display_hooks`,
+Hook sequence, all registered from `ANTISPAMWIZARD::init()` and not gated on `is_admin()` because the
+hooks gate themselves (`AntiSpamWizardTest::test_init_registers_the_shadow_display_hooks`,
 `ShadowDisplayTest::test_register_hooks_adds_the_query_hooks_and_the_transition_hook`):
 
 1. `pre_get_comments` (10, 1 arg) → `on_pre_get_comments()`: the eligibility decision. When the
@@ -48,7 +48,7 @@ hooks gate themselves (`ASWTest::test_init_registers_the_shadow_display_hooks`,
    and, the first time there is one, adds the `get_comment` filter.
 4. `get_comment` (10, 1 arg, added lazily) → `on_get_comment()`: presents a shadow row as `'0'`.
 5. `transition_comment_status` (10, 3 args) → `on_transition_comment_status()`: drops
-   `_asw_reason` when a moderator overrules the verdict (below).
+   `_antispamwizard_reason` when a moderator overrules the verdict (below).
 6. `comment_post_redirect` (100, 2 args) → `on_comment_post_redirect()`: sends a cookie-less
    author of a plugin-flagged comment back with core's moderation-hash pair (below). Priority 100,
    so a filter that replaces the target runs first and the pair lands on the URL the author is
@@ -103,14 +103,14 @@ S is built with `$wpdb->prepare()`, binding both table names through `%i`:
   AND comment_type IN ( '', 'comment' )
   AND <comments>.comment_ID > %d       -- the cutoff
   AND EXISTS ( SELECT 1 FROM <commentmeta> WHERE comment_id = <comments>.comment_ID
-               AND meta_key = '_asw_reason' ) )
+               AND meta_key = '_antispamwizard_reason' ) )
 ```
 
-- `comment_approved = 'spam'` plus the `_asw_reason` EXISTS restricts it to comments the
-  **plugin** flagged. A comment a moderator marked as spam carries no `_asw_reason` and stays
+- `comment_approved = 'spam'` plus the `_antispamwizard_reason` EXISTS restricts it to comments the
+  **plugin** flagged. A comment a moderator marked as spam carries no `_antispamwizard_reason` and stays
   hidden from its author too: that is a human decision, not a possible false positive
   (`test_moderator_marked_spam_and_a_flagged_pingback_are_not_shown`). For that to hold after the
-  plugin's verdict has been overruled, `on_transition_comment_status()` deletes `_asw_reason`
+  plugin's verdict has been overruled, `on_transition_comment_status()` deletes `_antispamwizard_reason`
   when a comment leaves `spam` for `approved` or `unapproved` (Not Spam, Approve, the Spam Log
   pill); a moderator who later marks it spam again makes it ordinary moderator-marked spam
   (`test_overruling_the_verdict_drops_the_flag_so_a_later_moderator_spam_stays_hidden`).
@@ -119,15 +119,15 @@ S is built with `$wpdb->prepare()`, binding both table names through `%i`:
   Spam Log pill: confirming a comment as **Spam** is a moderator's verdict, and the comment it
   confirms is usually already in the spam queue, where no transition fires; a **Ham** verdict on a
   trashed comment restores it `trash → unapproved`, which is not the overruling transition either.
-  `ajax_mark_comment()` therefore calls `ASW_Shadow_Display::forget_verdict()` itself after every
+  `ajax_mark_comment()` therefore calls `ANTISPAMWIZARD_Shadow_Display::forget_verdict()` itself after every
   successful verdict, whatever the prior status (`MarkCommentTest::test_confirming_a_flagged_comment_as_spam_stops_its_shadow_display`,
   `…test_a_ham_verdict_on_a_comment_trashed_from_the_spam_queue_does_not_restore_it_as_spam`);
   a refused status change keeps the flag (`test_a_failed_spam_confirmation_keeps_the_flag`,
   `test_a_refused_ham_untrash_keeps_the_recorded_status_and_the_flag`). The Ham verdict cannot use
   `wp_unspam_comment()`/`wp_untrash_comment()` as is on a trashed comment: both restore
   `_wp_trash_meta_status`, which is `'spam'` for a comment trashed from the spam queue, so the
-  comment would return to the queue, train spam through `ASW_Moderation` and stay shadow-visible.
-  `ASW_Admin_Page::move_out_of_spam()` rewrites that recorded `'spam'` to `'0'` first (putting it
+  comment would return to the queue, train spam through `ANTISPAMWIZARD_Moderation` and stay shadow-visible.
+  `ANTISPAMWIZARD_Admin_Page::move_out_of_spam()` rewrites that recorded `'spam'` to `'0'` first (putting it
   back if the untrash is refused, reading the restore back and logging one that did not land —
   `MarkCommentTest::test_a_refused_trash_status_rollback_is_logged`) and writes no status for a
   comment already approved or held. A comment with no status at all (deleted after the request
@@ -137,13 +137,13 @@ S is built with `$wpdb->prepare()`, binding both table names through `%i`:
   "refused" and "already absent", and logs a flag that is still there
   (`ShadowDisplayTest::test_forget_verdict_reads_back_a_refused_delete_and_logs_it`). The hook is registered
   ungated, so the rule holds whatever the setting is when the comment is moderated.
-- `comment_type IN ( '', 'comment' )` is the same scope as `ASW_Detector::filter_comment()` and
-  `ASW_Moderation`. Pingbacks and trackbacks are never shown, even with `_asw_reason`.
-- The **cutoff** `comment_ID > asw_shadow_display_after` keeps out every flag written before this
-  feature. Earlier versions never deleted `_asw_reason` when a moderator decided, so an upgraded
+- `comment_type IN ( '', 'comment' )` is the same scope as `ANTISPAMWIZARD_Detector::filter_comment()` and
+  `ANTISPAMWIZARD_Moderation`. Pingbacks and trackbacks are never shown, even with `_antispamwizard_reason`.
+- The **cutoff** `comment_ID > antispamwizard_shadow_display_after` keeps out every flag written before this
+  feature. Earlier versions never deleted `_antispamwizard_reason` when a moderator decided, so an upgraded
   site's spam queue holds flagged comments a moderator already confirmed (the Spam Log pill on an
   already-spam comment) or approved and re-spammed, indistinguishable from unreviewed ones. The
-  detector records the cutoff through `ASW_Shadow_Display::record_flag()` the first time it flags a
+  detector records the cutoff through `ANTISPAMWIZARD_Shadow_Display::record_flag()` the first time it flags a
   comment (`add_option()`, never overwritten: that comment's ID minus one), and while the option
   is unset no query is widened — no flag from this version exists yet. A refused write is retried
   on the next flag; the comments flagged meanwhile stay hidden, the fail-closed direction. The
@@ -161,18 +161,18 @@ PHP. Every ineligible case leaves the WHERE byte-identical and issues no extra `
 
 `WP_Comment_Query` caches results under a key built from the query vars, limited to the keys of
 `query_var_defaults` (minus `fields`). On eligibility, `on_pre_get_comments()` sets
-`query_var_defaults['asw_shadow'] = ''` and `query_vars['asw_shadow'] = 'email:<addr>'` or
+`query_var_defaults['antispamwizard_shadow'] = ''` and `query_vars['antispamwizard_shadow'] = 'email:<addr>'` or
 `'user:<id>'`. The widened result therefore never shares a key with the plain query or with
 another visitor's widened query (`test_cache_key_differs_from_the_same_query_with_the_setting_off`,
 `test_a_cached_widened_result_is_never_served_to_the_plain_query`,
 `test_cache_key_differs_between_two_visitors`).
 
 Approval lives in a `WeakMap` keyed by the query object. `comments_clauses` and `the_comments`
-trust only that map. Every `pre_get_comments` run first unsets any `asw_shadow` var and default,
+trust only that map. Every `pre_get_comments` run first unsets any `antispamwizard_shadow` var and default,
 so a value passed in by a caller, or left over from an earlier run of the same query object, is
 overwritten or removed and never trusted
-(`test_an_incoming_asw_shadow_arg_is_unset_for_an_ineligible_query`,
-`test_an_incoming_asw_shadow_arg_is_overwritten_for_an_eligible_query`,
+(`test_an_incoming_antispamwizard_shadow_arg_is_unset_for_an_ineligible_query`,
+`test_an_incoming_antispamwizard_shadow_arg_is_overwritten_for_an_eligible_query`,
 `test_a_reused_query_object_does_not_carry_an_earlier_approval`,
 `test_comments_clauses_ignores_a_query_pre_get_comments_never_approved`).
 
@@ -217,13 +217,13 @@ register their rows (`test_a_cached_widened_result_in_a_new_request_is_still_pre
 
 **The child-ID cache.** Core's `fill_descendants()` caches each parent's child IDs in the
 `comment-queries` group (`get_comment_child_ids:<parent>:<key>:<last_changed>`, the key built from
-the query vars, `asw_shadow` included) and on a hit skips the nested per-level query, so a reply
+the query vars, `antispamwizard_shadow` included) and on a hit skips the nested per-level query, so a reply
 served from it never passes through `the_comments`. Under an external object cache that is the
 author's second view of the page. An approved threaded query therefore records its viewer
 (identity + `post_id`) in `the_comments`, and `on_get_comment()` presents and registers any
 `spam` comment that passes the same test as the SQL branch — that post, that identity (the email
 compared case-insensitively, as the column's collation does), type `''`/`comment`, an ID above
-the cutoff, an `_asw_reason` row — without having seen it in a query result
+the cutoff, an `_antispamwizard_reason` row — without having seen it in a query result
 (`test_a_shadow_reply_from_the_child_id_cache_is_still_presented_as_held`,
 `test_a_threaded_viewer_is_presented_only_their_own_flagged_comments_on_that_post`).
 
@@ -257,7 +257,7 @@ argument and a `#comment-<ID>` fragment survive, the fragment last), when all of
   `eligible_identity()`: `test_redirect_ignores_a_comment_with_the_setting_off`,
   `test_redirect_ignores_a_comment_with_the_master_switch_off`,
   `test_redirect_ignores_everything_until_the_cutoff_is_recorded`);
-- the comment is plugin-flagged: type `''`/`comment`, an ID above the cutoff, an `_asw_reason` row
+- the comment is plugin-flagged: type `''`/`comment`, an ID above the cutoff, an `_antispamwizard_reason` row
   (`is_plugin_flagged()`, the same predicate the threaded `get_comment` recognition uses and the PHP
   mirror of the SQL branch, so the redirect and the query cannot disagree about which comments are
   shadowed: `test_redirect_ignores_spam_without_the_plugin_flag`,
@@ -282,10 +282,10 @@ moderation.`.
 
 ## `is_shadowed()`
 
-`ASW_Shadow_Display::is_shadowed( int $comment_id ): bool` answers from the static registry and
+`ANTISPAMWIZARD_Shadow_Display::is_shadowed( int $comment_id ): bool` answers from the static registry and
 recovers the real status of a comment this request presents as `'0'`. Code that acts on a
 comment's status must decide on this, never on the presented `comment_approved`. Its one caller
-is `ASW_Moderation::append_moderation_link()`: it skips the "Mark as spam" link when the comment
+is `ANTISPAMWIZARD_Moderation::append_moderation_link()`: it skips the "Mark as spam" link when the comment
 is `spam` **or** `is_shadowed()`, because the comment is already spam and the link would offer
 the author's own page a moderation action on it
 (`ModerationLinkTest::test_no_link_under_a_shadow_displayed_comment`,
@@ -322,7 +322,7 @@ the three query-hook catches also drop the query from the `WeakMap` (`pre_get_co
 its cache-key marker only after everything that can throw, so there is no marker to remove), and
 the redirect catch returns the location unchanged
 (`test_a_throw_in_the_redirect_returns_the_location_and_logs_only_the_site`).
-Each logs `'ASW: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine()`,
+Each logs `'ANTISPAMWIZARD: shadow display failed at ' . basename( $e->getFile() ) . ':' . $e->getLine()`,
 never the message or the full path. A failure therefore leaves the query exactly what core would
 return (`test_a_throw_inside_the_hooks_leaves_the_core_result_and_logs_only_the_site`, driven by
 the bootstrap's `wp_current_commenter_throws` switch;
@@ -360,7 +360,7 @@ new uncovered catch fails it.
   comment stays hidden, as it was before this feature. That is the fail-closed direction, and it
   is deliberate: rows the plugin's own branch did not select are never relabelled, because only
   that branch establishes that a `spam` row is the viewer's own plugin-flagged comment. A provider
-  that replays a result keyed on the query vars (which carry `asw_shadow`) replays it to the same
+  that replays a result keyed on the query vars (which carry `antispamwizard_shadow`) replays it to the same
   viewer only; such a row then renders with its real `spam` status rather than as held.
 - **A logged-in author's logged-out comments.** The `user_id` branch matches only comments posted
   while logged in, the same rule core applies to a logged-in user's held comments.
@@ -390,13 +390,15 @@ core can prove the widening, the cache key and the presentation survive both ren
   (`…test_shadow_smoke_check_carries_the_cookie_less_pass`).
 - The site repository's `verify.sh` posts a real flagged comment to `wp-comments-post.php` on the announcement post
   with a cookie jar, and asserts seven shadow lines: posted (302), found in the spam list, read
-  back as `comment_approved = spam`, `_asw_reason` recorded, visible to the author, shown as
+  back as `comment_approved = spam`, `_antispamwizard_reason` recorded, visible to the author, shown as
   awaiting moderation, and absent without the cookies. It then posts a second flagged comment
   without `wp-comment-cookies-consent` and without a jar, and asserts eight more: posted (302),
-  stored as spam, `_asw_reason` recorded, the `Location` carrying `unapproved=<ID>` and
+  stored as spam, `_antispamwizard_reason` recorded, the `Location` carrying `unapproved=<ID>` and
   `moderation-hash=`, the hash equal to `wp_hash()` of the stored `comment_date_gmt`, a cookie-less
   GET of that `Location` showing the comment, the same page showing the awaiting-moderation note,
-  and a plain GET of the post not showing it — fifteen shadow lines in all. Both comments are
+  and a plain GET of the post not showing it — fifteen shadow lines in all. It reads the meta key by
+  name (as does the site's `tests/SiteThemeTest.php`), so renaming `_antispamwizard_reason` needs a
+  matching change there. Both comments are
   deleted from the exit trap
   (`SiteThemeTest::test_verify_carries_the_shadow_display_case_and_its_cleanup` in that
   repository).

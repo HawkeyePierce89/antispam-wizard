@@ -1,20 +1,20 @@
 <?php
 /**
- * Tests for ASW_Sample_Repository.
+ * Tests for ANTISPAMWIZARD_Sample_Repository.
  */
 
 use PHPUnit\Framework\TestCase;
 
 class SampleRepositoryTest extends TestCase {
 
-    private ASW_Sample_Repository $repo;
+    private ANTISPAMWIZARD_Sample_Repository $repo;
 
     protected function setUp(): void {
         parent::setUp();
         global $wpdb, $wp_options;
         $wpdb->reset_tables();
         $wp_options = array();
-        $this->repo = new ASW_Sample_Repository( $wpdb );
+        $this->repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
     }
 
     protected function tearDown(): void {
@@ -38,7 +38,7 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}asw_samples WHERE script = %s AND category = %s",
+                "SELECT * FROM {$wpdb->prefix}antispamwizard_samples WHERE script = %s AND category = %s",
                 'latin',
                 'spam'
             )
@@ -52,44 +52,44 @@ class SampleRepositoryTest extends TestCase {
         $this->assertSame( 'inserted', $this->repo->insert( 'latin', 'spam', 'Attributed sample', 4242 ) );
 
         global $wpdb;
-        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}asw_samples" );
+        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}antispamwizard_samples" );
 
         $this->assertCount( 1, $rows );
         $this->assertSame( 4242, (int) $rows[0]->comment_id );
     }
 
     public function test_insert_rejects_a_zero_comment_id(): void {
-        update_option( 'asw_samples_revision', 5 );
+        update_option( 'antispamwizard_samples_revision', 5 );
 
         $this->assertFalse( $this->repo->insert( 'latin', 'spam', 'Unattributed sample', 0 ) );
 
         global $wpdb;
-        $this->assertCount( 0, $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}asw_samples" ) );
-        $this->assertSame( 5, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertCount( 0, $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}antispamwizard_samples" ) );
+        $this->assertSame( 5, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_insert_rejects_a_negative_comment_id(): void {
-        update_option( 'asw_samples_revision', 5 );
+        update_option( 'antispamwizard_samples_revision', 5 );
 
         $this->assertFalse( $this->repo->insert( 'latin', 'spam', 'Unattributed sample', -1 ) );
 
         global $wpdb;
-        $this->assertCount( 0, $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}asw_samples" ) );
-        $this->assertSame( 5, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertCount( 0, $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}antispamwizard_samples" ) );
+        $this->assertSame( 5, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_insert_bumps_revision_option(): void {
-        update_option( 'asw_samples_revision', 5 );
+        update_option( 'antispamwizard_samples_revision', 5 );
 
         $this->repo->insert( 'latin', 'spam', 'Test sample', 102 );
 
-        $this->assertSame( 6, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 6, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_insert_initializes_revision_when_missing(): void {
         $this->repo->insert( 'latin', 'ham', 'Good comment', 103 );
 
-        $revision = get_option( 'asw_samples_revision' );
+        $revision = get_option( 'antispamwizard_samples_revision' );
         $this->assertNotFalse( $revision );
         $this->assertGreaterThanOrEqual( 1, (int) $revision );
     }
@@ -105,9 +105,9 @@ class SampleRepositoryTest extends TestCase {
 
     public function test_insert_duplicate_does_not_bump_revision(): void {
         $this->repo->insert( 'latin', 'spam', 'Duplicate text', 106 );
-        $rev_after_first = (int) get_option( 'asw_samples_revision' );
+        $rev_after_first = (int) get_option( 'antispamwizard_samples_revision' );
         $this->repo->insert( 'latin', 'spam', 'Duplicate text', 107 );
-        $rev_after_second = (int) get_option( 'asw_samples_revision' );
+        $rev_after_second = (int) get_option( 'antispamwizard_samples_revision' );
 
         $this->assertSame( $rev_after_first, $rev_after_second );
     }
@@ -164,7 +164,7 @@ class SampleRepositoryTest extends TestCase {
 
     public function test_insert_recovery_does_not_bump_revision(): void {
         global $wpdb;
-        update_option( 'asw_samples_revision', 7 );
+        update_option( 'antispamwizard_samples_revision', 7 );
         $wpdb->insert_result                  = false;
         $wpdb->insert_writes_on_forced_failure = true;
 
@@ -175,7 +175,7 @@ class SampleRepositoryTest extends TestCase {
         // assertion below would pass for either outcome.
         $this->assertSame( 'exists', $result );
         // 'exists' recovery returns without bumping the revision.
-        $this->assertSame( 7, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 7, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_insert_returns_false_on_db_error(): void {
@@ -192,13 +192,13 @@ class SampleRepositoryTest extends TestCase {
 
     public function test_insert_db_error_does_not_bump_revision(): void {
         global $wpdb;
-        update_option( 'asw_samples_revision', 3 );
+        update_option( 'antispamwizard_samples_revision', 3 );
         $wpdb->insert_result                  = false;
         $wpdb->insert_writes_on_forced_failure = false;
 
         $this->repo->insert( 'latin', 'spam', 'Doomed sample', 117 );
 
-        $this->assertSame( 3, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 3, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     // --- delete_by_hash() tests ---
@@ -215,14 +215,14 @@ class SampleRepositoryTest extends TestCase {
     }
 
     public function test_delete_by_hash_bumps_revision(): void {
-        update_option( 'asw_samples_revision', 10 );
+        update_option( 'antispamwizard_samples_revision', 10 );
         $this->repo->insert( 'latin', 'spam', 'To delete', 119 );
         $hash = hash( 'sha256', 'To delete' );
 
         // Revision was bumped by insert (to 11), now delete should bump to 12.
         $this->repo->delete_by_hash( 'latin', 'spam', $hash );
 
-        $this->assertSame( 12, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 12, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_by_hash_does_not_affect_other_rows(): void {
@@ -253,23 +253,23 @@ class SampleRepositoryTest extends TestCase {
     public function test_delete_by_hash_db_error_does_not_bump_revision(): void {
         global $wpdb;
         $this->repo->insert( 'latin', 'spam', 'To delete', 123 );
-        $rev_before = (int) get_option( 'asw_samples_revision' );
+        $rev_before = (int) get_option( 'antispamwizard_samples_revision' );
         $hash       = hash( 'sha256', 'To delete' );
 
         $wpdb->delete_result = false;
         $this->repo->delete_by_hash( 'latin', 'spam', $hash );
 
-        $this->assertSame( $rev_before, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( $rev_before, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_by_hash_returns_true_when_no_rows_match(): void {
         // No matching row: delete returns 0 (not false) → success, no bump.
-        update_option( 'asw_samples_revision', 4 );
+        update_option( 'antispamwizard_samples_revision', 4 );
 
         $result = $this->repo->delete_by_hash( 'latin', 'spam', hash( 'sha256', 'absent' ) );
 
         $this->assertTrue( $result );
-        $this->assertSame( 4, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 4, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     // --- find_categories_by_hash() tests ---
@@ -299,7 +299,7 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
 
         // A refused SELECT must read as "nothing stored", the direction that
-        // costs ASW_Moderation a redundant insert() rather than a skipped one.
+        // costs ANTISPAMWIZARD_Moderation a redundant insert() rather than a skipped one.
         $this->repo->insert( 'latin', 'spam', 'Body one', 164 );
         $wpdb->get_results_result = false;
 
@@ -312,7 +312,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->find_categories_by_hash( 'latin', hash( 'sha256', 'Body one' ) );
 
         $this->assertSame(
-            array( "SELECT category FROM `wp_asw_samples` WHERE script = 'latin' AND content_hash = '" . hash( 'sha256', 'Body one' ) . "'" ),
+            array( "SELECT category FROM `wp_antispamwizard_samples` WHERE script = 'latin' AND content_hash = '" . hash( 'sha256', 'Body one' ) . "'" ),
             $wpdb->prepared_queries
         );
     }
@@ -405,7 +405,7 @@ class SampleRepositoryTest extends TestCase {
         $this->assertSame( 'hash-520', $rows[0]['email_hash'] );
         // The $wpdb stub hands back whole rows whatever the SELECT list names, so
         // the returned key alone would pass even if the column were dropped from
-        // the query -- against a real database ASW_Privacy would then see no hash
+        // the query -- against a real database ANTISPAMWIZARD_Privacy would then see no hash
         // on any row and export hash-covered samples twice. Assert the column is
         // actually selected.
         $this->assertNotEmpty( $wpdb->prepared_queries );
@@ -464,8 +464,8 @@ class SampleRepositoryTest extends TestCase {
 
         $this->assertNotEmpty( $wpdb->prepared_queries );
         foreach ( $wpdb->prepared_queries as $q ) {
-            $this->assertStringContainsString( '`wp_asw_samples`', $q );
-            $this->assertStringNotContainsString( "'wp_asw_samples'", $q );
+            $this->assertStringContainsString( '`wp_antispamwizard_samples`', $q );
+            $this->assertStringNotContainsString( "'wp_antispamwizard_samples'", $q );
         }
     }
 
@@ -476,7 +476,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->find_by_comment_ids( array( 512, 513 ) );
 
         $this->assertSame(
-            array( 'SELECT id, comment_id, email_hash, script, category, content, created_at FROM `wp_asw_samples` WHERE comment_id IN ( 512, 513 ) ORDER BY id ASC' ),
+            array( 'SELECT id, comment_id, email_hash, script, category, content, created_at FROM `wp_antispamwizard_samples` WHERE comment_id IN ( 512, 513 ) ORDER BY id ASC' ),
             $wpdb->prepared_queries
         );
     }
@@ -532,26 +532,26 @@ class SampleRepositoryTest extends TestCase {
 
     public function test_delete_by_comment_ids_bumps_the_revision_when_rows_were_removed(): void {
         $this->repo->insert( 'latin', 'spam', 'Erase me', 605 );
-        update_option( 'asw_samples_revision', 7 );
+        update_option( 'antispamwizard_samples_revision', 7 );
 
         $this->assertSame( 1, $this->repo->delete_by_comment_ids( array( 605 ) ) );
 
         // The cached classifier must be rebuilt without the erased text.
-        $this->assertSame( 8, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 8, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_by_comment_ids_leaves_the_revision_untouched_when_nothing_matched(): void {
         $this->repo->insert( 'latin', 'spam', 'Untouched', 606 );
-        update_option( 'asw_samples_revision', 7 );
+        update_option( 'antispamwizard_samples_revision', 7 );
 
         $this->assertSame( 0, $this->repo->delete_by_comment_ids( array( 999 ) ) );
 
-        $this->assertSame( 7, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 7, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_by_comment_ids_returns_false_and_keeps_rows_when_the_query_fails(): void {
         $this->repo->insert( 'latin', 'spam', 'Erase me', 610 );
-        update_option( 'asw_samples_revision', 7 );
+        update_option( 'antispamwizard_samples_revision', 7 );
 
         global $wpdb;
         // wpdb::query() returns false on a DB error.
@@ -565,7 +565,7 @@ class SampleRepositoryTest extends TestCase {
         // A failed DELETE must not bump the revision: nothing left the table, so
         // rebuilding the cached classifier would be pure waste on every failure.
         $wpdb->query_result = null;
-        $this->assertSame( 7, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 7, (int) get_option( 'antispamwizard_samples_revision' ) );
         $this->assertCount( 1, $this->repo->find_by_comment_ids( array( 610 ) ) );
     }
 
@@ -576,8 +576,8 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->delete_by_comment_ids( array( 607 ) );
 
         $this->assertNotEmpty( $wpdb->prepared_queries );
-        $this->assertStringContainsString( '`wp_asw_samples`', $wpdb->prepared_queries[0] );
-        $this->assertStringNotContainsString( "'wp_asw_samples'", $wpdb->prepared_queries[0] );
+        $this->assertStringContainsString( '`wp_antispamwizard_samples`', $wpdb->prepared_queries[0] );
+        $this->assertStringNotContainsString( "'wp_antispamwizard_samples'", $wpdb->prepared_queries[0] );
     }
 
     public function test_delete_by_comment_ids_binds_every_id_in_order(): void {
@@ -587,7 +587,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->delete_by_comment_ids( array( 608, 609 ) );
 
         $this->assertSame(
-            array( 'DELETE FROM `wp_asw_samples` WHERE comment_id IN ( 608, 609 )' ),
+            array( 'DELETE FROM `wp_antispamwizard_samples` WHERE comment_id IN ( 608, 609 )' ),
             $wpdb->prepared_queries
         );
     }
@@ -595,7 +595,7 @@ class SampleRepositoryTest extends TestCase {
     // --- latest_revision() tests ---
 
     public function test_latest_revision_returns_current_value(): void {
-        update_option( 'asw_samples_revision', 42 );
+        update_option( 'antispamwizard_samples_revision', 42 );
 
         $this->assertSame( 42, $this->repo->latest_revision() );
     }
@@ -607,7 +607,7 @@ class SampleRepositoryTest extends TestCase {
     // --- get_table_name() tests ---
 
     public function test_get_table_name_returns_prefixed_name(): void {
-        $this->assertSame( 'wp_asw_samples', $this->repo->get_table_name() );
+        $this->assertSame( 'wp_antispamwizard_samples', $this->repo->get_table_name() );
     }
 
     // --- get_create_table_sql() tests ---
@@ -616,7 +616,7 @@ class SampleRepositoryTest extends TestCase {
         $sql = $this->repo->get_create_table_sql();
 
         $this->assertStringContainsString( 'CREATE TABLE', $sql );
-        $this->assertStringContainsString( 'wp_asw_samples', $sql );
+        $this->assertStringContainsString( 'wp_antispamwizard_samples', $sql );
         $this->assertStringContainsString( 'content_hash', $sql );
         $this->assertStringContainsString( 'script', $sql );
         $this->assertStringContainsString( 'category', $sql );
@@ -662,7 +662,7 @@ class SampleRepositoryTest extends TestCase {
         // the debug.log dev/smoke.sh scans on every capable admin_init.
         global $wpdb;
 
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $observed = null;
         $wpdb->on_get_var = static function () use ( $wpdb, &$observed ) {
@@ -685,10 +685,10 @@ class SampleRepositoryTest extends TestCase {
         // schema_is_current() is what decides whether DB_VERSION may be stamped,
         // so anything the DDL adds must be probed or a half-applied migration is
         // recorded as complete and never retried.
-        foreach ( ASW_Sample_Repository::VERSIONED_COLUMNS as $column ) {
+        foreach ( ANTISPAMWIZARD_Sample_Repository::VERSIONED_COLUMNS as $column ) {
             $this->assertStringContainsString( $column . ' ', $sql );
         }
-        foreach ( ASW_Sample_Repository::VERSIONED_INDEXES as $index ) {
+        foreach ( ANTISPAMWIZARD_Sample_Repository::VERSIONED_INDEXES as $index ) {
             $this->assertStringContainsString( 'KEY ' . $index . ' (', $sql );
         }
         // Every named index in the DDL must be probed, except idx_unique_sample,
@@ -698,7 +698,7 @@ class SampleRepositoryTest extends TestCase {
         preg_match_all( '/\bKEY\s+(idx_\w+)\s*\(/', $sql, $m );
         $this->assertSame(
             array( 'idx_unique_sample' ),
-            array_values( array_diff( $m[1], ASW_Sample_Repository::VERSIONED_INDEXES ) )
+            array_values( array_diff( $m[1], ANTISPAMWIZARD_Sample_Repository::VERSIONED_INDEXES ) )
         );
 
         // The same guard for the columns. An unprobed column is the identical
@@ -711,7 +711,7 @@ class SampleRepositoryTest extends TestCase {
             // Columns of the original CREATE, which exist on every table the
             // plugin ever created and need no probe.
             array( 'id', 'script', 'category', 'content', 'content_hash', 'created_at' ),
-            array_values( array_diff( $c[1], ASW_Sample_Repository::VERSIONED_COLUMNS ) )
+            array_values( array_diff( $c[1], ANTISPAMWIZARD_Sample_Repository::VERSIONED_COLUMNS ) )
         );
     }
 
@@ -721,7 +721,7 @@ class SampleRepositoryTest extends TestCase {
         $sql = $this->repo->get_create_table_sql();
 
         // No backticks on table name — dbDelta() requires unquoted name.
-        $this->assertStringContainsString( 'CREATE TABLE wp_asw_samples', $sql );
+        $this->assertStringContainsString( 'CREATE TABLE wp_antispamwizard_samples', $sql );
         $this->assertStringNotContainsString( 'CREATE TABLE `', $sql );
     }
 
@@ -732,7 +732,7 @@ class SampleRepositoryTest extends TestCase {
         // The duplicate-check SELECT in insert() goes through prepare().
         $found = false;
         foreach ( $wpdb->prepared_queries as $q ) {
-            if ( stripos( $q, 'SELECT' ) === 0 && strpos( $q, '`wp_asw_samples`' ) !== false ) {
+            if ( stripos( $q, 'SELECT' ) === 0 && strpos( $q, '`wp_antispamwizard_samples`' ) !== false ) {
                 $found = true;
                 break;
             }
@@ -747,7 +747,7 @@ class SampleRepositoryTest extends TestCase {
 
         $found = false;
         foreach ( $wpdb->prepared_queries as $q ) {
-            if ( strpos( $q, '`wp_asw_samples`' ) !== false ) {
+            if ( strpos( $q, '`wp_antispamwizard_samples`' ) !== false ) {
                 $found = true;
                 break;
             }
@@ -762,7 +762,7 @@ class SampleRepositoryTest extends TestCase {
 
         $found = false;
         foreach ( $wpdb->prepared_queries as $q ) {
-            if ( strpos( $q, '`wp_asw_samples`' ) !== false ) {
+            if ( strpos( $q, '`wp_antispamwizard_samples`' ) !== false ) {
                 $found = true;
                 break;
             }
@@ -789,7 +789,7 @@ class SampleRepositoryTest extends TestCase {
     public function test_create_table_sql_rejects_invalid_charset(): void {
         global $wpdb;
         $wpdb->charset = 'evil; DROP TABLE users';
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $sql = $repo->get_create_table_sql();
 
@@ -800,7 +800,7 @@ class SampleRepositoryTest extends TestCase {
     public function test_create_table_sql_rejects_invalid_collate(): void {
         global $wpdb;
         $wpdb->collate = 'evil; DROP TABLE users';
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $sql = $repo->get_create_table_sql();
 
@@ -813,7 +813,7 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
         $wpdb->charset = 'evil';
         $wpdb->collate = 'latin1_swedish_ci';
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $sql = $repo->get_create_table_sql();
 
@@ -826,7 +826,7 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
         $wpdb->charset = 'utf8mb4';
         $wpdb->collate = 'latin1_swedish_ci';
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $sql = $repo->get_create_table_sql();
 
@@ -840,7 +840,7 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
         $wpdb->charset = 'latin1';
         $wpdb->collate = '';
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $sql = $repo->get_create_table_sql();
 
@@ -854,7 +854,7 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
         $wpdb->charset = 'latin1';
         $wpdb->collate = 'latin1_swedish_ci';
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $sql = $repo->get_create_table_sql();
 
@@ -868,8 +868,8 @@ class SampleRepositoryTest extends TestCase {
         global $wpdb;
 
         $this->assertSame(
-            "SELECT * FROM `wp_asw_samples` WHERE script = 'latin'",
-            $wpdb->prepare( 'SELECT * FROM %i WHERE script = %s', 'wp_asw_samples', 'latin' )
+            "SELECT * FROM `wp_antispamwizard_samples` WHERE script = 'latin'",
+            $wpdb->prepare( 'SELECT * FROM %i WHERE script = %s', 'wp_antispamwizard_samples', 'latin' )
         );
     }
 
@@ -891,7 +891,7 @@ class SampleRepositoryTest extends TestCase {
 
         $hash = hash( 'sha256', 'Ordering probe' );
         $this->assertContains(
-            "SELECT COUNT(*) FROM `wp_asw_samples` WHERE content_hash = '{$hash}' AND script = 'latin' AND category = 'spam'",
+            "SELECT COUNT(*) FROM `wp_antispamwizard_samples` WHERE content_hash = '{$hash}' AND script = 'latin' AND category = 'spam'",
             $wpdb->prepared_queries
         );
     }
@@ -907,7 +907,7 @@ class SampleRepositoryTest extends TestCase {
         $this->assertSame( 'exists', $this->repo->insert( 'cyrillic', 'ham', 'Recheck probe', 135 ) );
 
         $hash = hash( 'sha256', 'Recheck probe' );
-        $expected = "SELECT COUNT(*) FROM `wp_asw_samples` WHERE content_hash = '{$hash}' AND script = 'cyrillic' AND category = 'ham'";
+        $expected = "SELECT COUNT(*) FROM `wp_antispamwizard_samples` WHERE content_hash = '{$hash}' AND script = 'cyrillic' AND category = 'ham'";
         // Both the pre-insert duplicate check and the recheck use this SQL.
         $this->assertSame( 2, count( array_keys( $wpdb->prepared_queries, $expected, true ) ) );
     }
@@ -918,7 +918,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->find_all( 'cyrillic', 'ham' );
 
         $this->assertSame(
-            array( "SELECT content FROM `wp_asw_samples` WHERE script = 'cyrillic' AND category = 'ham' ORDER BY id ASC" ),
+            array( "SELECT content FROM `wp_antispamwizard_samples` WHERE script = 'cyrillic' AND category = 'ham' ORDER BY id ASC" ),
             $wpdb->prepared_queries
         );
     }
@@ -929,7 +929,7 @@ class SampleRepositoryTest extends TestCase {
         // ascending id, so a table built through it would come back in id
         // order whether the query asked for it or not.
         $wpdb->seed_table_rows(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 array( 'id' => 9, 'script' => 'cyrillic', 'category' => 'spam', 'content' => 'newest' ),
                 array( 'id' => 2, 'script' => 'cyrillic', 'category' => 'spam', 'content' => 'oldest' ),
@@ -950,7 +950,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->count_by_script_category( 'cjk', 'spam' );
 
         $this->assertSame(
-            array( "SELECT COUNT(*) FROM `wp_asw_samples` WHERE script = 'cjk' AND category = 'spam'" ),
+            array( "SELECT COUNT(*) FROM `wp_antispamwizard_samples` WHERE script = 'cjk' AND category = 'spam'" ),
             $wpdb->prepared_queries
         );
     }
@@ -961,7 +961,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->insert( 'latin', 'spam', 'Revision probe', 136 );
 
         $this->assertContains(
-            "UPDATE `wp_options` SET option_value = option_value + 1 WHERE option_name = 'asw_samples_revision'",
+            "UPDATE `wp_options` SET option_value = option_value + 1 WHERE option_name = 'antispamwizard_samples_revision'",
             $wpdb->prepared_queries
         );
     }
@@ -1035,7 +1035,7 @@ class SampleRepositoryTest extends TestCase {
 
     public function test_schema_is_current_is_false_before_the_ddl_runs(): void {
         // No dbDelta() has applied the layout, so the comment_id subject key is
-        // absent -- which is what ASW::maybe_upgrade_schema() must see when the
+        // absent -- which is what ANTISPAMWIZARD::maybe_upgrade_schema() must see when the
         // database refuses the migration.
         $this->assertFalse( $this->repo->schema_is_current() );
     }
@@ -1069,9 +1069,9 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->schema_is_current();
 
         $probes = implode( "\n", $wpdb->prepared_queries );
-        foreach ( ASW_Sample_Repository::VERSIONED_INDEXES as $index ) {
+        foreach ( ANTISPAMWIZARD_Sample_Repository::VERSIONED_INDEXES as $index ) {
             $this->assertStringContainsString(
-                "SHOW INDEX FROM `wp_asw_samples` WHERE Key_name = '{$index}'",
+                "SHOW INDEX FROM `wp_antispamwizard_samples` WHERE Key_name = '{$index}'",
                 $probes
             );
         }
@@ -1094,8 +1094,8 @@ class SampleRepositoryTest extends TestCase {
     // --- find_by_email_hash() / delete_by_email_hash() ---
 
     public function test_find_by_email_hash_returns_only_the_matching_subjects_rows(): void {
-        $subject = ASW_Detector::hash_email( 'subject@example.com' );
-        $other   = ASW_Detector::hash_email( 'other@example.com' );
+        $subject = ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' );
+        $other   = ANTISPAMWIZARD_Detector::hash_email( 'other@example.com' );
         $this->repo->insert( 'latin', 'spam', 'Subject sample one', 701, $subject );
         $this->repo->insert( 'latin', 'spam', 'Subject sample two', 702, $subject );
         $this->repo->insert( 'latin', 'spam', 'Someone else', 703, $other );
@@ -1113,7 +1113,7 @@ class SampleRepositoryTest extends TestCase {
         // The whole point of the secondary key: emptying the spam queue
         // hard-deletes the comment, and comment_id alone would then never resolve
         // to this row again while it still holds the full comment text.
-        $subject = ASW_Detector::hash_email( 'subject@example.com' );
+        $subject = ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' );
         $this->repo->insert( 'latin', 'spam', 'Orphaned sample', 704, $subject );
 
         // No comment IDs at all -- as WordPress core reports for a deleted comment.
@@ -1133,26 +1133,26 @@ class SampleRepositoryTest extends TestCase {
     }
 
     public function test_delete_by_email_hash_removes_the_rows_and_bumps_the_revision(): void {
-        $subject = ASW_Detector::hash_email( 'subject@example.com' );
-        $other   = ASW_Detector::hash_email( 'other@example.com' );
+        $subject = ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' );
+        $other   = ANTISPAMWIZARD_Detector::hash_email( 'other@example.com' );
         $this->repo->insert( 'latin', 'spam', 'Erase this one', 706, $subject );
         $this->repo->insert( 'latin', 'spam', 'Keep this one', 707, $other );
-        update_option( 'asw_samples_revision', 7 );
+        update_option( 'antispamwizard_samples_revision', 7 );
 
         $this->assertSame( 1, $this->repo->delete_by_email_hash( $subject ) );
 
         $this->assertSame( array(), $this->repo->find_by_email_hash( $subject ) );
         $this->assertCount( 1, $this->repo->find_by_email_hash( $other ) );
-        $this->assertSame( 8, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 8, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_by_email_hash_leaves_the_revision_untouched_when_nothing_matched(): void {
-        $this->repo->insert( 'latin', 'spam', 'Untouched', 708, ASW_Detector::hash_email( 'subject@example.com' ) );
-        update_option( 'asw_samples_revision', 7 );
+        $this->repo->insert( 'latin', 'spam', 'Untouched', 708, ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' ) );
+        update_option( 'antispamwizard_samples_revision', 7 );
 
-        $this->assertSame( 0, $this->repo->delete_by_email_hash( ASW_Detector::hash_email( 'nobody@example.com' ) ) );
+        $this->assertSame( 0, $this->repo->delete_by_email_hash( ANTISPAMWIZARD_Detector::hash_email( 'nobody@example.com' ) ) );
 
-        $this->assertSame( 7, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 7, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_by_email_hash_deletes_nothing_for_an_empty_hash(): void {
@@ -1167,9 +1167,9 @@ class SampleRepositoryTest extends TestCase {
     }
 
     public function test_delete_by_email_hash_returns_false_and_keeps_rows_when_the_query_fails(): void {
-        $subject = ASW_Detector::hash_email( 'subject@example.com' );
+        $subject = ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' );
         $this->repo->insert( 'latin', 'spam', 'Erase me', 710, $subject );
-        update_option( 'asw_samples_revision', 7 );
+        update_option( 'antispamwizard_samples_revision', 7 );
 
         global $wpdb;
         $wpdb->query_result = false;
@@ -1177,7 +1177,7 @@ class SampleRepositoryTest extends TestCase {
         $this->assertFalse( $this->repo->delete_by_email_hash( $subject ) );
 
         $wpdb->query_result = null;
-        $this->assertSame( 7, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 7, (int) get_option( 'antispamwizard_samples_revision' ) );
         $this->assertCount( 1, $this->repo->find_by_email_hash( $subject ) );
     }
 
@@ -1196,7 +1196,7 @@ class SampleRepositoryTest extends TestCase {
     private function seed_legacy_row( string $content ): void {
         global $wpdb;
         $wpdb->insert(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 'comment_id'   => 0,
                 'email_hash'   => '',
@@ -1211,8 +1211,8 @@ class SampleRepositoryTest extends TestCase {
 
     public function test_delete_unattributed_removes_rows_no_subject_key_can_reach(): void {
         $this->seed_legacy_row( 'Legacy sample no request can reach' );
-        $this->repo->insert( 'latin', 'spam', 'Attributed sample', 801, ASW_Detector::hash_email( 'subject@example.com' ) );
-        update_option( 'asw_samples_revision', 4 );
+        $this->repo->insert( 'latin', 'spam', 'Attributed sample', 801, ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' ) );
+        update_option( 'antispamwizard_samples_revision', 4 );
 
         $this->assertSame( 1, $this->repo->delete_unattributed() );
 
@@ -1220,7 +1220,7 @@ class SampleRepositoryTest extends TestCase {
         // invalidated so the erased text stops influencing verdicts.
         $remaining = $this->repo->find_all( 'latin', 'spam' );
         $this->assertSame( array( 'Attributed sample' ), $remaining );
-        $this->assertSame( 5, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 5, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_unattributed_keeps_a_row_that_only_the_hash_key_reaches(): void {
@@ -1229,10 +1229,10 @@ class SampleRepositoryTest extends TestCase {
         // the secondary key.
         global $wpdb;
         $wpdb->insert(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 'comment_id'   => 0,
-                'email_hash'   => ASW_Detector::hash_email( 'subject@example.com' ),
+                'email_hash'   => ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' ),
                 'script'       => 'latin',
                 'category'     => 'spam',
                 'content'      => 'Reachable by hash only',
@@ -1242,20 +1242,20 @@ class SampleRepositoryTest extends TestCase {
         );
 
         $this->assertSame( 0, $this->repo->delete_unattributed() );
-        $this->assertCount( 1, $this->repo->find_by_email_hash( ASW_Detector::hash_email( 'subject@example.com' ) ) );
+        $this->assertCount( 1, $this->repo->find_by_email_hash( ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' ) ) );
     }
 
     public function test_delete_unattributed_returns_zero_without_bumping_the_revision(): void {
         $this->repo->insert( 'latin', 'spam', 'Attributed sample', 802 );
-        update_option( 'asw_samples_revision', 4 );
+        update_option( 'antispamwizard_samples_revision', 4 );
 
         $this->assertSame( 0, $this->repo->delete_unattributed() );
-        $this->assertSame( 4, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 4, (int) get_option( 'antispamwizard_samples_revision' ) );
     }
 
     public function test_delete_unattributed_returns_false_and_keeps_rows_when_the_query_fails(): void {
         $this->seed_legacy_row( 'Legacy sample no request can reach' );
-        update_option( 'asw_samples_revision', 4 );
+        update_option( 'antispamwizard_samples_revision', 4 );
 
         global $wpdb;
         $wpdb->query_result = false;
@@ -1265,7 +1265,7 @@ class SampleRepositoryTest extends TestCase {
         $this->assertFalse( $this->repo->delete_unattributed() );
 
         $wpdb->query_result = null;
-        $this->assertSame( 4, (int) get_option( 'asw_samples_revision' ) );
+        $this->assertSame( 4, (int) get_option( 'antispamwizard_samples_revision' ) );
         $this->assertSame( array( 'Legacy sample no request can reach' ), $this->repo->find_all( 'latin', 'spam' ) );
     }
 
@@ -1276,7 +1276,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->delete_unattributed();
 
         $this->assertSame(
-            array( "DELETE FROM `wp_asw_samples` WHERE comment_id = 0 AND email_hash = ''" ),
+            array( "DELETE FROM `wp_antispamwizard_samples` WHERE comment_id = 0 AND email_hash = ''" ),
             $wpdb->prepared_queries
         );
     }
@@ -1290,8 +1290,8 @@ class SampleRepositoryTest extends TestCase {
 
         $this->assertSame(
             array(
-                "SELECT id, comment_id, email_hash, script, category, content, created_at FROM `wp_asw_samples` WHERE email_hash = 'abc' ORDER BY id ASC",
-                "DELETE FROM `wp_asw_samples` WHERE email_hash = 'abc'",
+                "SELECT id, comment_id, email_hash, script, category, content, created_at FROM `wp_antispamwizard_samples` WHERE email_hash = 'abc' ORDER BY id ASC",
+                "DELETE FROM `wp_antispamwizard_samples` WHERE email_hash = 'abc'",
             ),
             $wpdb->prepared_queries
         );
@@ -1387,7 +1387,7 @@ class SampleRepositoryTest extends TestCase {
         // find_all() answers the empty array either way -- a failed SELECT hands
         // back the array() wpdb::query()'s flush() left in last_result, which is
         // byte-identical to "this script has no rows". The flag is the only way
-        // ASW_Model_Store can tell a unit built from no samples apart from one
+        // ANTISPAMWIZARD_Model_Store can tell a unit built from no samples apart from one
         // built from samples it could not read, and caching the latter under a
         // fingerprint that says the rows are in it would drop every user-added
         // sample out of the models for the unit's whole day.
@@ -1425,7 +1425,7 @@ class SampleRepositoryTest extends TestCase {
 
         $this->assertSame(
             array(
-                'SELECT category, COUNT(*) AS sample_count, MAX(id) AS max_id FROM `wp_asw_samples` WHERE script = \'cyrillic\' GROUP BY category',
+                'SELECT category, COUNT(*) AS sample_count, MAX(id) AS max_id FROM `wp_antispamwizard_samples` WHERE script = \'cyrillic\' GROUP BY category',
             ),
             $wpdb->prepared_queries
         );
@@ -1504,7 +1504,7 @@ class SampleRepositoryTest extends TestCase {
         $this->repo->table_fingerprint();
 
         $this->assertSame(
-            array( 'SELECT COUNT(*) AS sample_count, MAX(id) AS max_id FROM `wp_asw_samples`' ),
+            array( 'SELECT COUNT(*) AS sample_count, MAX(id) AS max_id FROM `wp_antispamwizard_samples`' ),
             $wpdb->prepared_queries
         );
     }

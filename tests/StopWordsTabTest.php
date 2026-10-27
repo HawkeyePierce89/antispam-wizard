@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 class StopWordsTabTest extends TestCase {
 
-    private ASW_Admin_Page $admin_page;
+    private ANTISPAMWIZARD_Admin_Page $admin_page;
 
     protected function setUp(): void {
         global $wp_options, $wp_actions, $wp_filters, $wp_menu_pages, $wp_enqueued_styles,
@@ -25,17 +25,17 @@ class StopWordsTabTest extends TestCase {
         $_GET                  = array();
         $_FILES                = array();
 
-        if ( ! defined( 'ASW_PATH' ) ) {
-            define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
         }
-        if ( ! defined( 'ASW_URL' ) ) {
-            define( 'ASW_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_URL' ) ) {
+            define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
         }
-        if ( ! defined( 'ASW_VERSION' ) ) {
-            define( 'ASW_VERSION', '1.0.0' );
+        if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
+            define( 'ANTISPAMWIZARD_VERSION', '1.0.0' );
         }
 
-        $this->admin_page = new ASW_Admin_Page();
+        $this->admin_page = new ANTISPAMWIZARD_Admin_Page();
     }
 
     protected function tearDown(): void {
@@ -49,7 +49,7 @@ class StopWordsTabTest extends TestCase {
     public function test_ajax_add_stop_word_success() {
         global $wp_json_responses;
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'badword';
 
@@ -58,16 +58,16 @@ class StopWordsTabTest extends TestCase {
         $this->assertCount( 1, $wp_json_responses );
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertContains( 'badword', $list );
     }
 
     public function test_ajax_add_stop_word_duplicate() {
         global $wp_json_responses;
 
-        ASW_Settings::update( array( 'stop_words_list' => array( 'existing' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'existing' ) ) );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'existing';
 
@@ -80,7 +80,7 @@ class StopWordsTabTest extends TestCase {
     public function test_ajax_add_stop_word_empty() {
         global $wp_json_responses;
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = '';
 
@@ -105,7 +105,7 @@ class StopWordsTabTest extends TestCase {
         global $wp_current_user_caps, $wp_json_responses;
         $wp_current_user_caps = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'badword';
 
@@ -118,7 +118,7 @@ class StopWordsTabTest extends TestCase {
     public function test_ajax_add_stop_word_bare_equals_rejected() {
         global $wp_json_responses;
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = '=';
 
@@ -133,9 +133,9 @@ class StopWordsTabTest extends TestCase {
     public function test_ajax_remove_stop_word_success() {
         global $wp_json_responses;
 
-        ASW_Settings::update( array( 'stop_words_list' => array( 'word1', 'word2', 'word3' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'word1', 'word2', 'word3' ) ) );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'word2';
 
@@ -143,7 +143,7 @@ class StopWordsTabTest extends TestCase {
 
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertNotContains( 'word2', $list );
         $this->assertContains( 'word1', $list );
         $this->assertContains( 'word3', $list );
@@ -152,9 +152,9 @@ class StopWordsTabTest extends TestCase {
     public function test_ajax_remove_stop_word_not_found() {
         global $wp_json_responses;
 
-        ASW_Settings::update( array( 'stop_words_list' => array( 'word1' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'word1' ) ) );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'nonexistent';
 
@@ -178,7 +178,7 @@ class StopWordsTabTest extends TestCase {
         global $wp_current_user_caps, $wp_json_responses;
         $wp_current_user_caps = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'word1';
 
@@ -190,16 +190,16 @@ class StopWordsTabTest extends TestCase {
     // --- Import tests ---
 
     public function test_import_from_textarea() {
-        ASW_Settings::update( array( 'stop_words_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_stop_words' );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_stop_words' );
 
-        $_POST['asw_import']       = '1';
-        $_POST['asw_import_nonce'] = $nonce;
+        $_POST['antispamwizard_import']       = '1';
+        $_POST['antispamwizard_import_nonce'] = $nonce;
         $_POST['stop_words_text']             = "word1\nword2\nword3";
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertCount( 3, $list );
         $this->assertContains( 'word1', $list );
         $this->assertContains( 'word2', $list );
@@ -207,101 +207,101 @@ class StopWordsTabTest extends TestCase {
     }
 
     public function test_import_merges_with_existing() {
-        ASW_Settings::update( array( 'stop_words_list' => array( 'existing' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'existing' ) ) );
 
-        $nonce = wp_create_nonce( 'asw_import_stop_words' );
-        $_POST['asw_import']       = '1';
-        $_POST['asw_import_nonce'] = $nonce;
+        $nonce = wp_create_nonce( 'antispamwizard_import_stop_words' );
+        $_POST['antispamwizard_import']       = '1';
+        $_POST['antispamwizard_import_nonce'] = $nonce;
         $_POST['stop_words_text']             = "existing\nnewword";
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertCount( 2, $list );
         $this->assertContains( 'existing', $list );
         $this->assertContains( 'newword', $list );
     }
 
     public function test_import_skips_empty_lines() {
-        ASW_Settings::update( array( 'stop_words_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_stop_words' );
-        $_POST['asw_import']       = '1';
-        $_POST['asw_import_nonce'] = $nonce;
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_stop_words' );
+        $_POST['antispamwizard_import']       = '1';
+        $_POST['antispamwizard_import_nonce'] = $nonce;
         $_POST['stop_words_text']             = "word1\n\n\nword2\n  \n";
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertCount( 2, $list );
     }
 
     public function test_import_without_nonce_does_nothing() {
-        $defaults = ASW_Settings::get_defaults();
-        $_POST['asw_import'] = '1';
+        $defaults = ANTISPAMWIZARD_Settings::get_defaults();
+        $_POST['antispamwizard_import'] = '1';
         $_POST['stop_words_text']       = "word1\nword2";
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertSame( $defaults['stop_words_list'], $list );
     }
 
     public function test_import_without_capability_does_nothing() {
         global $wp_current_user_caps;
         $wp_current_user_caps = array();
-        $defaults = ASW_Settings::get_defaults();
+        $defaults = ANTISPAMWIZARD_Settings::get_defaults();
 
-        $nonce = wp_create_nonce( 'asw_import_stop_words' );
-        $_POST['asw_import']       = '1';
-        $_POST['asw_import_nonce'] = $nonce;
+        $nonce = wp_create_nonce( 'antispamwizard_import_stop_words' );
+        $_POST['antispamwizard_import']       = '1';
+        $_POST['antispamwizard_import_nonce'] = $nonce;
         $_POST['stop_words_text']             = "word1";
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertSame( $defaults['stop_words_list'], $list );
     }
 
     // --- Parse stop-words text ---
 
     public function test_parse_stop_words_text_basic() {
-        $result = ASW_Admin_Page::parse_stop_words_text( "one\ntwo\nthree" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "one\ntwo\nthree" );
         $this->assertSame( array( 'one', 'two', 'three' ), $result );
     }
 
     public function test_parse_stop_words_text_windows_line_endings() {
-        $result = ASW_Admin_Page::parse_stop_words_text( "one\r\ntwo\r\nthree" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "one\r\ntwo\r\nthree" );
         $this->assertSame( array( 'one', 'two', 'three' ), $result );
     }
 
     public function test_parse_stop_words_text_with_exact_match_prefix() {
-        $result = ASW_Admin_Page::parse_stop_words_text( "=exact\nsubstring" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "=exact\nsubstring" );
         $this->assertSame( array( '=exact', 'substring' ), $result );
     }
 
     public function test_parse_stop_words_text_empty() {
-        $result = ASW_Admin_Page::parse_stop_words_text( '' );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( '' );
         $this->assertSame( array(), $result );
     }
 
     public function test_parse_stop_words_text_filters_too_long() {
         $long_word = str_repeat( 'a', 65 );
-        $result = ASW_Admin_Page::parse_stop_words_text( "valid\n{$long_word}\nother" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "valid\n{$long_word}\nother" );
         $this->assertSame( array( 'valid', 'other' ), $result );
     }
 
     public function test_parse_stop_words_text_filters_emoji() {
-        $result = ASW_Admin_Page::parse_stop_words_text( "good\nbad😀word\nfine" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "good\nbad😀word\nfine" );
         $this->assertSame( array( 'good', 'fine' ), $result );
     }
 
     public function test_parse_stop_words_text_filters_bare_equals() {
-        $result = ASW_Admin_Page::parse_stop_words_text( "=\n=valid phrase\nword" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "=\n=valid phrase\nword" );
         $this->assertSame( array( '=valid phrase', 'word' ), $result );
     }
 
     public function test_parse_stop_words_text_filters_exact_match_with_special_chars() {
-        $result = ASW_Admin_Page::parse_stop_words_text( "=hello!\n=good phrase" );
+        $result = ANTISPAMWIZARD_Admin_Page::parse_stop_words_text( "=hello!\n=good phrase" );
         $this->assertSame( array( '=good phrase' ), $result );
     }
 
@@ -313,10 +313,10 @@ class StopWordsTabTest extends TestCase {
         $this->admin_page->add_menu_page();
         $this->admin_page->enqueue_assets( 'antispam-wizard_page_antispam-wizard-stop-words' );
 
-        $this->assertArrayHasKey( 'asw-admin', $wp_enqueued_scripts );
-        $this->assertStringContainsString( 'admin/js/admin.js', $wp_enqueued_scripts['asw-admin']['src'] );
-        $this->assertArrayHasKey( 'asw-admin', $wp_localized_scripts );
-        $this->assertSame( 'aswAdmin', $wp_localized_scripts['asw-admin']['object_name'] );
+        $this->assertArrayHasKey( 'antispamwizard-admin', $wp_enqueued_scripts );
+        $this->assertStringContainsString( 'admin/js/admin.js', $wp_enqueued_scripts['antispamwizard-admin']['src'] );
+        $this->assertArrayHasKey( 'antispamwizard-admin', $wp_localized_scripts );
+        $this->assertSame( 'antispamwizardAdmin', $wp_localized_scripts['antispamwizard-admin']['object_name'] );
     }
 
     public function test_enqueue_assets_skips_other_pages() {
@@ -337,8 +337,8 @@ class StopWordsTabTest extends TestCase {
 
         $this->admin_page->init();
 
-        $this->assertArrayHasKey( 'wp_ajax_asw_add_stop_word', $wp_actions );
-        $this->assertArrayHasKey( 'wp_ajax_asw_remove_stop_word', $wp_actions );
+        $this->assertArrayHasKey( 'wp_ajax_antispamwizard_add_stop_word', $wp_actions );
+        $this->assertArrayHasKey( 'wp_ajax_antispamwizard_remove_stop_word', $wp_actions );
     }
 
     // --- Stop-words view renders ---
@@ -351,8 +351,8 @@ class StopWordsTabTest extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString( 'Blocked Words', $output );
-        $this->assertStringContainsString( 'asw-new-word', $output );
-        $this->assertStringContainsString( 'asw-add-word', $output );
+        $this->assertStringContainsString( 'antispamwizard-new-word', $output );
+        $this->assertStringContainsString( 'antispamwizard-add-word', $output );
         $this->assertStringContainsString( 'Import', $output );
         $this->assertStringContainsString( 'Export', $output );
     }
@@ -367,10 +367,10 @@ class StopWordsTabTest extends TestCase {
 
     public function test_stop_words_export_body_is_byte_identical_to_the_list() {
         $list = array( 'alpha & beta', '<script>', 'quote"inside', "single'quote", 'plain' );
-        ASW_Settings::update( array( 'stop_words_list' => $list ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => $list ) );
 
-        $_POST['asw_export']       = '1';
-        $_POST['asw_export_nonce'] = wp_create_nonce( 'asw_export_stop_words' );
+        $_POST['antispamwizard_export']       = '1';
+        $_POST['antispamwizard_export_nonce'] = wp_create_nonce( 'antispamwizard_export_stop_words' );
 
         $output = $this->capture_export( array( $this->admin_page, 'handle_stop_words_export' ) );
 
@@ -383,10 +383,10 @@ class StopWordsTabTest extends TestCase {
 
     public function test_excluded_tokens_export_body_is_byte_identical_to_the_list() {
         $list = array( 'a&b', '<em>', 'has"quote', "it's", 'token' );
-        ASW_Settings::update( array( 'excluded_tokens_list' => $list ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => $list ) );
 
-        $_POST['asw_export_excluded_tokens']       = '1';
-        $_POST['asw_export_excluded_tokens_nonce'] = wp_create_nonce( 'asw_export_excluded_tokens' );
+        $_POST['antispamwizard_export_excluded_tokens']       = '1';
+        $_POST['antispamwizard_export_excluded_tokens_nonce'] = wp_create_nonce( 'antispamwizard_export_excluded_tokens' );
 
         $output = $this->capture_export( array( $this->admin_page, 'handle_excluded_tokens_export' ) );
 
@@ -426,7 +426,7 @@ class StopWordsTabTest extends TestCase {
     }
 
     public function test_stop_words_tab_renders_existing_words() {
-        ASW_Settings::update( array( 'stop_words_list' => array( 'spam', '=exact' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'spam', '=exact' ) ) );
         $_GET['page'] = 'antispam-wizard-stop-words';
 
         ob_start();
@@ -435,6 +435,6 @@ class StopWordsTabTest extends TestCase {
 
         $this->assertStringContainsString( 'spam', $output );
         $this->assertStringContainsString( '=exact', $output );
-        $this->assertStringContainsString( 'asw-word-tag', $output );
+        $this->assertStringContainsString( 'antispamwizard-word-tag', $output );
     }
 }
