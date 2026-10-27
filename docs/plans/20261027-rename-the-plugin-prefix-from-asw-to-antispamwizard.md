@@ -222,11 +222,11 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
 
 ### Task 4: Update documentation
 
-- [ ] Task 2 has already updated CLAUDE.md and `docs/*.md`. Confirm two things:
+- [x] Task 2 has already updated CLAUDE.md and `docs/*.md`. Confirm two things:
   - CLAUDE.md names `tests/AntiSpamWizardTest.php` wherever it referred to the old file.
   - CLAUDE.md and `docs/model-store.md` both say that every model unit key keeps the
     `antispamwizard_classifiers_` prefix that `uninstall.php` relies on.
-- [ ] README.md already has its compose project examples (`antispamwizard-smoke-…`,
+- [x] README.md already has its compose project examples (`antispamwizard-smoke-…`,
   `antispamwizard-pc-…`) and storage names updated. No `readme.txt` change: it contains no
   identifier.
 
