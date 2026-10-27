@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for ASW_Detector.
+ * Tests for ANTISPAMWIZARD_Detector.
  */
 
 use PHPUnit\Framework\TestCase;
@@ -20,8 +20,8 @@ class DetectorTest extends TestCase {
     /**
      * Helper: create a mock check that returns a fixed result.
      */
-    private function make_check( bool $spam, string $name = 'test', string $details = '' ): ASW_Check {
-        return new class( $spam, $name, $details ) implements ASW_Check {
+    private function make_check( bool $spam, string $name = 'test', string $details = '' ): ANTISPAMWIZARD_Check {
+        return new class( $spam, $name, $details ) implements ANTISPAMWIZARD_Check {
             private $spam;
             private $name;
             private $details;
@@ -32,14 +32,14 @@ class DetectorTest extends TestCase {
                 $this->details = $details;
             }
 
-            public function check( array $comment_data ): ASW_Check_Result {
-                return new ASW_Check_Result( $this->spam, $this->name, $this->details );
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
+                return new ANTISPAMWIZARD_Check_Result( $this->spam, $this->name, $this->details );
             }
         };
     }
 
     public function test_run_returns_results_from_all_checks(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'check_a' ),
             $this->make_check( true, 'check_b', 'found spam' ),
         ) );
@@ -54,14 +54,14 @@ class DetectorTest extends TestCase {
     }
 
     public function test_run_with_no_checks_returns_empty(): void {
-        $detector = new ASW_Detector( array() );
+        $detector = new ANTISPAMWIZARD_Detector( array() );
         $results  = $detector->run( array( 'comment_content' => 'hello' ) );
 
         $this->assertCount( 0, $results );
     }
 
     public function test_run_all_ham(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'check_a' ),
             $this->make_check( false, 'check_b' ),
         ) );
@@ -74,7 +74,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_returns_spam_when_check_detects_spam(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -89,7 +89,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_passes_through_for_ham(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'links' ),
         ) );
 
@@ -107,7 +107,7 @@ class DetectorTest extends TestCase {
         global $wp_actions;
 
         // With short-circuit, only the first spam check's reason is recorded.
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
             $this->make_check( true, 'emoji', '5 emoji found' ),
         ) );
@@ -123,24 +123,24 @@ class DetectorTest extends TestCase {
         $this->assertArrayHasKey( 'comment_post', $wp_actions );
         do_action( 'comment_post', 42 );
 
-        $meta = get_comment_meta( 42, '_asw_reason', true );
+        $meta = get_comment_meta( 42, '_antispamwizard_reason', true );
         $this->assertStringContainsString( 'links: too many links', $meta );
     }
 
     public function test_the_first_flag_records_the_shadow_display_cutoff(): void {
-        $detector = new ASW_Detector( array( $this->make_check( true, 'links', 'too many links' ) ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $this->make_check( true, 'links', 'too many links' ) ) );
 
         $detector->filter_comment( 1, array( 'comment_content' => 'spam content', 'comment_author_IP' => '10.0.0.1' ) );
         do_action( 'comment_post', 42 );
-        $this->assertSame( 41, get_option( ASW_Shadow_Display::CUTOFF_OPTION ), 'flags above 41 are this version\'s' );
+        $this->assertSame( 41, get_option( ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ), 'flags above 41 are this version\'s' );
 
         $detector->filter_comment( 1, array( 'comment_content' => 'spam content', 'comment_author_IP' => '10.0.0.1' ) );
         do_action( 'comment_post', 50 );
-        $this->assertSame( 41, get_option( ASW_Shadow_Display::CUTOFF_OPTION ), 'a later flag keeps the first cutoff' );
+        $this->assertSame( 41, get_option( ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ), 'a later flag keeps the first cutoff' );
     }
 
     public function test_filter_comment_skips_pingbacks(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -155,7 +155,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_skips_trackbacks(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -170,7 +170,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_processes_regular_comments(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -193,7 +193,7 @@ class DetectorTest extends TestCase {
 
     public function test_ip_hashing_uses_sha256(): void {
         $ip   = '192.168.1.1';
-        $hash = ASW_Detector::hash_ip( $ip );
+        $hash = ANTISPAMWIZARD_Detector::hash_ip( $ip );
 
         $salt = wp_salt( 'auth' );
         $this->assertEquals( hash( 'sha256', $salt . $ip ), $hash );
@@ -204,35 +204,35 @@ class DetectorTest extends TestCase {
     public function test_ip_hashing_is_deterministic(): void {
         $ip = '10.0.0.1';
         $this->assertEquals(
-            ASW_Detector::hash_ip( $ip ),
-            ASW_Detector::hash_ip( $ip )
+            ANTISPAMWIZARD_Detector::hash_ip( $ip ),
+            ANTISPAMWIZARD_Detector::hash_ip( $ip )
         );
     }
 
     public function test_ip_hashing_different_ips_produce_different_hashes(): void {
         $this->assertNotEquals(
-            ASW_Detector::hash_ip( '192.168.1.1' ),
-            ASW_Detector::hash_ip( '192.168.1.2' )
+            ANTISPAMWIZARD_Detector::hash_ip( '192.168.1.1' ),
+            ANTISPAMWIZARD_Detector::hash_ip( '192.168.1.2' )
         );
     }
 
     public function test_filter_comment_hashes_ip_in_comment_data(): void {
         // Use a check that captures the comment data to verify hashed IP is present.
         $captured = null;
-        $check    = new class( $captured ) implements ASW_Check {
+        $check    = new class( $captured ) implements ANTISPAMWIZARD_Check {
             private $captured;
 
             public function __construct( &$captured ) {
                 $this->captured = &$captured;
             }
 
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->captured = $comment_data;
-                return new ASW_Check_Result( false, 'test', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'test', '' );
             }
         };
 
-        $detector = new ASW_Detector( array( $check ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $check ) );
         $detector->filter_comment( 1, array(
             'comment_content'   => 'hello',
             'comment_author_IP' => '203.0.113.50',
@@ -240,7 +240,7 @@ class DetectorTest extends TestCase {
 
         $this->assertArrayHasKey( 'comment_author_IP_hashed', $captured );
         $this->assertEquals(
-            ASW_Detector::hash_ip( '203.0.113.50' ),
+            ANTISPAMWIZARD_Detector::hash_ip( '203.0.113.50' ),
             $captured['comment_author_IP_hashed']
         );
         // Raw IP is kept so other filters can still access it.
@@ -251,7 +251,7 @@ class DetectorTest extends TestCase {
     public function test_register_hooks_adds_filter(): void {
         global $wp_filters;
 
-        $detector = new ASW_Detector( array() );
+        $detector = new ANTISPAMWIZARD_Detector( array() );
         $detector->register_hooks();
 
         $this->assertArrayHasKey( 'pre_comment_approved', $wp_filters );
@@ -260,7 +260,7 @@ class DetectorTest extends TestCase {
     public function test_filter_integration_via_apply_filters(): void {
         global $wp_filters;
 
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'spam_check', 'detected' ),
         ) );
         $detector->register_hooks();
@@ -274,7 +274,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_integration_passes_through_ham(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'clean' ),
         ) );
         $detector->register_hooks();
@@ -288,7 +288,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_multiple_spam_checks_all_reported(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'check_1', 'reason 1' ),
             $this->make_check( false, 'check_2' ),
             $this->make_check( true, 'check_3', 'reason 3' ),
@@ -303,16 +303,16 @@ class DetectorTest extends TestCase {
 
         // With short-circuit, only check_1 is reported (stops after first spam).
         do_action( 'comment_post', 99 );
-        $meta = get_comment_meta( 99, '_asw_reason', true );
+        $meta = get_comment_meta( 99, '_antispamwizard_reason', true );
         $this->assertStringContainsString( 'check_1: reason 1', $meta );
     }
 
     /**
      * Helper: create a check that throws an exception.
      */
-    private function make_throwing_check( string $class_name = 'RuntimeException' ): ASW_Check {
-        return new class() implements ASW_Check {
-            public function check( array $comment_data ): ASW_Check_Result {
+    private function make_throwing_check( string $class_name = 'RuntimeException' ): ANTISPAMWIZARD_Check {
+        return new class() implements ANTISPAMWIZARD_Check {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 throw new \RuntimeException( 'Unexpected failure' );
             }
         };
@@ -321,7 +321,7 @@ class DetectorTest extends TestCase {
     // --- C1: Fail-open on exception ---
 
     public function test_run_skips_check_on_exception_fail_open(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_throwing_check(),
             $this->make_check( false, 'clean', '' ),
         ) );
@@ -334,7 +334,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_does_not_mark_spam_when_only_check_throws(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_throwing_check(),
         ) );
 
@@ -350,7 +350,7 @@ class DetectorTest extends TestCase {
     // --- C2: Upstream respect ---
 
     public function test_filter_comment_preserves_upstream_spam(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'clean' ),
         ) );
 
@@ -363,7 +363,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_preserves_upstream_trash(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'clean' ),
         ) );
 
@@ -376,7 +376,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_preserves_upstream_wp_error(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( false, 'clean' ),
         ) );
 
@@ -394,18 +394,18 @@ class DetectorTest extends TestCase {
 
     public function test_run_short_circuits_after_first_spam(): void {
         $call_count = 0;
-        $counting_check = new class( $call_count ) implements ASW_Check {
+        $counting_check = new class( $call_count ) implements ANTISPAMWIZARD_Check {
             private $count;
             public function __construct( &$count ) {
                 $this->count = &$count;
             }
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->count++;
-                return new ASW_Check_Result( false, 'after_spam', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'after_spam', '' );
             }
         };
 
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'spam_check', 'detected' ),
             $counting_check,
         ) );
@@ -419,18 +419,18 @@ class DetectorTest extends TestCase {
 
     public function test_bot_check_spam_verdict_short_circuits_content_checks(): void {
         $call_count = 0;
-        $counting_content_check = new class( $call_count ) implements ASW_Check {
+        $counting_content_check = new class( $call_count ) implements ANTISPAMWIZARD_Check {
             private $count;
             public function __construct( &$count ) {
                 $this->count = &$count;
             }
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->count++;
-                return new ASW_Check_Result( false, 'content_check', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'content_check', '' );
             }
         };
 
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'honeypot', 'spam detected' ), // bot check
             $counting_content_check, // later content check
         ) );
@@ -447,23 +447,23 @@ class DetectorTest extends TestCase {
 
     public function test_filter_comment_truncates_oversized_content(): void {
         $captured = null;
-        $check    = new class( $captured ) implements ASW_Check {
+        $check    = new class( $captured ) implements ANTISPAMWIZARD_Check {
             private $captured;
 
             public function __construct( &$captured ) {
                 $this->captured = &$captured;
             }
 
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->captured = $comment_data;
-                return new ASW_Check_Result( false, 'test', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'test', '' );
             }
         };
 
-        $detector = new ASW_Detector( array( $check ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $check ) );
 
         // Create content larger than MAX_COMMENT_LENGTH (64 KB).
-        $oversized = str_repeat( 'a', ASW_Detector::MAX_COMMENT_LENGTH + 1000 );
+        $oversized = str_repeat( 'a', ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH + 1000 );
 
         $detector->filter_comment( 1, array(
             'comment_content'   => $oversized,
@@ -472,27 +472,27 @@ class DetectorTest extends TestCase {
 
         $this->assertNotNull( $captured );
         $this->assertEquals(
-            ASW_Detector::MAX_COMMENT_LENGTH,
+            ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH,
             mb_strlen( $captured['comment_content'], 'UTF-8' )
         );
     }
 
     public function test_filter_comment_does_not_truncate_normal_content(): void {
         $captured = null;
-        $check    = new class( $captured ) implements ASW_Check {
+        $check    = new class( $captured ) implements ANTISPAMWIZARD_Check {
             private $captured;
 
             public function __construct( &$captured ) {
                 $this->captured = &$captured;
             }
 
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->captured = $comment_data;
-                return new ASW_Check_Result( false, 'test', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'test', '' );
             }
         };
 
-        $detector = new ASW_Detector( array( $check ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $check ) );
         $content  = 'This is a normal comment.';
 
         $detector->filter_comment( 1, array(
@@ -506,20 +506,20 @@ class DetectorTest extends TestCase {
 
     public function test_evaluate_strips_malformed_utf8_before_checks_run(): void {
         $captured = null;
-        $check    = new class( $captured ) implements ASW_Check {
+        $check    = new class( $captured ) implements ANTISPAMWIZARD_Check {
             private $captured;
 
             public function __construct( &$captured ) {
                 $this->captured = &$captured;
             }
 
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->captured = $comment_data;
-                return new ASW_Check_Result( false, 'test', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'test', '' );
             }
         };
 
-        $detector = new ASW_Detector( array( $check ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $check ) );
 
         // PCRE validates the whole subject, so one stray byte anywhere makes every
         // /u pattern in every check return false/null.
@@ -539,20 +539,20 @@ class DetectorTest extends TestCase {
 
     public function test_malformed_utf8_is_sanitized_before_the_length_cap_is_applied(): void {
         $captured = null;
-        $check    = new class( $captured ) implements ASW_Check {
+        $check    = new class( $captured ) implements ANTISPAMWIZARD_Check {
             private $captured;
 
             public function __construct( &$captured ) {
                 $this->captured = &$captured;
             }
 
-            public function check( array $comment_data ): ASW_Check_Result {
+            public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
                 $this->captured = $comment_data;
-                return new ASW_Check_Result( false, 'test', '' );
+                return new ANTISPAMWIZARD_Check_Result( false, 'test', '' );
             }
         };
 
-        $detector = new ASW_Detector( array( $check ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $check ) );
 
         // Sanitizing before truncating is what makes the cap mean what it says.
         // On PHP 8.1 and 8.2 - the plugin's floor, and the smoke harness's
@@ -567,7 +567,7 @@ class DetectorTest extends TestCase {
         // each invalid BYTE as a character, so sanitization can no longer expand the
         // count and the swap is unobservable - the assertion then holds trivially.
         // That is a property of the runtime, not a reason to drop the ordering.
-        $body = str_repeat( "\xED\xA0\x80", ASW_Detector::MAX_COMMENT_LENGTH );
+        $body = str_repeat( "\xED\xA0\x80", ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH );
 
         $detector->filter_comment( 1, array(
             'comment_content'   => $body,
@@ -581,7 +581,7 @@ class DetectorTest extends TestCase {
             'Checks must never be handed a subject that fails PCRE UTF-8 validation'
         );
         $this->assertLessThanOrEqual(
-            ASW_Detector::MAX_COMMENT_LENGTH,
+            ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH,
             mb_strlen( $captured['comment_content'], 'UTF-8' ),
             'Sanitization must run before the truncation, or malformed bytes expand past the cap'
         );
@@ -600,7 +600,7 @@ class DetectorTest extends TestCase {
         $this->assertIsString( $source );
 
         $start = strpos( $source, 'public function evaluate(' );
-        $this->assertNotFalse( $start, 'ASW_Detector::evaluate() not found' );
+        $this->assertNotFalse( $start, 'ANTISPAMWIZARD_Detector::evaluate() not found' );
         $end  = strpos( $source, "\n    public function", $start + 1 );
         $body = false === $end ? substr( $source, $start ) : substr( $source, $start, $end - $start );
 
@@ -616,7 +616,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_non_string_comment_content_fails_open_instead_of_fataling(): void {
-        $detector = new ASW_Detector( array( new ASW_Emoji_Check() ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( new ANTISPAMWIZARD_Emoji_Check() ) );
 
         // run() catches a Throwable per check, but evaluate()'s own mb_strlen()
         // does not run under that catch, so a non-string body must skip the
@@ -631,7 +631,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_non_string_comment_author_ip_fails_open_instead_of_fataling(): void {
-        $detector = new ASW_Detector( array( new ASW_Emoji_Check() ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( new ANTISPAMWIZARD_Emoji_Check() ) );
 
         // hash_ip() is typed `string` and the plugin declares no strict_types, so an
         // array from another pre_comment_approved filter is a TypeError - raised by
@@ -652,17 +652,17 @@ class DetectorTest extends TestCase {
      * run() - so the comment still passes - but the check is silently skipped and a
      * plugin-attributable line lands in the debug.log dev/smoke.sh scans, on input any
      * unauthenticated commenter can trigger through another plugin. Exercise the real
-     * ASW_Duplicate_Check, which owns that fallback.
+     * ANTISPAMWIZARD_Duplicate_Check, which owns that fallback.
      */
     public function test_non_string_ip_does_not_break_checks_that_hash_it_themselves(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'enabled'           => true,
             'duplicate_enabled' => true,
         ) );
 
-        $detector = new ASW_Detector( array( new ASW_Duplicate_Check() ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( new ANTISPAMWIZARD_Duplicate_Check() ) );
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         $status = $detector->filter_comment( 1, array(
@@ -683,16 +683,16 @@ class DetectorTest extends TestCase {
     }
 
     public function test_non_string_comment_content_is_logged_when_a_content_independent_check_flags(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'enabled'          => true,
             'honeypot_enabled' => true,
         ) );
 
         // Honeypot never reads comment_content, so it reaches the spam branch with
-        // the body still non-string. ASW_Spam_Log::add_entry() takes a string and
+        // the body still non-string. ANTISPAMWIZARD_Spam_Log::add_entry() takes a string and
         // its TypeError would land outside run()'s per-check catch.
-        $detector = new ASW_Detector( array(
-            new ASW_Honeypot_Check( array( ASW_Comment_Form::HONEYPOT_FIELD => 'filled by bot' ) ),
+        $detector = new ANTISPAMWIZARD_Detector( array(
+            new ANTISPAMWIZARD_Honeypot_Check( array( ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'filled by bot' ) ),
         ) );
 
         $this->assertSame(
@@ -703,20 +703,20 @@ class DetectorTest extends TestCase {
             ) )
         );
 
-        $entries = ASW_Spam_Log::get_entries();
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $entries );
         $this->assertSame( '', $entries[0]['text_excerpt'] );
         $this->assertSame( array( 'honeypot' ), $entries[0]['checks_triggered'] );
     }
 
     public function test_one_stray_byte_does_not_disable_a_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'enabled'       => true,
             'emoji_enabled' => true,
             'emoji_max'     => 4,
         ) );
 
-        $detector = new ASW_Detector( array( new ASW_Emoji_Check() ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( new ANTISPAMWIZARD_Emoji_Check() ) );
         $emoji    = str_repeat( '😀', 10 );
 
         $this->assertSame(
@@ -744,15 +744,15 @@ class DetectorTest extends TestCase {
         // string, so everything after the NUL - including the message this test
         // inspects - is silently dropped from the log. An anonymous throwing
         // check therefore makes every assertion below pass vacuously.
-        $check = new ASW_Throwing_Check();
+        $check = new ANTISPAMWIZARD_Throwing_Check();
 
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $check,
             $this->make_check( false, 'clean' ),
         ) );
 
         // Capture error_log output.
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         $results = $detector->run( array( 'comment_content' => 'hello' ) );
@@ -764,7 +764,7 @@ class DetectorTest extends TestCase {
         // The diagnostic must name the check that failed, or a broken check on a
         // live site is unattributable.
         $this->assertStringContainsString( 'AntiSpam Wizard', $logged );
-        $this->assertStringContainsString( 'ASW_Throwing_Check', $logged );
+        $this->assertStringContainsString( 'ANTISPAMWIZARD_Throwing_Check', $logged );
         // ...and it must NOT carry the exception message: a check wrapping $wpdb,
         // file I/O or an HTTP client can put a query, a path or a credential in
         // there, and debug.log is web-readable on misconfigured hosts. The named
@@ -781,7 +781,7 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_sanitizes_spam_reason_meta(): void {
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'xss', '<script>alert("xss")</script>bad' ),
         ) );
 
@@ -791,7 +791,7 @@ class DetectorTest extends TestCase {
         ) );
 
         do_action( 'comment_post', 200 );
-        $meta = get_comment_meta( 200, '_asw_reason', true );
+        $meta = get_comment_meta( 200, '_antispamwizard_reason', true );
         $this->assertStringNotContainsString( '<script>', $meta );
         $this->assertStringContainsString( 'xss', $meta );
     }
@@ -799,9 +799,9 @@ class DetectorTest extends TestCase {
     // --- Global enabled setting ---
 
     public function test_filter_comment_passes_through_when_disabled(): void {
-        ASW_Settings::update( array( 'enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => false ) );
 
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -814,9 +814,9 @@ class DetectorTest extends TestCase {
     }
 
     public function test_filter_comment_runs_checks_when_enabled(): void {
-        ASW_Settings::update( array( 'enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => true ) );
 
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -830,7 +830,7 @@ class DetectorTest extends TestCase {
 
     public function test_filter_comment_runs_checks_with_default_enabled(): void {
         // No settings saved — default should be enabled.
-        $detector = new ASW_Detector( array(
+        $detector = new ANTISPAMWIZARD_Detector( array(
             $this->make_check( true, 'links', 'too many links' ),
         ) );
 
@@ -851,8 +851,8 @@ class DetectorTest extends TestCase {
  * test_run_logs_a_diagnostic_naming_the_failing_check pass vacuously - including
  * the one asserting the exception message never reaches the log.
  */
-class ASW_Throwing_Check implements ASW_Check {
-    public function check( array $comment_data ): ASW_Check_Result {
+class ANTISPAMWIZARD_Throwing_Check implements ANTISPAMWIZARD_Check {
+    public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
         throw new \RuntimeException( 'secret database credentials' );
     }
 }

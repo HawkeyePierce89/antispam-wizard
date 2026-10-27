@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 class AdminPageTest extends TestCase {
 
-    private ASW_Admin_Page $admin_page;
+    private ANTISPAMWIZARD_Admin_Page $admin_page;
 
     protected function setUp(): void {
         global $wp_options, $wp_actions, $wp_filters, $wp_menu_pages, $wp_submenu_pages, $wp_enqueued_styles, $wp_enqueued_scripts, $wp_localized_scripts, $wp_current_user_caps, $wp_nonces, $wp_redirects;
@@ -22,17 +22,17 @@ class AdminPageTest extends TestCase {
         $_POST              = array();
         $_GET               = array();
 
-        if ( ! defined( 'ASW_PATH' ) ) {
-            define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
         }
-        if ( ! defined( 'ASW_URL' ) ) {
-            define( 'ASW_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_URL' ) ) {
+            define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
         }
-        if ( ! defined( 'ASW_VERSION' ) ) {
-            define( 'ASW_VERSION', '1.0.0' );
+        if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
+            define( 'ANTISPAMWIZARD_VERSION', '1.0.0' );
         }
 
-        $this->admin_page = new ASW_Admin_Page();
+        $this->admin_page = new ANTISPAMWIZARD_Admin_Page();
     }
 
     protected function tearDown(): void {
@@ -66,7 +66,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_submenu_slugs_has_main_first() {
-        $keys = array_keys( ASW_Admin_Page::SUBMENU_SLUGS );
+        $keys = array_keys( ANTISPAMWIZARD_Admin_Page::SUBMENU_SLUGS );
         $this->assertSame( 'main', $keys[0] );
     }
 
@@ -92,19 +92,19 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_get_submenu_url_returns_admin_php_urls() {
-        $url = ASW_Admin_Page::get_submenu_url( 'general' );
+        $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'general' );
         $this->assertStringContainsString( 'admin.php', $url );
         $this->assertStringContainsString( 'page=antispam-wizard', $url );
 
-        $url = ASW_Admin_Page::get_submenu_url( 'stop-words' );
+        $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'stop-words' );
         $this->assertStringContainsString( 'page=antispam-wizard-stop-words', $url );
 
-        $url = ASW_Admin_Page::get_submenu_url( 'log' );
+        $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'log' );
         $this->assertStringContainsString( 'page=antispam-wizard-log', $url );
     }
 
     public function test_get_submenu_url_falls_back_for_unknown_tab() {
-        $url = ASW_Admin_Page::get_submenu_url( 'nonexistent' );
+        $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'nonexistent' );
         $this->assertStringContainsString( 'page=antispam-wizard-main', $url );
     }
 
@@ -115,7 +115,7 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString( 'asw-kpi-row', $output );
+        $this->assertStringContainsString( 'antispamwizard-kpi-row', $output );
     }
 
     public function test_render_page_defaults_to_main_for_unknown_page() {
@@ -125,7 +125,7 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString( 'asw-admin', $output );
+        $this->assertStringContainsString( 'antispamwizard-admin', $output );
     }
 
     public function test_enqueue_assets_on_toplevel_page() {
@@ -134,8 +134,8 @@ class AdminPageTest extends TestCase {
         $this->admin_page->add_menu_page();
         $this->admin_page->enqueue_assets( 'toplevel_page_antispam-wizard-main' );
 
-        $this->assertArrayHasKey( 'asw-admin', $wp_enqueued_styles );
-        $this->assertStringContainsString( 'admin/css/admin.css', $wp_enqueued_styles['asw-admin']['src'] );
+        $this->assertArrayHasKey( 'antispamwizard-admin', $wp_enqueued_styles );
+        $this->assertStringContainsString( 'admin/css/admin.css', $wp_enqueued_styles['antispamwizard-admin']['src'] );
     }
 
     /**
@@ -152,8 +152,8 @@ class AdminPageTest extends TestCase {
         $this->admin_page->add_menu_page();
         $this->admin_page->enqueue_assets( $hook_suffix );
 
-        $this->assertArrayHasKey( 'asw-admin', $wp_enqueued_styles, "Styles missing on: $hook_suffix" );
-        $this->assertArrayHasKey( 'asw-admin', $wp_enqueued_scripts, "Scripts missing on: $hook_suffix" );
+        $this->assertArrayHasKey( 'antispamwizard-admin', $wp_enqueued_styles, "Styles missing on: $hook_suffix" );
+        $this->assertArrayHasKey( 'antispamwizard-admin', $wp_enqueued_scripts, "Scripts missing on: $hook_suffix" );
     }
 
     /**
@@ -214,9 +214,9 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_with_valid_nonce() {
         global $wp_nonces;
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_enabled'] = '1';
         $_POST['links_max']     = '5';
         $_POST['emoji_enabled'] = '1';
@@ -226,7 +226,7 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertTrue( $settings['links_enabled'] );
         $this->assertSame( 5, $settings['links_max'] );
         $this->assertTrue( $settings['emoji_enabled'] );
@@ -243,46 +243,46 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_save_saves_enabled_toggle() {
         $_GET['page'] = 'antispam-wizard-main';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['enabled'] = '1';
 
         $this->admin_page->handle_save();
 
-        $this->assertTrue( ASW_Settings::get( 'enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'enabled' ) );
     }
 
     public function test_handle_save_from_main_page_preserves_general_settings() {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'links_enabled' => true,
             'links_max'     => 5,
             'bayesian_threshold' => 0.85,
         ) );
 
         $_GET['page'] = 'antispam-wizard-main';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['enabled'] = '1';
 
         $this->admin_page->handle_save();
 
-        $this->assertTrue( ASW_Settings::get( 'enabled' ) );
-        $this->assertTrue( ASW_Settings::get( 'links_enabled' ) );
-        $this->assertSame( 5, ASW_Settings::get( 'links_max' ) );
-        $this->assertSame( 0.85, ASW_Settings::get( 'bayesian_threshold' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'links_enabled' ) );
+        $this->assertSame( 5, ANTISPAMWIZARD_Settings::get( 'links_max' ) );
+        $this->assertSame( 0.85, ANTISPAMWIZARD_Settings::get( 'bayesian_threshold' ) );
     }
 
     public function test_handle_save_from_main_page_disables_enabled() {
-        ASW_Settings::update( array( 'enabled' => true, 'links_enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => true, 'links_enabled' => true ) );
 
         $_GET['page'] = 'antispam-wizard-main';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
 
         $this->admin_page->handle_save();
 
-        $this->assertFalse( ASW_Settings::get( 'enabled' ) );
-        $this->assertTrue( ASW_Settings::get( 'links_enabled' ) );
+        $this->assertFalse( ANTISPAMWIZARD_Settings::get( 'enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'links_enabled' ) );
     }
 
     public function test_handle_save_without_nonce_does_nothing() {
@@ -292,29 +292,29 @@ class AdminPageTest extends TestCase {
         $this->admin_page->handle_save();
 
         // Settings should still be defaults.
-        $this->assertSame( 2, ASW_Settings::get( 'links_max' ) );
+        $this->assertSame( 2, ANTISPAMWIZARD_Settings::get( 'links_max' ) );
     }
 
     public function test_handle_save_with_invalid_nonce_does_nothing() {
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = 'invalid_nonce';
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = 'invalid_nonce';
         $_POST['links_max'] = '99';
 
         $this->admin_page->handle_save();
 
-        $this->assertSame( 2, ASW_Settings::get( 'links_max' ) );
+        $this->assertSame( 2, ANTISPAMWIZARD_Settings::get( 'links_max' ) );
     }
 
     public function test_handle_save_without_capability_does_nothing() {
         global $wp_current_user_caps, $wp_nonces;
         $wp_current_user_caps = array(); // No capabilities.
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max'] = '99';
 
         $this->admin_page->handle_save();
 
-        $this->assertSame( 2, ASW_Settings::get( 'links_max' ) );
+        $this->assertSame( 2, ANTISPAMWIZARD_Settings::get( 'links_max' ) );
     }
 
     public function test_render_page_requires_capability() {
@@ -343,7 +343,7 @@ class AdminPageTest extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString(
-            '<span class="asw-brand-icon">' . $expected_svg . '</span>',
+            '<span class="antispamwizard-brand-icon">' . $expected_svg . '</span>',
             $output
         );
         $this->assertStringNotContainsString( '&lt;svg', $output );
@@ -351,7 +351,7 @@ class AdminPageTest extends TestCase {
         $this->assertStringNotContainsString( '&quot;currentColor&quot;', $output );
 
         // The literal in the source file is what gets echoed, byte for byte.
-        $source = file_get_contents( ASW_PATH . 'admin/class-admin-page.php' );
+        $source = file_get_contents( ANTISPAMWIZARD_PATH . 'admin/class-admin-page.php' );
         $this->assertStringContainsString( '$brand_icon = \'' . $expected_svg . '\';', $source );
     }
 
@@ -364,18 +364,18 @@ class AdminPageTest extends TestCase {
      * URI equal to the Author URI, so the two must stay different.
      */
     public function test_website_and_source_addresses_agree_across_readme_header_and_row() {
-        $this->assertSame( 'https://antispamwizard.com/', ASW_Admin_Page::WEBSITE_URL );
-        $this->assertSame( 'https://github.com/HawkeyePierce89/antispam-wizard', ASW_Admin_Page::SOURCE_URL );
+        $this->assertSame( 'https://antispamwizard.com/', ANTISPAMWIZARD_Admin_Page::WEBSITE_URL );
+        $this->assertSame( 'https://github.com/HawkeyePierce89/antispam-wizard', ANTISPAMWIZARD_Admin_Page::SOURCE_URL );
 
-        $header = file_get_contents( ASW_PATH . 'antispam-wizard.php' );
-        $this->assertMatchesRegularExpression( '/^ \* Plugin URI:\s+' . preg_quote( ASW_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
+        $header = file_get_contents( ANTISPAMWIZARD_PATH . 'antispam-wizard.php' );
+        $this->assertMatchesRegularExpression( '/^ \* Plugin URI:\s+' . preg_quote( ANTISPAMWIZARD_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
         $this->assertMatchesRegularExpression( '/^ \* Author:\s+Anton Karmanov$/m', $header );
         $this->assertMatchesRegularExpression( '/^ \* Author URI:\s+https:\/\/karmanov\.ws\/$/m', $header );
-        $this->assertStringNotContainsString( ASW_Admin_Page::WEBSITE_URL, substr( $header, strpos( $header, 'Author URI:' ), 60 ), 'Author URI must differ from Plugin URI' );
+        $this->assertStringNotContainsString( ANTISPAMWIZARD_Admin_Page::WEBSITE_URL, substr( $header, strpos( $header, 'Author URI:' ), 60 ), 'Author URI must differ from Plugin URI' );
 
-        $readme = file_get_contents( ASW_PATH . 'readme.txt' );
-        $this->assertStringContainsString( '* Website: ' . ASW_Admin_Page::WEBSITE_URL, $readme );
-        $this->assertStringContainsString( '* Source code and issue tracker: ' . ASW_Admin_Page::SOURCE_URL, $readme );
+        $readme = file_get_contents( ANTISPAMWIZARD_PATH . 'readme.txt' );
+        $this->assertStringContainsString( '* Website: ' . ANTISPAMWIZARD_Admin_Page::WEBSITE_URL, $readme );
+        $this->assertStringContainsString( '* Source code and issue tracker: ' . ANTISPAMWIZARD_Admin_Page::SOURCE_URL, $readme );
     }
 
     /**
@@ -397,7 +397,7 @@ class AdminPageTest extends TestCase {
         );
         $this->assertCount( 1, $registered, 'plugin_row_meta must be registered once, with two accepted arguments' );
 
-        $ours = $this->admin_page->plugin_row_meta( array( '<a href="#">View details</a>' ), plugin_basename( ASW_FILE ) );
+        $ours = $this->admin_page->plugin_row_meta( array( '<a href="#">View details</a>' ), plugin_basename( ANTISPAMWIZARD_FILE ) );
         $this->assertSame(
             array(
                 '<a href="#">View details</a>',
@@ -408,7 +408,7 @@ class AdminPageTest extends TestCase {
 
         $other = array( '<a href="#">View details</a>' );
         $this->assertSame( $other, $this->admin_page->plugin_row_meta( $other, 'akismet/akismet.php' ) );
-        $this->assertSame( 'not-an-array', $this->admin_page->plugin_row_meta( 'not-an-array', plugin_basename( ASW_FILE ) ) );
+        $this->assertSame( 'not-an-array', $this->admin_page->plugin_row_meta( 'not-an-array', plugin_basename( ANTISPAMWIZARD_FILE ) ) );
     }
 
     public function test_render_page_has_no_tab_navigation() {
@@ -416,26 +416,26 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringNotContainsString( 'asw-tabs', $output );
+        $this->assertStringNotContainsString( 'antispamwizard-tabs', $output );
         $this->assertStringNotContainsString( 'role="tablist"', $output );
-        $this->assertStringContainsString( 'asw-page-content', $output );
+        $this->assertStringContainsString( 'antispamwizard-page-content', $output );
     }
 
     public function test_admin_css_has_no_tab_styles() {
-        $css = file_get_contents( ASW_PATH . 'admin/css/admin.css' );
-        $this->assertStringNotContainsString( '.asw-tabs', $css );
-        $this->assertStringNotContainsString( '.asw-tab ', $css );
-        $this->assertStringNotContainsString( '.asw-tab.', $css );
-        $this->assertStringNotContainsString( '.asw-tab:', $css );
-        $this->assertStringContainsString( '.asw-page-content', $css );
+        $css = file_get_contents( ANTISPAMWIZARD_PATH . 'admin/css/admin.css' );
+        $this->assertStringNotContainsString( '.antispamwizard-tabs', $css );
+        $this->assertStringNotContainsString( '.antispamwizard-tab ', $css );
+        $this->assertStringNotContainsString( '.antispamwizard-tab.', $css );
+        $this->assertStringNotContainsString( '.antispamwizard-tab:', $css );
+        $this->assertStringContainsString( '.antispamwizard-page-content', $css );
     }
 
     public function test_admin_js_has_no_tab_switching() {
-        $js = file_get_contents( ASW_PATH . 'admin/js/admin.js' );
-        $this->assertStringNotContainsString( 'asw-tabs', $js );
+        $js = file_get_contents( ANTISPAMWIZARD_PATH . 'admin/js/admin.js' );
+        $this->assertStringNotContainsString( 'antispamwizard-tabs', $js );
         $this->assertStringNotContainsString( 'tab-switch', $js );
-        $this->assertStringContainsString( 'asw_add_stop_word', $js );
-        $this->assertStringContainsString( 'asw_mark_comment', $js );
+        $this->assertStringContainsString( 'antispamwizard_add_stop_word', $js );
+        $this->assertStringContainsString( 'antispamwizard_mark_comment', $js );
     }
 
     public function test_render_page_general_tab_has_form() {
@@ -455,8 +455,8 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_save_persists_bot_checks() {
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
 
         // Enabled and clamped values.
         $_POST['honeypot_enabled'] = '1';
@@ -475,7 +475,7 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertTrue( $settings['honeypot_enabled'] );
         $this->assertTrue( $settings['submit_time_enabled'] );
         $this->assertSame( 300, $settings['submit_time_min_seconds'] );
@@ -486,7 +486,7 @@ class AdminPageTest extends TestCase {
         $_POST['submit_time_min_seconds'] = '-5';
 
         $this->admin_page->handle_save();
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertFalse( $settings['honeypot_enabled'] );
         $this->assertFalse( $settings['submit_time_enabled'] );
         $this->assertSame( 1, $settings['submit_time_min_seconds'] );
@@ -495,9 +495,9 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_bayesian_enabled_and_threshold() {
         global $wp_nonces;
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['bayesian_enabled']   = '1';
         $_POST['bayesian_threshold'] = '0.7';
         $_POST['links_max']     = '2';
@@ -513,7 +513,7 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertTrue( $settings['bayesian_enabled'] );
         $this->assertSame( 0.7, $settings['bayesian_threshold'] );
         $this->assertSame( 40, $settings['min_message_length'] );
@@ -522,9 +522,9 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_bayesian_threshold_clamped_to_range() {
         global $wp_nonces;
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['bayesian_threshold'] = '0.01';
         $_POST['links_max']     = '2';
         $_POST['emoji_max']     = '4';
@@ -539,7 +539,7 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertSame( 0.1, $settings['bayesian_threshold'] );
     }
 
@@ -563,8 +563,8 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString( 'asw-tokens-list', $output );
-        $this->assertStringContainsString( 'asw-add-token', $output );
+        $this->assertStringContainsString( 'antispamwizard-tokens-list', $output );
+        $this->assertStringContainsString( 'antispamwizard-add-token', $output );
     }
 
     public function test_render_page_stop_words_page() {
@@ -574,15 +574,15 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString( 'asw-words-list', $output );
-        $this->assertStringContainsString( 'asw-add-word', $output );
+        $this->assertStringContainsString( 'antispamwizard-words-list', $output );
+        $this->assertStringContainsString( 'antispamwizard-add-word', $output );
     }
 
     public function test_ajax_add_excluded_token_success() {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['token'] = 'customtoken';
 
@@ -590,16 +590,16 @@ class AdminPageTest extends TestCase {
 
         $this->assertCount( 1, $wp_json_responses );
         $this->assertTrue( $wp_json_responses[0]['success'] );
-        $this->assertContains( 'customtoken', ASW_Settings::get( 'excluded_tokens_list' ) );
+        $this->assertContains( 'customtoken', ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list' ) );
     }
 
     public function test_ajax_add_excluded_token_duplicate() {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        ASW_Settings::update( array( 'excluded_tokens_list' => array( 'mytoken' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array( 'mytoken' ) ) );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['token'] = 'mytoken';
 
@@ -614,7 +614,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['token'] = '';
 
@@ -644,7 +644,7 @@ class AdminPageTest extends TestCase {
         $wp_json_responses = array();
         $wp_current_user_caps = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['token'] = 'the';
 
@@ -659,9 +659,9 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        ASW_Settings::update( array( 'excluded_tokens_list' => array( 'foo', 'bar' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array( 'foo', 'bar' ) ) );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['token'] = 'foo';
 
@@ -669,7 +669,7 @@ class AdminPageTest extends TestCase {
 
         $this->assertCount( 1, $wp_json_responses );
         $this->assertTrue( $wp_json_responses[0]['success'] );
-        $list = ASW_Settings::get( 'excluded_tokens_list' );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list' );
         $this->assertNotContains( 'foo', $list );
         $this->assertContains( 'bar', $list );
     }
@@ -678,9 +678,9 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        ASW_Settings::update( array( 'excluded_tokens_list' => array( 'foo' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array( 'foo' ) ) );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['token'] = 'nonexistent';
 
@@ -710,8 +710,8 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->init();
 
-        $this->assertArrayHasKey( 'wp_ajax_asw_add_excluded_token', $wp_actions );
-        $this->assertArrayHasKey( 'wp_ajax_asw_remove_excluded_token', $wp_actions );
+        $this->assertArrayHasKey( 'wp_ajax_antispamwizard_add_excluded_token', $wp_actions );
+        $this->assertArrayHasKey( 'wp_ajax_antispamwizard_remove_excluded_token', $wp_actions );
     }
 
     public function test_enqueue_assets_includes_excluded_tokens_nonce() {
@@ -720,8 +720,8 @@ class AdminPageTest extends TestCase {
         $this->admin_page->add_menu_page();
         $this->admin_page->enqueue_assets( 'toplevel_page_antispam-wizard-main' );
 
-        $this->assertArrayHasKey( 'asw-admin', $wp_localized_scripts );
-        $data = $wp_localized_scripts['asw-admin']['data'];
+        $this->assertArrayHasKey( 'antispamwizard-admin', $wp_localized_scripts );
+        $data = $wp_localized_scripts['antispamwizard-admin']['data'];
         $this->assertArrayHasKey( 'excluded_tokens_nonce', $data );
         $this->assertArrayHasKey( 'no_tokens_text', $data );
     }
@@ -731,16 +731,16 @@ class AdminPageTest extends TestCase {
     // --- Excluded tokens import tests ---
 
     public function test_excluded_tokens_import_from_textarea() {
-        ASW_Settings::update( array( 'excluded_tokens_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_excluded_tokens' );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_excluded_tokens' );
 
-        $_POST['asw_import_excluded_tokens']       = '1';
-        $_POST['asw_import_excluded_tokens_nonce'] = $nonce;
+        $_POST['antispamwizard_import_excluded_tokens']       = '1';
+        $_POST['antispamwizard_import_excluded_tokens_nonce'] = $nonce;
         $_POST['excluded_tokens_text']                        = "token1\ntoken2\ntoken3";
 
         $this->admin_page->handle_excluded_tokens_import();
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $this->assertCount( 3, $list );
         $this->assertContains( 'token1', $list );
         $this->assertContains( 'token2', $list );
@@ -748,58 +748,58 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_excluded_tokens_import_merges_with_existing() {
-        ASW_Settings::update( array( 'excluded_tokens_list' => array( 'existing' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array( 'existing' ) ) );
 
-        $nonce = wp_create_nonce( 'asw_import_excluded_tokens' );
-        $_POST['asw_import_excluded_tokens']       = '1';
-        $_POST['asw_import_excluded_tokens_nonce'] = $nonce;
+        $nonce = wp_create_nonce( 'antispamwizard_import_excluded_tokens' );
+        $_POST['antispamwizard_import_excluded_tokens']       = '1';
+        $_POST['antispamwizard_import_excluded_tokens_nonce'] = $nonce;
         $_POST['excluded_tokens_text']                        = "existing\nnewtoken";
 
         $this->admin_page->handle_excluded_tokens_import();
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $this->assertCount( 2, $list );
         $this->assertContains( 'existing', $list );
         $this->assertContains( 'newtoken', $list );
     }
 
     public function test_excluded_tokens_import_skips_empty_lines() {
-        ASW_Settings::update( array( 'excluded_tokens_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_excluded_tokens' );
-        $_POST['asw_import_excluded_tokens']       = '1';
-        $_POST['asw_import_excluded_tokens_nonce'] = $nonce;
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_excluded_tokens' );
+        $_POST['antispamwizard_import_excluded_tokens']       = '1';
+        $_POST['antispamwizard_import_excluded_tokens_nonce'] = $nonce;
         $_POST['excluded_tokens_text']                        = "token1\n\n\ntoken2\n  \n";
 
         $this->admin_page->handle_excluded_tokens_import();
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $this->assertCount( 2, $list );
     }
 
     public function test_excluded_tokens_import_without_nonce_does_nothing() {
-        $defaults = ASW_Settings::get_defaults();
-        $_POST['asw_import_excluded_tokens'] = '1';
+        $defaults = ANTISPAMWIZARD_Settings::get_defaults();
+        $_POST['antispamwizard_import_excluded_tokens'] = '1';
         $_POST['excluded_tokens_text']                  = "token1\ntoken2";
 
         $this->admin_page->handle_excluded_tokens_import();
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $this->assertSame( $defaults['excluded_tokens_list'], $list );
     }
 
     public function test_excluded_tokens_import_without_capability_does_nothing() {
         global $wp_current_user_caps;
         $wp_current_user_caps = array();
-        $defaults = ASW_Settings::get_defaults();
+        $defaults = ANTISPAMWIZARD_Settings::get_defaults();
 
-        $nonce = wp_create_nonce( 'asw_import_excluded_tokens' );
-        $_POST['asw_import_excluded_tokens']       = '1';
-        $_POST['asw_import_excluded_tokens_nonce'] = $nonce;
+        $nonce = wp_create_nonce( 'antispamwizard_import_excluded_tokens' );
+        $_POST['antispamwizard_import_excluded_tokens']       = '1';
+        $_POST['antispamwizard_import_excluded_tokens_nonce'] = $nonce;
         $_POST['excluded_tokens_text']                        = "token1";
 
         $this->admin_page->handle_excluded_tokens_import();
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         $this->assertSame( $defaults['excluded_tokens_list'], $list );
     }
 
@@ -842,12 +842,12 @@ class AdminPageTest extends TestCase {
             $this->assertStringContainsString( $description, $output, "Missing help description: $description" );
         }
 
-        // All descriptions render as visible asw-check-desc elements in the cards
+        // All descriptions render as visible antispamwizard-check-desc elements in the cards
         // (11 check cards + 1 shadow display card + 1 Loaded Models description + 1 Form Integrations
         // description = 14 when CF7 is available). When CF7 is unavailable the Form Integrations card
         // is omitted, leaving 13.
-        $count = substr_count( $output, 'class="asw-check-desc"' );
-        if ( ASW_CF7_Integration::is_available() ) {
+        $count = substr_count( $output, 'class="antispamwizard-check-desc"' );
+        if ( ANTISPAMWIZARD_CF7_Integration::is_available() ) {
             $this->assertSame( 14, $count );
         } else {
             $this->assertSame( 13, $count );
@@ -858,8 +858,8 @@ class AdminPageTest extends TestCase {
         global $wp_redirects;
 
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '2';
         $_POST['emoji_max']     = '4';
         $_POST['multi_lang_threshold']  = '3';
@@ -920,7 +920,7 @@ class AdminPageTest extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString( 'name="enabled"', $output );
-        $this->assertStringContainsString( 'asw-toggle', $output );
+        $this->assertStringContainsString( 'antispamwizard-toggle', $output );
     }
 
     public function test_render_main_page_contains_nonce_field() {
@@ -930,7 +930,7 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString( ASW_Admin_Page::NONCE_FIELD, $output );
+        $this->assertStringContainsString( ANTISPAMWIZARD_Admin_Page::NONCE_FIELD, $output );
     }
 
     public function test_render_main_page_contains_intro_text() {
@@ -940,7 +940,7 @@ class AdminPageTest extends TestCase {
         $this->admin_page->render_page();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString( 'asw-main-intro', $output );
+        $this->assertStringContainsString( 'antispamwizard-main-intro', $output );
         $this->assertStringContainsString( 'out of the box', $output );
     }
 
@@ -1027,7 +1027,7 @@ class AdminPageTest extends TestCase {
 
     public function test_render_main_page_toggle_checked_when_enabled() {
         $_GET['page'] = 'antispam-wizard-main';
-        ASW_Settings::update( array( 'enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => true ) );
 
         ob_start();
         $this->admin_page->render_page();
@@ -1038,7 +1038,7 @@ class AdminPageTest extends TestCase {
 
     public function test_render_main_page_toggle_unchecked_when_disabled() {
         $_GET['page'] = 'antispam-wizard-main';
-        ASW_Settings::update( array( 'enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => false ) );
 
         ob_start();
         $this->admin_page->render_page();
@@ -1053,7 +1053,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'badword';
 
@@ -1061,14 +1061,14 @@ class AdminPageTest extends TestCase {
 
         $this->assertCount( 1, $wp_json_responses );
         $this->assertTrue( $wp_json_responses[0]['success'] );
-        $this->assertContains( 'badword', ASW_Settings::get( 'stop_words_list' ) );
+        $this->assertContains( 'badword', ANTISPAMWIZARD_Settings::get( 'stop_words_list' ) );
     }
 
     public function test_ajax_add_stop_word_too_long() {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = str_repeat( 'a', 65 );
 
@@ -1083,7 +1083,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = str_repeat( 'b', 64 );
 
@@ -1097,7 +1097,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'hello🔥';
 
@@ -1112,7 +1112,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'two words';
 
@@ -1127,7 +1127,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = '=test phrase';
 
@@ -1135,14 +1135,14 @@ class AdminPageTest extends TestCase {
 
         $this->assertCount( 1, $wp_json_responses );
         $this->assertTrue( $wp_json_responses[0]['success'] );
-        $this->assertContains( '=test phrase', ASW_Settings::get( 'stop_words_list' ) );
+        $this->assertContains( '=test phrase', ANTISPAMWIZARD_Settings::get( 'stop_words_list' ) );
     }
 
     public function test_ajax_add_stop_word_rejects_emoji_in_exact_match() {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = "=buy\xF0\x9F\x94\xA5cheap";
 
@@ -1156,7 +1156,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $_POST['nonce'] = $nonce;
         $_POST['word']  = 'слово';
 
@@ -1164,7 +1164,7 @@ class AdminPageTest extends TestCase {
 
         $this->assertCount( 1, $wp_json_responses );
         $this->assertTrue( $wp_json_responses[0]['success'] );
-        $this->assertContains( 'слово', ASW_Settings::get( 'stop_words_list' ) );
+        $this->assertContains( 'слово', ANTISPAMWIZARD_Settings::get( 'stop_words_list' ) );
     }
 
     // --- End stop word validation tests ---
@@ -1172,9 +1172,9 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_clamps_duplicate_ttl_to_minimum_60() {
         global $wp_nonces;
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['duplicate_ttl'] = '10';
         $_POST['links_max']     = '2';
         $_POST['emoji_max']     = '4';
@@ -1188,17 +1188,17 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertSame( 60, $settings['duplicate_ttl'] );
     }
 
     public function test_handle_save_with_slashed_nonce_succeeds() {
         $_GET['page'] = 'antispam-wizard';
-        $slashed_nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $slashed_nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
         $this->assertStringContainsString( '\\', $slashed_nonce );
 
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $slashed_nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $slashed_nonce;
         $_POST['links_max']     = '10';
         $_POST['emoji_max']     = '4';
         $_POST['multi_lang_threshold']  = '3';
@@ -1212,7 +1212,7 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertSame( 10, $settings['links_max'] );
     }
 
@@ -1220,7 +1220,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $slashed_nonce = wp_create_nonce( ASW_Admin_Page::AJAX_NONCE );
+        $slashed_nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::AJAX_NONCE );
         $this->assertStringContainsString( '\\', $slashed_nonce );
 
         $_POST['nonce'] = $slashed_nonce;
@@ -1236,7 +1236,7 @@ class AdminPageTest extends TestCase {
         global $wp_json_responses;
         $wp_json_responses = array();
 
-        $slashed_nonce = wp_create_nonce( ASW_Admin_Page::EXCLUDED_TOKENS_NONCE );
+        $slashed_nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::EXCLUDED_TOKENS_NONCE );
         $this->assertStringContainsString( '\\', $slashed_nonce );
 
         $_POST['nonce'] = $slashed_nonce;
@@ -1250,24 +1250,24 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_clear_log_with_slashed_nonce_succeeds() {
         // Seed the spam log so we can verify it gets cleared.
-        ASW_Spam_Log::add_entry( 'test', array( 'stop_words' ), '127.0.0.1' );
-        $this->assertNotEmpty( ASW_Spam_Log::get_entries() );
+        ANTISPAMWIZARD_Spam_Log::add_entry( 'test', array( 'stop_words' ), '127.0.0.1' );
+        $this->assertNotEmpty( ANTISPAMWIZARD_Spam_Log::get_entries() );
 
-        $slashed_nonce = wp_create_nonce( 'asw_clear_log' );
+        $slashed_nonce = wp_create_nonce( 'antispamwizard_clear_log' );
         $this->assertStringContainsString( '\\', $slashed_nonce );
 
-        $_POST['asw_clear_log']       = '1';
-        $_POST['asw_clear_log_nonce'] = $slashed_nonce;
+        $_POST['antispamwizard_clear_log']       = '1';
+        $_POST['antispamwizard_clear_log_nonce'] = $slashed_nonce;
 
         $this->admin_page->handle_clear_log();
 
-        $this->assertEmpty( ASW_Spam_Log::get_entries() );
+        $this->assertEmpty( ANTISPAMWIZARD_Spam_Log::get_entries() );
     }
 
     public function test_handle_save_clamps_negative_to_min() {
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '-5';
         $_POST['emoji_max']     = '4';
         $_POST['multi_lang_threshold']  = '3';
@@ -1281,13 +1281,13 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertSame( 1, $settings['links_max'] );
     }
 
     public function test_stop_words_import_caps_at_max_entries() {
-        ASW_Settings::update( array( 'stop_words_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_stop_words' );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_stop_words' );
 
         // Generate 10005 unique words.
         $words = array();
@@ -1295,19 +1295,19 @@ class AdminPageTest extends TestCase {
             $words[] = 'word' . $i;
         }
 
-        $_POST['asw_import']       = '1';
-        $_POST['asw_import_nonce'] = $nonce;
+        $_POST['antispamwizard_import']       = '1';
+        $_POST['antispamwizard_import_nonce'] = $nonce;
         $_POST['stop_words_text']             = implode( "\n", $words );
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
-        $this->assertCount( ASW_Admin_Page::IMPORT_MAX_ENTRIES, $list );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
+        $this->assertCount( ANTISPAMWIZARD_Admin_Page::IMPORT_MAX_ENTRIES, $list );
     }
 
     public function test_excluded_tokens_import_caps_at_max_entries() {
-        ASW_Settings::update( array( 'excluded_tokens_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_excluded_tokens' );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_excluded_tokens' );
 
         // Generate 10005 unique tokens.
         $tokens = array();
@@ -1315,34 +1315,34 @@ class AdminPageTest extends TestCase {
             $tokens[] = 'token' . $i;
         }
 
-        $_POST['asw_import_excluded_tokens']       = '1';
-        $_POST['asw_import_excluded_tokens_nonce'] = $nonce;
+        $_POST['antispamwizard_import_excluded_tokens']       = '1';
+        $_POST['antispamwizard_import_excluded_tokens_nonce'] = $nonce;
         $_POST['excluded_tokens_text']                        = implode( "\n", $tokens );
 
         $this->admin_page->handle_excluded_tokens_import();
 
-        $list = ASW_Settings::get( 'excluded_tokens_list', array() );
-        $this->assertCount( ASW_Admin_Page::IMPORT_MAX_ENTRIES, $list );
+        $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
+        $this->assertCount( ANTISPAMWIZARD_Admin_Page::IMPORT_MAX_ENTRIES, $list );
     }
 
     public function test_stop_words_import_under_limit_not_truncated() {
-        ASW_Settings::update( array( 'stop_words_list' => array() ) );
-        $nonce = wp_create_nonce( 'asw_import_stop_words' );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array() ) );
+        $nonce = wp_create_nonce( 'antispamwizard_import_stop_words' );
 
-        $_POST['asw_import']       = '1';
-        $_POST['asw_import_nonce'] = $nonce;
+        $_POST['antispamwizard_import']       = '1';
+        $_POST['antispamwizard_import_nonce'] = $nonce;
         $_POST['stop_words_text']             = "alpha\nbeta\ngamma";
 
         $this->admin_page->handle_stop_words_import();
 
-        $list = ASW_Settings::get( 'stop_words_list', array() );
+        $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         $this->assertCount( 3, $list );
     }
 
     // --- Export handler tests ---
 
     public function test_stop_words_export_without_trigger_does_nothing() {
-        // No asw_export in POST.
+        // No antispamwizard_export in POST.
         ob_start();
         $this->admin_page->handle_stop_words_export();
         $output = ob_get_clean();
@@ -1351,8 +1351,8 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_stop_words_export_with_bad_nonce_does_nothing() {
-        $_POST['asw_export']       = '1';
-        $_POST['asw_export_nonce'] = 'invalid';
+        $_POST['antispamwizard_export']       = '1';
+        $_POST['antispamwizard_export_nonce'] = 'invalid';
 
         ob_start();
         $this->admin_page->handle_stop_words_export();
@@ -1365,8 +1365,8 @@ class AdminPageTest extends TestCase {
         global $wp_current_user_caps;
         $wp_current_user_caps = array();
 
-        $_POST['asw_export']       = '1';
-        $_POST['asw_export_nonce'] = wp_create_nonce( 'asw_export_stop_words' );
+        $_POST['antispamwizard_export']       = '1';
+        $_POST['antispamwizard_export_nonce'] = wp_create_nonce( 'antispamwizard_export_stop_words' );
 
         ob_start();
         $this->admin_page->handle_stop_words_export();
@@ -1376,10 +1376,10 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_stop_words_export_outputs_list() {
-        ASW_Settings::update( array( 'stop_words_list' => array( 'alpha', 'beta', 'gamma' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'alpha', 'beta', 'gamma' ) ) );
 
-        $_POST['asw_export']       = '1';
-        $_POST['asw_export_nonce'] = wp_create_nonce( 'asw_export_stop_words' );
+        $_POST['antispamwizard_export']       = '1';
+        $_POST['antispamwizard_export_nonce'] = wp_create_nonce( 'antispamwizard_export_stop_words' );
 
         // The handler calls the real header() function; under the PHPUnit CLI
         // SAPI headers are already sent, so swallow that one warning while still
@@ -1398,8 +1398,8 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_excluded_tokens_export_with_bad_nonce_does_nothing() {
-        $_POST['asw_export_excluded_tokens']       = '1';
-        $_POST['asw_export_excluded_tokens_nonce'] = 'invalid';
+        $_POST['antispamwizard_export_excluded_tokens']       = '1';
+        $_POST['antispamwizard_export_excluded_tokens_nonce'] = 'invalid';
 
         ob_start();
         $this->admin_page->handle_excluded_tokens_export();
@@ -1412,8 +1412,8 @@ class AdminPageTest extends TestCase {
         global $wp_current_user_caps;
         $wp_current_user_caps = array();
 
-        $_POST['asw_export_excluded_tokens']       = '1';
-        $_POST['asw_export_excluded_tokens_nonce'] = wp_create_nonce( 'asw_export_excluded_tokens' );
+        $_POST['antispamwizard_export_excluded_tokens']       = '1';
+        $_POST['antispamwizard_export_excluded_tokens_nonce'] = wp_create_nonce( 'antispamwizard_export_excluded_tokens' );
 
         ob_start();
         $this->admin_page->handle_excluded_tokens_export();
@@ -1423,10 +1423,10 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_excluded_tokens_export_outputs_list() {
-        ASW_Settings::update( array( 'excluded_tokens_list' => array( 'foo', 'bar' ) ) );
+        ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => array( 'foo', 'bar' ) ) );
 
-        $_POST['asw_export_excluded_tokens']       = '1';
-        $_POST['asw_export_excluded_tokens_nonce'] = wp_create_nonce( 'asw_export_excluded_tokens' );
+        $_POST['antispamwizard_export_excluded_tokens']       = '1';
+        $_POST['antispamwizard_export_excluded_tokens_nonce'] = wp_create_nonce( 'antispamwizard_export_excluded_tokens' );
 
         $output = $this->capture_export( array( $this->admin_page, 'handle_excluded_tokens_export' ) );
 
@@ -1465,8 +1465,8 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_save_clamps_oversized_to_max() {
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '99999';
         $_POST['emoji_max']     = '99999';
         $_POST['multi_lang_threshold']  = '3';
@@ -1480,7 +1480,7 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
 
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $this->assertSame( 50, $settings['links_max'] );
         $this->assertSame( 100, $settings['emoji_max'] );
     }
@@ -1490,11 +1490,11 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_persists_cf7_enabled_when_available(): void {
         // Ensure CF7 is available (default).
         unset( $GLOBALS['wp_cf7_is_available'] );
-        $this->assertTrue( ASW_CF7_Integration::is_available() );
+        $this->assertTrue( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['cf7_enabled'] = '1';
         $_POST['links_max']     = '2';
         $_POST['emoji_max']     = '4';
@@ -1508,13 +1508,13 @@ class AdminPageTest extends TestCase {
         $_POST['min_message_length']       = '50';
 
         $this->admin_page->handle_save();
-        $this->assertTrue( ASW_Settings::get( 'cf7_enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'cf7_enabled' ) );
 
         // Unchecked should become false.
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST = array();
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '2';
         $_POST['emoji_max']     = '4';
         $_POST['multi_lang_threshold']  = '3';
@@ -1527,19 +1527,19 @@ class AdminPageTest extends TestCase {
         $_POST['min_message_length']       = '50';
 
         $this->admin_page->handle_save();
-        $this->assertFalse( ASW_Settings::get( 'cf7_enabled' ) );
+        $this->assertFalse( ANTISPAMWIZARD_Settings::get( 'cf7_enabled' ) );
     }
 
     public function test_handle_save_leaves_cf7_enabled_untouched_when_unavailable(): void {
         // Start with known value true.
-        ASW_Settings::update( array( 'cf7_enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'cf7_enabled' => true ) );
         $GLOBALS['wp_cf7_is_available'] = false;
-        $this->assertFalse( ASW_CF7_Integration::is_available() );
+        $this->assertFalse( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
         $_GET['page'] = 'antispam-wizard';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST = array();
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         // Do not send cf7_enabled (would be absent from form when CF7 unavailable)
         $_POST['links_max']     = '2';
         $_POST['emoji_max']     = '4';
@@ -1554,23 +1554,23 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->handle_save();
         // Should remain true because the toggle was not part of bool_keys.
-        $this->assertTrue( ASW_Settings::get( 'cf7_enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'cf7_enabled' ) );
 
         // Also verify that even if attacker injects cf7_enabled, it does not flip to false
         // when CF7 is unavailable (the key is not processed).
-        ASW_Settings::update( array( 'cf7_enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'cf7_enabled' => true ) );
         $_POST['cf7_enabled'] = '1';
-        $nonce = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = $nonce;
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $this->admin_page->handle_save();
-        $this->assertTrue( ASW_Settings::get( 'cf7_enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'cf7_enabled' ) );
 
         unset( $GLOBALS['wp_cf7_is_available'] );
     }
 
     public function test_general_view_omits_cf7_card_when_unavailable(): void {
         $GLOBALS['wp_cf7_is_available'] = false;
-        $this->assertFalse( ASW_CF7_Integration::is_available() );
+        $this->assertFalse( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
         $_GET['page'] = 'antispam-wizard';
         ob_start();
@@ -1585,7 +1585,7 @@ class AdminPageTest extends TestCase {
 
     public function test_general_view_renders_cf7_card_when_available(): void {
         unset( $GLOBALS['wp_cf7_is_available'] );
-        $this->assertTrue( ASW_CF7_Integration::is_available() );
+        $this->assertTrue( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
         $_GET['page'] = 'antispam-wizard';
         ob_start();
@@ -1614,7 +1614,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_general_view_renders_shadow_display_toggle_unchecked_when_off(): void {
-        ASW_Settings::update( array( 'shadow_display_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'shadow_display_enabled' => false ) );
 
         $_GET['page'] = 'antispam-wizard';
         ob_start();
@@ -1644,16 +1644,16 @@ class AdminPageTest extends TestCase {
         // A save without the field (checkbox unticked) stores false.
         $_GET['page'] = 'antispam-wizard';
         $_POST        = $post;
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $this->admin_page->handle_save();
-        $this->assertFalse( ASW_Settings::get( 'shadow_display_enabled' ) );
+        $this->assertFalse( ANTISPAMWIZARD_Settings::get( 'shadow_display_enabled' ) );
 
         // A save with it stores true.
         $_GET['page'] = 'antispam-wizard';
         $_POST        = $post;
         $_POST['shadow_display_enabled']      = '1';
-        $_POST[ ASW_Admin_Page::NONCE_FIELD ] = wp_create_nonce( ASW_Admin_Page::NONCE_ACTION );
+        $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $this->admin_page->handle_save();
-        $this->assertTrue( ASW_Settings::get( 'shadow_display_enabled' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'shadow_display_enabled' ) );
     }
 }

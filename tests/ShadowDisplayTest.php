@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for ASW_Shadow_Display: which comment queries are widened with the
+ * Tests for ANTISPAMWIZARD_Shadow_Display: which comment queries are widened with the
  * visitor's own auto-flagged spam, how, and which are left byte-identical.
  *
  * Everything is driven through the WP_Comment_Query stub, which runs core's
@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  * Stands in for the $wp_options store and counts every read, so "returned
  * before any option read" is an assertable fact.
  */
-class ASW_Option_Store_Spy implements ArrayAccess {
+class ANTISPAMWIZARD_Option_Store_Spy implements ArrayAccess {
 
     public int $reads = 0;
 
@@ -48,7 +48,7 @@ class ASW_Option_Store_Spy implements ArrayAccess {
  * A comment object, and a clauses array, whose every read throws: drives the
  * fail-open catch of the callbacks that read them.
  */
-class ASW_Throwing_Shadow_Input implements ArrayAccess {
+class ANTISPAMWIZARD_Throwing_Shadow_Input implements ArrayAccess {
 
     public function __isset( $name ) {
         throw new RuntimeException( 'shadow input stub: secret failure detail' );
@@ -81,15 +81,15 @@ class ShadowDisplayTest extends TestCase {
 
     private const CORE_EMAIL_APPROVED = "( ( comment_approved = '1' ) OR ( comment_author_email = 'me@example.com' AND comment_approved = '0' ) )";
 
-    private const EMAIL_SHADOW = "( comment_author_email = 'me@example.com' AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND `wp_comments`.comment_ID > 0 AND EXISTS ( SELECT 1 FROM `wp_commentmeta` WHERE comment_id = `wp_comments`.comment_ID AND meta_key = '_asw_reason' ) )";
+    private const EMAIL_SHADOW = "( comment_author_email = 'me@example.com' AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND `wp_comments`.comment_ID > 0 AND EXISTS ( SELECT 1 FROM `wp_commentmeta` WHERE comment_id = `wp_comments`.comment_ID AND meta_key = '_antispamwizard_reason' ) )";
 
-    private const USER_SHADOW = "( user_id = 42 AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND `wp_comments`.comment_ID > 0 AND EXISTS ( SELECT 1 FROM `wp_commentmeta` WHERE comment_id = `wp_comments`.comment_ID AND meta_key = '_asw_reason' ) )";
+    private const USER_SHADOW = "( user_id = 42 AND comment_approved = 'spam' AND comment_type IN ( '', 'comment' ) AND `wp_comments`.comment_ID > 0 AND EXISTS ( SELECT 1 FROM `wp_commentmeta` WHERE comment_id = `wp_comments`.comment_ID AND meta_key = '_antispamwizard_reason' ) )";
 
     protected function setUp(): void {
         parent::setUp();
         global $wp_options, $wp_actions, $wp_filters, $wp_comments, $wp_comment_meta, $wp_comment_cache, $wp_is_admin, $wp_is_feed, $wpdb;
         // The plugin flagged its first comment while every seeded ID existed.
-        $wp_options       = array( ASW_Shadow_Display::CUTOFF_OPTION => 0 );
+        $wp_options       = array( ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION => 0 );
         $wp_actions       = array();
         $wp_filters       = array();
         $wp_comment_cache = array();
@@ -98,7 +98,7 @@ class ShadowDisplayTest extends TestCase {
         $_GET             = array();
         $_POST            = array();
         $wpdb->reset_tables();
-        asw_test_reset_comment_query_stubs();
+        antispamwizard_test_reset_comment_query_stubs();
         self::reset_registry();
 
         $wp_comments = array(
@@ -108,8 +108,8 @@ class ShadowDisplayTest extends TestCase {
             4 => array( 'comment_ID' => 4, 'comment_post_ID' => 7, 'comment_approved' => '0', 'comment_author_email' => 'me@example.com' ),
         );
         $wp_comment_meta = array(
-            2 => array( '_asw_reason' => 'links' ),
-            3 => array( '_asw_reason' => 'links' ),
+            2 => array( '_antispamwizard_reason' => 'links' ),
+            3 => array( '_antispamwizard_reason' => 'links' ),
         );
     }
 
@@ -122,20 +122,20 @@ class ShadowDisplayTest extends TestCase {
         $wp_is_feed  = false;
         $_GET        = array();
         $_POST       = array();
-        asw_test_reset_comment_query_stubs();
+        antispamwizard_test_reset_comment_query_stubs();
         self::reset_registry();
         parent::tearDown();
     }
 
     // ------------------------------------------------------------- Helpers.
 
-    /** Empty ASW_Shadow_Display's static registry of shadow-displayed IDs. */
+    /** Empty ANTISPAMWIZARD_Shadow_Display's static registry of shadow-displayed IDs. */
     private static function reset_registry(): void {
-        ( new ReflectionProperty( ASW_Shadow_Display::class, 'shadowed' ) )->setValue( null, array() );
+        ( new ReflectionProperty( ANTISPAMWIZARD_Shadow_Display::class, 'shadowed' ) )->setValue( null, array() );
     }
 
-    private function register(): ASW_Shadow_Display {
-        $shadow = new ASW_Shadow_Display();
+    private function register(): ANTISPAMWIZARD_Shadow_Display {
+        $shadow = new ANTISPAMWIZARD_Shadow_Display();
         $shadow->register_hooks();
         return $shadow;
     }
@@ -144,7 +144,7 @@ class ShadowDisplayTest extends TestCase {
      * Start a new request against a warm comment-queries cache: no hooks, an
      * empty registry, a fresh instance.
      */
-    private function new_request(): ASW_Shadow_Display {
+    private function new_request(): ANTISPAMWIZARD_Shadow_Display {
         $GLOBALS['wp_actions'] = array();
         $GLOBALS['wp_filters'] = array();
         self::reset_registry();
@@ -223,8 +223,8 @@ class ShadowDisplayTest extends TestCase {
         list( $core, $hooked ) = $this->assert_where_untouched( $args );
 
         $this->assertSame( $core['key'], $hooked['key'], 'cache key must be unchanged' );
-        $this->assertArrayNotHasKey( ASW_Shadow_Display::QUERY_VAR, $hooked['query']->query_var_defaults );
-        $this->assertArrayNotHasKey( ASW_Shadow_Display::QUERY_VAR, $hooked['query']->query_vars );
+        $this->assertArrayNotHasKey( ANTISPAMWIZARD_Shadow_Display::QUERY_VAR, $hooked['query']->query_var_defaults );
+        $this->assertArrayNotHasKey( ANTISPAMWIZARD_Shadow_Display::QUERY_VAR, $hooked['query']->query_vars );
     }
 
     /**
@@ -278,7 +278,7 @@ class ShadowDisplayTest extends TestCase {
             '( ' . self::CORE_EMAIL_APPROVED . ' OR ' . self::EMAIL_SHADOW . ' ) AND comment_post_ID = 7',
             $run['where']
         );
-        $this->assertSame( '( ' . self::CORE_EMAIL_APPROVED . ' OR ' . self::EMAIL_SHADOW . ' )', asw_test_get_sql_clauses( $run['query'] )['where']['approved'], 'written back' );
+        $this->assertSame( '( ' . self::CORE_EMAIL_APPROVED . ' OR ' . self::EMAIL_SHADOW . ' )', antispamwizard_test_get_sql_clauses( $run['query'] )['where']['approved'], 'written back' );
         $this->assertContains( self::EMAIL_SHADOW, $run['prepared'], 'the email is bound through $wpdb->prepare()' );
         $this->assertSame( 0, $run['queries'], 'no extra query: the branch is part of the one SELECT' );
         $this->assertSame( array( 1, 2, 3, 4 ), $run['ids'] );
@@ -297,7 +297,7 @@ class ShadowDisplayTest extends TestCase {
         $this->assertSame( '( ' . $core . ' OR ' . self::USER_SHADOW . ' ) AND comment_post_ID = 7', $run['where'] );
         $this->assertStringNotContainsString( 'comment_author_email', self::USER_SHADOW );
         $this->assertSame( array( 1, 3 ), $run['ids'] );
-        $this->assertSame( 'user:42', $run['query']->query_vars[ ASW_Shadow_Display::QUERY_VAR ] );
+        $this->assertSame( 'user:42', $run['query']->query_vars[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] );
     }
 
     public function test_include_unapproved_as_a_comma_string_is_understood(): void {
@@ -325,11 +325,11 @@ class ShadowDisplayTest extends TestCase {
             '( ' . self::CORE_EMAIL_APPROVED . ' OR ' . self::EMAIL_SHADOW . ' ) AND comment_post_ID = 7',
             $run['where']
         );
-        $this->assertSame( 'email:me@example.com', $run['query']->query_vars[ ASW_Shadow_Display::QUERY_VAR ] );
+        $this->assertSame( 'email:me@example.com', $run['query']->query_vars[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] );
         $this->assertSame( array( 1, 2, 3, 4 ), $run['ids'] );
         $this->assertSame( '0', get_comment( 2 )->comment_approved );
         $this->assertSame( 'spam', $GLOBALS['wp_comments'][2]['comment_approved'], 'the stored row keeps spam' );
-        $this->assertTrue( ASW_Shadow_Display::is_shadowed( 2 ) );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
     }
 
     public function test_a_wrong_moderation_hash_is_untouched(): void {
@@ -360,7 +360,7 @@ class ShadowDisplayTest extends TestCase {
         $run = $this->run_query( $this->front_end_args( 'me@example.com' ) );
 
         $this->assertStringContainsString( self::EMAIL_SHADOW, (string) $run['where'] );
-        $this->assertSame( 'email:me@example.com', $run['query']->query_vars[ ASW_Shadow_Display::QUERY_VAR ] );
+        $this->assertSame( 'email:me@example.com', $run['query']->query_vars[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] );
     }
 
     // ------------------------------------------------- Inert: who is asking.
@@ -375,7 +375,7 @@ class ShadowDisplayTest extends TestCase {
     }
 
     public function test_anonymous_visitor_returns_before_any_option_read(): void {
-        $spy                   = new ASW_Option_Store_Spy();
+        $spy                   = new ANTISPAMWIZARD_Option_Store_Spy();
         $GLOBALS['wp_options'] = $spy;
         $this->register();
 
@@ -467,12 +467,12 @@ class ShadowDisplayTest extends TestCase {
             . "\$GLOBALS['wp_is_admin']          = false;\n"
             . "\$GLOBALS['wp_is_feed']           = false;\n"
             . "\$GLOBALS['wp_current_commenter'] = array( 'comment_author_email' => 'me@example.com' );\n"
-            . "\$GLOBALS['wp_options']           = array( ASW_Shadow_Display::CUTOFF_OPTION => 0 );\n"
-            . "( new ASW_Shadow_Display() )->register_hooks();\n"
+            . "\$GLOBALS['wp_options']           = array( ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION => 0 );\n"
+            . "( new ANTISPAMWIZARD_Shadow_Display() )->register_hooks();\n"
             . "( new WP_Comment_Query() )->query( array( 'post_id' => 7, 'status' => 'approve', 'include_unapproved' => array( 'me@example.com' ) ) );\n"
             . "echo end( \$GLOBALS['wp_comment_query_log'] );\n";
 
-        $file = tempnam( sys_get_temp_dir(), 'asw-rest-' );
+        $file = tempnam( sys_get_temp_dir(), 'antispamwizard-rest-' );
         file_put_contents( $file, $script );
 
         try {
@@ -515,13 +515,13 @@ class ShadowDisplayTest extends TestCase {
     // ------------------------------------------------------ Inert: settings.
 
     public function test_shadow_display_setting_off_is_untouched(): void {
-        $GLOBALS['wp_options']['asw_settings'] = array( 'shadow_display_enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'shadow_display_enabled' => false );
         $this->as_cookie_author( 'me@example.com' );
         $this->assert_untouched( $this->front_end_args( 'me@example.com' ) );
     }
 
     public function test_master_switch_off_is_untouched(): void {
-        $GLOBALS['wp_options']['asw_settings'] = array( 'enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'enabled' => false );
         $this->as_cookie_author( 'me@example.com' );
         $this->assert_untouched( $this->front_end_args( 'me@example.com' ) );
     }
@@ -533,14 +533,14 @@ class ShadowDisplayTest extends TestCase {
         $this->register();
 
         $widened = $this->run_query( $this->front_end_args( 'me@example.com' ) );
-        $GLOBALS['wp_options']['asw_settings'] = array( 'shadow_display_enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'shadow_display_enabled' => false );
         $plain = $this->run_query( $this->front_end_args( 'me@example.com' ) );
 
         $this->assertStringContainsString( 'spam', (string) $widened['where'] );
         $this->assertStringNotContainsString( 'spam', (string) $plain['where'] );
         $this->assertNotSame( $widened['key'], $plain['key'] );
-        $this->assertSame( '', $widened['query']->query_var_defaults[ ASW_Shadow_Display::QUERY_VAR ] );
-        $this->assertSame( 'email:me@example.com', $widened['query']->query_vars[ ASW_Shadow_Display::QUERY_VAR ] );
+        $this->assertSame( '', $widened['query']->query_var_defaults[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] );
+        $this->assertSame( 'email:me@example.com', $widened['query']->query_vars[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] );
     }
 
     public function test_a_cached_widened_result_is_never_served_to_the_plain_query(): void {
@@ -551,7 +551,7 @@ class ShadowDisplayTest extends TestCase {
         $GLOBALS['wp_comment_query_cache'] = array();
 
         $widened = ( new WP_Comment_Query() )->query( $this->front_end_args( 'me@example.com' ) );
-        $GLOBALS['wp_options']['asw_settings'] = array( 'shadow_display_enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'shadow_display_enabled' => false );
         $plain = ( new WP_Comment_Query() )->query( $this->front_end_args( 'me@example.com' ) );
 
         $this->assertSame( array( 1, 2, 3, 4 ), array_map( 'intval', wp_list_pluck_stub( $widened, 'comment_ID' ) ) );
@@ -577,26 +577,26 @@ class ShadowDisplayTest extends TestCase {
         $this->assertStringNotContainsString( 'spam', (string) $other['where'] );
     }
 
-    // ------------------------------------------- An incoming asw_shadow arg.
+    // ------------------------------------------- An incoming antispamwizard_shadow arg.
 
-    public function test_an_incoming_asw_shadow_arg_is_unset_for_an_ineligible_query(): void {
+    public function test_an_incoming_antispamwizard_shadow_arg_is_unset_for_an_ineligible_query(): void {
         $args = array(
             'post_id'                      => 7,
             'status'                       => 'approve',
-            ASW_Shadow_Display::QUERY_VAR => 'email:me@example.com',
+            ANTISPAMWIZARD_Shadow_Display::QUERY_VAR => 'email:me@example.com',
         );
         $this->assert_untouched( $args );
     }
 
-    public function test_an_incoming_asw_shadow_arg_is_overwritten_for_an_eligible_query(): void {
+    public function test_an_incoming_antispamwizard_shadow_arg_is_overwritten_for_an_eligible_query(): void {
         $this->as_cookie_author( 'me@example.com' );
         $this->register();
 
         $args                                   = $this->front_end_args( 'me@example.com' );
-        $args[ ASW_Shadow_Display::QUERY_VAR ] = 'email:victim@example.com';
+        $args[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] = 'email:victim@example.com';
         $run                                    = $this->run_query( $args );
 
-        $this->assertSame( 'email:me@example.com', $run['query']->query_vars[ ASW_Shadow_Display::QUERY_VAR ] );
+        $this->assertSame( 'email:me@example.com', $run['query']->query_vars[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] );
         $this->assertStringNotContainsString( 'victim', (string) $run['where'] );
         $this->assertStringContainsString( self::EMAIL_SHADOW, (string) $run['where'] );
     }
@@ -613,19 +613,19 @@ class ShadowDisplayTest extends TestCase {
         $second = $this->run_query( $this->front_end_args( 'me@example.com' ), $query );
 
         $this->assertSame( self::CORE_EMAIL_APPROVED . ' AND comment_post_ID = 7', $second['where'] );
-        $this->assertArrayNotHasKey( ASW_Shadow_Display::QUERY_VAR, $query->query_var_defaults );
-        $this->assertArrayNotHasKey( ASW_Shadow_Display::QUERY_VAR, $query->query_vars );
+        $this->assertArrayNotHasKey( ANTISPAMWIZARD_Shadow_Display::QUERY_VAR, $query->query_var_defaults );
+        $this->assertArrayNotHasKey( ANTISPAMWIZARD_Shadow_Display::QUERY_VAR, $query->query_vars );
     }
 
     public function test_comments_clauses_ignores_a_query_pre_get_comments_never_approved(): void {
         // A query object that arrives at comments_clauses already carrying the
         // marker -- but was never approved by this instance -- is not widened.
         $this->as_cookie_author( 'me@example.com' );
-        $shadow = new ASW_Shadow_Display();
+        $shadow = new ANTISPAMWIZARD_Shadow_Display();
         add_filter( 'comments_clauses', array( $shadow, 'on_comments_clauses' ), 10, 2 );
 
         $args                                   = $this->front_end_args( 'me@example.com' );
-        $args[ ASW_Shadow_Display::QUERY_VAR ] = 'email:me@example.com';
+        $args[ ANTISPAMWIZARD_Shadow_Display::QUERY_VAR ] = 'email:me@example.com';
         $run                                    = $this->run_query( $args );
 
         $this->assertSame( self::CORE_EMAIL_APPROVED . ' AND comment_post_ID = 7', $run['where'] );
@@ -637,7 +637,7 @@ class ShadowDisplayTest extends TestCase {
         add_filter(
             'comments_clauses',
             static function ( $clauses, $query ) {
-                asw_test_set_approved_clause( $query, null );
+                antispamwizard_test_set_approved_clause( $query, null );
                 $clauses['where'] = 'comment_post_ID = 7';
                 return $clauses;
             },
@@ -653,7 +653,7 @@ class ShadowDisplayTest extends TestCase {
         add_filter(
             'comments_clauses',
             static function ( $clauses, $query ) {
-                $clauses['where'] .= ' AND ' . asw_test_get_sql_clauses( $query )['where']['approved'];
+                $clauses['where'] .= ' AND ' . antispamwizard_test_get_sql_clauses( $query )['where']['approved'];
                 return $clauses;
             },
             10,
@@ -681,14 +681,14 @@ class ShadowDisplayTest extends TestCase {
     /** Add the moderation-path and pingback fixtures next to setUp()'s rows. */
     private function seed_non_shadow_spam(): void {
         global $wp_comments, $wp_comment_meta;
-        // Marked spam by a moderator: no _asw_reason.
+        // Marked spam by a moderator: no _antispamwizard_reason.
         $wp_comments[6] = array( 'comment_ID' => 6, 'comment_post_ID' => 7, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com' );
-        // A pingback the plugin flagged: carries _asw_reason, wrong type.
+        // A pingback the plugin flagged: carries _antispamwizard_reason, wrong type.
         $wp_comments[8]     = array( 'comment_ID' => 8, 'comment_post_ID' => 7, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com', 'comment_type' => 'pingback' );
-        $wp_comment_meta[8] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[8] = array( '_antispamwizard_reason' => 'links' );
         // Another visitor's auto-flagged comment.
         $wp_comments[9]     = array( 'comment_ID' => 9, 'comment_post_ID' => 7, 'comment_approved' => 'spam', 'comment_author_email' => 'you@example.com' );
-        $wp_comment_meta[9] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[9] = array( '_antispamwizard_reason' => 'links' );
     }
 
     public function test_author_sees_their_flagged_comment_as_awaiting_moderation_in_thread_order(): void {
@@ -723,7 +723,7 @@ class ShadowDisplayTest extends TestCase {
     public function test_a_threaded_query_presents_a_shadow_reply_as_held(): void {
         global $wp_comments, $wp_comment_meta;
         $wp_comments[5]     = array( 'comment_ID' => 5, 'comment_post_ID' => 7, 'comment_parent' => 1, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com' );
-        $wp_comment_meta[5] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[5] = array( '_antispamwizard_reason' => 'links' );
         $this->as_cookie_author( 'me@example.com' );
         $this->register();
 
@@ -735,7 +735,7 @@ class ShadowDisplayTest extends TestCase {
         $this->assertArrayHasKey( 5, $statuses, 'the descendant pass found the reply' );
         $this->assertSame( '0', $statuses[5] );
         $this->assertSame( '1', $statuses[1] );
-        $this->assertTrue( ASW_Shadow_Display::is_shadowed( 5 ) );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 5 ) );
     }
 
     public function test_moderator_marked_spam_and_a_flagged_pingback_are_not_shown(): void {
@@ -746,28 +746,28 @@ class ShadowDisplayTest extends TestCase {
         $statuses = self::statuses( ( new WP_Comment_Query() )->query( $this->front_end_args( 'me@example.com' ) ) );
 
         $this->assertArrayHasKey( 2, $statuses, 'control: the auto-flagged comment is shown' );
-        $this->assertArrayNotHasKey( 6, $statuses, 'moderator-marked spam has no _asw_reason' );
+        $this->assertArrayNotHasKey( 6, $statuses, 'moderator-marked spam has no _antispamwizard_reason' );
         $this->assertArrayNotHasKey( 8, $statuses, 'a pingback is never shadow-displayed' );
         $this->assertArrayNotHasKey( 9, $statuses, "another visitor's flagged comment" );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 6 ) );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 8 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 6 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 8 ) );
     }
 
     public function test_a_flag_written_before_the_cutoff_is_never_shown(): void {
-        // Versions before shadow display never dropped _asw_reason when a
+        // Versions before shadow display never dropped _antispamwizard_reason when a
         // moderator decided, so a flag at or below the cutoff may be one a
         // moderator already confirmed as spam.
         global $wp_comments, $wp_comment_meta;
         $wp_comments[5]     = array( 'comment_ID' => 5, 'comment_post_ID' => 7, 'comment_parent' => 1, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com' );
-        $wp_comment_meta[5] = array( '_asw_reason' => 'links' );
-        $GLOBALS['wp_options'][ ASW_Shadow_Display::CUTOFF_OPTION ] = 2;
+        $wp_comment_meta[5] = array( '_antispamwizard_reason' => 'links' );
+        $GLOBALS['wp_options'][ ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ] = 2;
         $this->as_cookie_author( 'me@example.com' );
         $this->register();
 
         $statuses = self::statuses( ( new WP_Comment_Query() )->query( $this->front_end_args( 'me@example.com' ) ) );
         $this->assertArrayNotHasKey( 2, $statuses, 'flagged at the cutoff' );
         $this->assertSame( '0', $statuses[3], 'control: flagged above the cutoff' );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 2 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
 
         // The threaded get_comment-side recognition applies the same cutoff.
         $args                 = $this->front_end_args( 'me@example.com' );
@@ -779,20 +779,20 @@ class ShadowDisplayTest extends TestCase {
     }
 
     public function test_nothing_is_shown_until_the_plugin_has_flagged_a_comment(): void {
-        unset( $GLOBALS['wp_options'][ ASW_Shadow_Display::CUTOFF_OPTION ] );
+        unset( $GLOBALS['wp_options'][ ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ] );
         $this->as_cookie_author( 'me@example.com' );
         $this->assert_untouched( $this->front_end_args( 'me@example.com' ) );
     }
 
     public function test_record_flag_keeps_the_first_cutoff(): void {
-        unset( $GLOBALS['wp_options'][ ASW_Shadow_Display::CUTOFF_OPTION ] );
+        unset( $GLOBALS['wp_options'][ ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ] );
 
-        ASW_Shadow_Display::record_flag( 0 );
-        $this->assertFalse( get_option( ASW_Shadow_Display::CUTOFF_OPTION ) );
+        ANTISPAMWIZARD_Shadow_Display::record_flag( 0 );
+        $this->assertFalse( get_option( ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ) );
 
-        ASW_Shadow_Display::record_flag( 12 );
-        ASW_Shadow_Display::record_flag( 20 );
-        $this->assertSame( 11, get_option( ASW_Shadow_Display::CUTOFF_OPTION ) );
+        ANTISPAMWIZARD_Shadow_Display::record_flag( 12 );
+        ANTISPAMWIZARD_Shadow_Display::record_flag( 20 );
+        $this->assertSame( 11, get_option( ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ) );
     }
 
     public function test_another_visitor_and_an_anonymous_visitor_get_no_shadow_row(): void {
@@ -827,9 +827,9 @@ class ShadowDisplayTest extends TestCase {
 
         $this->assertSame( 'spam', $wp_comments[2]['comment_approved'] );
         $this->assertSame( 'spam', $wp_comment_cache[2]['comment_approved'] );
-        $this->assertTrue( ASW_Shadow_Display::is_shadowed( 2 ) );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 1 ) );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 4 ), 'a genuinely held comment is not a shadow row' );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 1 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 4 ), 'a genuinely held comment is not a shadow row' );
     }
 
     public function test_an_unrelated_comment_passes_through_get_comment_unmodified(): void {
@@ -867,7 +867,7 @@ class ShadowDisplayTest extends TestCase {
     }
 
     public function test_with_the_setting_off_no_get_comment_filter_is_registered(): void {
-        $GLOBALS['wp_options']['asw_settings'] = array( 'shadow_display_enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'shadow_display_enabled' => false );
         $this->as_cookie_author( 'me@example.com' );
         $this->register();
 
@@ -875,7 +875,7 @@ class ShadowDisplayTest extends TestCase {
 
         $this->assertSame( array( 1 => '1', 4 => '0' ), self::statuses( $comments ) );
         $this->assertArrayNotHasKey( 'get_comment', $GLOBALS['wp_filters'] );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 2 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
     }
 
     public function test_an_eligible_query_with_no_shadow_row_registers_no_filter(): void {
@@ -915,8 +915,8 @@ class ShadowDisplayTest extends TestCase {
             $run = $this->run_query( $args );
 
             $this->assertSame( array( 2, 3, 4 ), $run['ids'], 'control: the spam rows came back' );
-            $this->assertFalse( ASW_Shadow_Display::is_shadowed( 2 ) );
-            $this->assertFalse( ASW_Shadow_Display::is_shadowed( 3 ) );
+            $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
+            $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 3 ) );
             $this->assertArrayNotHasKey( 'get_comment', $GLOBALS['wp_filters'] );
             $this->assertSame( 'spam', get_comment( 2 )->comment_approved );
         }
@@ -937,7 +937,7 @@ class ShadowDisplayTest extends TestCase {
         $this->assertCount( $log_before, $GLOBALS['wp_comment_query_log'], 'control: a cache hit, no clauses built' );
         $this->assertSame( '0', self::statuses( $comments )[2] );
         $this->assertSame( '0', self::statuses( $comments )[3] );
-        $this->assertTrue( ASW_Shadow_Display::is_shadowed( 2 ) );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
     }
 
     public function test_a_shadow_reply_from_the_child_id_cache_is_still_presented_as_held(): void {
@@ -949,7 +949,7 @@ class ShadowDisplayTest extends TestCase {
         $wp_comments[2]['comment_approved'] = '1';
         $wp_comments[3]['comment_approved'] = '1';
         $wp_comments[5]                     = array( 'comment_ID' => 5, 'comment_post_ID' => 7, 'comment_parent' => 1, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com' );
-        $wp_comment_meta[5]                 = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[5]                 = array( '_antispamwizard_reason' => 'links' );
         $this->as_cookie_author( 'me@example.com' );
         $this->register();
         $args                 = $this->front_end_args( 'me@example.com' );
@@ -963,21 +963,21 @@ class ShadowDisplayTest extends TestCase {
         $this->assertCount( $log_before, $GLOBALS['wp_comment_query_log'], 'control: neither the query nor its descendant level ran' );
         $this->assertArrayHasKey( 5, $statuses, 'the cached level still yields the reply' );
         $this->assertSame( '0', $statuses[5] );
-        $this->assertTrue( ASW_Shadow_Display::is_shadowed( 5 ) );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 5 ) );
         $this->assertSame( '0', get_comment( 5 )->comment_approved );
     }
 
     public function test_a_threaded_viewer_is_presented_only_their_own_flagged_comments_on_that_post(): void {
         // The get_comment-side recognition mirrors the SQL branch: post,
-        // identity, type and _asw_reason.
+        // identity, type and _antispamwizard_reason.
         global $wp_comments, $wp_comment_meta;
         $this->seed_non_shadow_spam();
         // Their own auto-flagged comment on another post.
         $wp_comments[10]     = array( 'comment_ID' => 10, 'comment_post_ID' => 8, 'comment_approved' => 'spam', 'comment_author_email' => 'me@example.com' );
-        $wp_comment_meta[10] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[10] = array( '_antispamwizard_reason' => 'links' );
         // Their own auto-flagged comment, address in another case.
         $wp_comments[11]     = array( 'comment_ID' => 11, 'comment_post_ID' => 7, 'comment_parent' => 1, 'comment_approved' => 'spam', 'comment_author_email' => 'Me@Example.com' );
-        $wp_comment_meta[11] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[11] = array( '_antispamwizard_reason' => 'links' );
         $this->as_cookie_author( 'me@example.com' );
         $this->register();
         $args                 = $this->front_end_args( 'me@example.com' );
@@ -989,10 +989,10 @@ class ShadowDisplayTest extends TestCase {
         $this->assertSame( 'spam', get_comment( 8 )->comment_approved, 'a flagged pingback' );
         $this->assertSame( 'spam', get_comment( 9 )->comment_approved, "another visitor's flagged comment" );
         $this->assertSame( 'spam', get_comment( 10 )->comment_approved, 'another post' );
-        $this->assertFalse( ASW_Shadow_Display::is_shadowed( 6 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 6 ) );
         $this->assertSame( '0', get_comment( 11 )->comment_approved, 'control: their own, as the collation compares it' );
         $this->assertSame( '0', get_comment( 2 )->comment_approved, 'control: recognised without the registry' );
-        $this->assertTrue( ASW_Shadow_Display::is_shadowed( 2 ) );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::is_shadowed( 2 ) );
     }
 
     public function test_a_shadow_row_whose_real_status_changed_is_no_longer_presented_as_held(): void {
@@ -1012,15 +1012,15 @@ class ShadowDisplayTest extends TestCase {
     public function test_forget_verdict_reads_back_a_refused_delete_and_logs_it(): void {
         global $wp_comment_meta;
 
-        $this->assertTrue( ASW_Shadow_Display::forget_verdict( 2 ) );
-        $this->assertArrayNotHasKey( '_asw_reason', $wp_comment_meta[2] );
-        $this->assertTrue( ASW_Shadow_Display::forget_verdict( 2 ), 'an already absent flag is the goal state' );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::forget_verdict( 2 ) );
+        $this->assertArrayNotHasKey( '_antispamwizard_reason', $wp_comment_meta[2] );
+        $this->assertTrue( ANTISPAMWIZARD_Shadow_Display::forget_verdict( 2 ), 'an already absent flag is the goal state' );
 
-        $log      = tempnam( sys_get_temp_dir(), 'asw-shadow-log-' );
+        $log      = tempnam( sys_get_temp_dir(), 'antispamwizard-shadow-log-' );
         $previous = ini_set( 'error_log', $log );
         $GLOBALS['wp_delete_comment_meta_fails'] = true;
         try {
-            $forgotten = ASW_Shadow_Display::forget_verdict( 3 );
+            $forgotten = ANTISPAMWIZARD_Shadow_Display::forget_verdict( 3 );
             $written   = (string) file_get_contents( $log );
         } finally {
             $GLOBALS['wp_delete_comment_meta_fails'] = false;
@@ -1029,8 +1029,8 @@ class ShadowDisplayTest extends TestCase {
         }
 
         $this->assertFalse( $forgotten );
-        $this->assertArrayHasKey( '_asw_reason', $wp_comment_meta[3] );
-        $this->assertStringContainsString( 'ASW: shadow display flag could not be removed from comment 3', $written );
+        $this->assertArrayHasKey( '_antispamwizard_reason', $wp_comment_meta[3] );
+        $this->assertStringContainsString( 'ANTISPAMWIZARD: shadow display flag could not be removed from comment 3', $written );
     }
 
     public function test_overruling_the_verdict_drops_the_flag_so_a_later_moderator_spam_stays_hidden(): void {
@@ -1039,12 +1039,12 @@ class ShadowDisplayTest extends TestCase {
 
         // Not Spam (approved) on comment 2, then a moderator marks it spam again.
         wp_unspam_comment( 2 );
-        $this->assertArrayNotHasKey( '_asw_reason', $wp_comment_meta[2] );
+        $this->assertArrayNotHasKey( '_antispamwizard_reason', $wp_comment_meta[2] );
         wp_spam_comment( 2 );
 
         // Not Spam that leaves comment 3 held.
-        asw_test_set_comment_status( 3, '0' );
-        $this->assertArrayNotHasKey( '_asw_reason', $wp_comment_meta[3] );
+        antispamwizard_test_set_comment_status( 3, '0' );
+        $this->assertArrayNotHasKey( '_antispamwizard_reason', $wp_comment_meta[3] );
         wp_spam_comment( 3 );
 
         $this->as_cookie_author( 'me@example.com' );
@@ -1057,13 +1057,13 @@ class ShadowDisplayTest extends TestCase {
         global $wp_comments, $wp_comment_meta;
         $this->register();
 
-        asw_test_set_comment_status( 2, 'trash' );
+        antispamwizard_test_set_comment_status( 2, 'trash' );
         $wp_comments[4]['comment_approved'] = '1';
-        $wp_comment_meta[4]                 = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[4]                 = array( '_antispamwizard_reason' => 'links' );
         wp_spam_comment( 4 );
 
-        $this->assertSame( 'links', $wp_comment_meta[2]['_asw_reason'], 'spam → trash keeps the verdict' );
-        $this->assertSame( 'links', $wp_comment_meta[4]['_asw_reason'], 'only leaving spam drops it' );
+        $this->assertSame( 'links', $wp_comment_meta[2]['_antispamwizard_reason'], 'spam → trash keeps the verdict' );
+        $this->assertSame( 'links', $wp_comment_meta[4]['_antispamwizard_reason'], 'only leaving spam drops it' );
     }
 
     // ------------------------------------------- Redirect: the pair for a cookie-less author.
@@ -1107,7 +1107,7 @@ class ShadowDisplayTest extends TestCase {
         $this->assertSame( '2', $query['unapproved'] );
         $this->assertSame( wp_hash( $comment->comment_date_gmt ), $query['moderation-hash'] );
         $this->assertSame( 'spam', $GLOBALS['wp_comments'][2]['comment_approved'], 'the row is never touched' );
-        $this->assertSame( 'links', $GLOBALS['wp_comment_meta'][2]['_asw_reason'] );
+        $this->assertSame( 'links', $GLOBALS['wp_comment_meta'][2]['_antispamwizard_reason'] );
     }
 
     public function test_redirect_ignores_a_held_comment(): void {
@@ -1124,17 +1124,17 @@ class ShadowDisplayTest extends TestCase {
     }
 
     public function test_redirect_ignores_spam_without_the_plugin_flag(): void {
-        unset( $GLOBALS['wp_comment_meta'][2]['_asw_reason'] );
+        unset( $GLOBALS['wp_comment_meta'][2]['_antispamwizard_reason'] );
         $this->assert_redirect_untouched( $this->posted() );
     }
 
     public function test_redirect_ignores_a_flag_at_or_below_the_cutoff(): void {
-        $GLOBALS['wp_options'][ ASW_Shadow_Display::CUTOFF_OPTION ] = 2;
+        $GLOBALS['wp_options'][ ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ] = 2;
         $this->assert_redirect_untouched( $this->posted() );
     }
 
     public function test_redirect_ignores_everything_until_the_cutoff_is_recorded(): void {
-        unset( $GLOBALS['wp_options'][ ASW_Shadow_Display::CUTOFF_OPTION ] );
+        unset( $GLOBALS['wp_options'][ ANTISPAMWIZARD_Shadow_Display::CUTOFF_OPTION ] );
         $this->assert_redirect_untouched( $this->posted() );
     }
 
@@ -1167,12 +1167,12 @@ class ShadowDisplayTest extends TestCase {
     }
 
     public function test_redirect_ignores_a_comment_with_the_setting_off(): void {
-        $GLOBALS['wp_options']['asw_settings'] = array( 'shadow_display_enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'shadow_display_enabled' => false );
         $this->assert_redirect_untouched( $this->posted() );
     }
 
     public function test_redirect_ignores_a_comment_with_the_master_switch_off(): void {
-        $GLOBALS['wp_options']['asw_settings'] = array( 'enabled' => false );
+        $GLOBALS['wp_options']['antispamwizard_settings'] = array( 'enabled' => false );
         $this->assert_redirect_untouched( $this->posted() );
     }
 
@@ -1202,10 +1202,10 @@ class ShadowDisplayTest extends TestCase {
     public function test_a_throw_in_the_redirect_returns_the_location_and_logs_only_the_site(): void {
         $shadow = $this->register();
 
-        $log      = tempnam( sys_get_temp_dir(), 'asw-shadow-log-' );
+        $log      = tempnam( sys_get_temp_dir(), 'antispamwizard-shadow-log-' );
         $previous = ini_set( 'error_log', $log );
         try {
-            $location = $shadow->on_comment_post_redirect( self::POST_URL, new ASW_Throwing_Shadow_Input() );
+            $location = $shadow->on_comment_post_redirect( self::POST_URL, new ANTISPAMWIZARD_Throwing_Shadow_Input() );
             $written  = (string) file_get_contents( $log );
         } finally {
             ini_set( 'error_log', false === $previous ? '' : $previous );
@@ -1214,8 +1214,8 @@ class ShadowDisplayTest extends TestCase {
 
         $this->assertSame( self::POST_URL, $location );
         // The throw site is the fixture's __isset(), named by basename only.
-        $this->assertMatchesRegularExpression( '/ASW: shadow display failed at ShadowDisplayTest\.php:\d+$/m', $written );
-        $this->assertSame( 1, substr_count( $written, 'ASW: shadow display failed at' ) );
+        $this->assertMatchesRegularExpression( '/ANTISPAMWIZARD: shadow display failed at ShadowDisplayTest\.php:\d+$/m', $written );
+        $this->assertSame( 1, substr_count( $written, 'ANTISPAMWIZARD: shadow display failed at' ) );
         $this->assertStringNotContainsString( 'secret failure detail', $written );
         $this->assertStringNotContainsString( '/tests/', $written, 'never the full path' );
     }
@@ -1262,7 +1262,7 @@ class ShadowDisplayTest extends TestCase {
         $core                              = self::statuses( ( new WP_Comment_Query() )->query( $args ) );
 
         $this->register();
-        $log      = tempnam( sys_get_temp_dir(), 'asw-shadow-log-' );
+        $log      = tempnam( sys_get_temp_dir(), 'antispamwizard-shadow-log-' );
         $previous = ini_set( 'error_log', $log );
         try {
             $GLOBALS['wp_comment_query_cache'] = array();
@@ -1277,10 +1277,10 @@ class ShadowDisplayTest extends TestCase {
         $this->assertSame( array( 1 => '1', 4 => '0' ), $core );
         $this->assertSame( $core, $hooked );
         $this->assertSame( self::CORE_EMAIL_APPROVED . ' AND comment_post_ID = 7', end( $GLOBALS['wp_comment_query_log'] ) );
-        $this->assertArrayNotHasKey( ASW_Shadow_Display::QUERY_VAR, $query->query_var_defaults );
+        $this->assertArrayNotHasKey( ANTISPAMWIZARD_Shadow_Display::QUERY_VAR, $query->query_var_defaults );
         $this->assertArrayNotHasKey( 'get_comment', $GLOBALS['wp_filters'] );
         // The throw site is the commenter stub, named by basename only.
-        $this->assertMatchesRegularExpression( '/ASW: shadow display failed at bootstrap\.php:\d+$/m', $written );
+        $this->assertMatchesRegularExpression( '/ANTISPAMWIZARD: shadow display failed at bootstrap\.php:\d+$/m', $written );
         $this->assertStringNotContainsString( 'secret failure detail', $written );
         $this->assertStringNotContainsString( '/includes/', $written, 'never the full path' );
     }
@@ -1291,15 +1291,15 @@ class ShadowDisplayTest extends TestCase {
         $query             = new WP_Comment_Query();
         $query->query_vars = array_merge( $query->query_var_defaults, $this->front_end_args( 'me@example.com' ) );
 
-        $log      = tempnam( sys_get_temp_dir(), 'asw-shadow-log-' );
+        $log      = tempnam( sys_get_temp_dir(), 'antispamwizard-shadow-log-' );
         $previous = ini_set( 'error_log', $log );
         try {
-            $input = new ASW_Throwing_Shadow_Input();
+            $input = new ANTISPAMWIZARD_Throwing_Shadow_Input();
 
             $shadow->on_pre_get_comments( $query );
             $this->assertSame( array( $input ), $shadow->on_the_comments( array( $input ), $query ) );
             $plain = array( 'where' => self::CORE_EMAIL_APPROVED );
-            asw_test_set_approved_clause( $query, self::CORE_EMAIL_APPROVED );
+            antispamwizard_test_set_approved_clause( $query, self::CORE_EMAIL_APPROVED );
             $this->assertSame( $plain, $shadow->on_comments_clauses( $plain, $query ), 'the_comments dropped the approval' );
 
             // A $wpdb whose every read throws: the shadow fragment cannot be built.
@@ -1311,7 +1311,7 @@ class ShadowDisplayTest extends TestCase {
             } finally {
                 $GLOBALS['wpdb'] = $real_wpdb;
             }
-            $this->assertSame( self::CORE_EMAIL_APPROVED, asw_test_get_sql_clauses( $query )['where']['approved'], 'nothing written back' );
+            $this->assertSame( self::CORE_EMAIL_APPROVED, antispamwizard_test_get_sql_clauses( $query )['where']['approved'], 'nothing written back' );
             $this->assertSame( array(), $shadow->on_the_comments( array(), $query ), 'comments_clauses dropped the approval' );
             $this->assertArrayNotHasKey( 'get_comment', $GLOBALS['wp_filters'] );
 
@@ -1325,7 +1325,7 @@ class ShadowDisplayTest extends TestCase {
 
         // Four catches, each naming a bare file name: the fixture's, or the
         // plugin's own call site for the missing $wpdb->prepare().
-        $this->assertSame( 4, preg_match_all( '/ASW: shadow display failed at [\w.-]+\.php:\d+$/m', $written ) );
+        $this->assertSame( 4, preg_match_all( '/ANTISPAMWIZARD: shadow display failed at [\w.-]+\.php:\d+$/m', $written ) );
         $this->assertStringNotContainsString( 'secret failure detail', $written );
     }
 
@@ -1348,7 +1348,7 @@ class ShadowDisplayTest extends TestCase {
 
         foreach ( $blocks[1] as $body ) {
             $this->assertStringContainsString(
-                "error_log( 'ASW: shadow display failed at ' . basename( \$e->getFile() ) . ':' . \$e->getLine() );",
+                "error_log( 'ANTISPAMWIZARD: shadow display failed at ' . basename( \$e->getFile() ) . ':' . \$e->getLine() );",
                 $body
             );
             preg_match_all( '/(basename\(\s*)?\$e\b(?:\s*->\s*\w+\s*\(\s*\))?/', $body, $uses );

@@ -4,11 +4,11 @@ use PHPUnit\Framework\TestCase;
 
 class NaiveBayesTest extends TestCase {
 
-    private ASW_Naive_Bayes $classifier;
+    private ANTISPAMWIZARD_Naive_Bayes $classifier;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->classifier = new ASW_Naive_Bayes();
+        $this->classifier = new ANTISPAMWIZARD_Naive_Bayes();
     }
 
     private function train_basic(): void {
@@ -67,7 +67,7 @@ class NaiveBayesTest extends TestCase {
 
     public function test_unlearn_method_removed(): void {
         $this->assertFalse(
-            method_exists( ASW_Naive_Bayes::class, 'unlearn' ),
+            method_exists( ANTISPAMWIZARD_Naive_Bayes::class, 'unlearn' ),
             'Naive_Bayes::unlearn() should have been removed (dead code with orphaned-token bug)'
         );
     }
@@ -102,10 +102,10 @@ class NaiveBayesTest extends TestCase {
 
     public function test_classify_survives_a_trained_model_with_no_vocabulary(): void {
         // Documents but no tokens in any category: every training sample
-        // tokenised to nothing, or a cached unit ASW_Model_Store pruned. The
+        // tokenised to nothing, or a cached unit ANTISPAMWIZARD_Model_Store pruned. The
         // Laplace denominator (token_totals + vocabulary_size) is then 0, and
         // without the floor this is a DivisionByZeroError that
-        // ASW_Detector::run()'s fail-open catch swallows -- disabling the
+        // ANTISPAMWIZARD_Detector::run()'s fail-open catch swallows -- disabling the
         // Bayesian check for the cached unit's whole day while appending a
         // plugin-attributable line to the debug.log dev/smoke.sh scans on every
         // submission.
@@ -183,7 +183,7 @@ class NaiveBayesTest extends TestCase {
 
         $state = $this->classifier->get_state();
 
-        $new_classifier = new ASW_Naive_Bayes();
+        $new_classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $new_classifier->set_state( $state );
 
         $text     = 'Buy cheap pills free offer';
@@ -282,7 +282,7 @@ class NaiveBayesTest extends TestCase {
 
     public function test_learn_caps_dictionary_size_per_category(): void {
         // Use reflection to temporarily lower the cap for testing.
-        $ref = new \ReflectionClass( ASW_Naive_Bayes::class );
+        $ref = new \ReflectionClass( ANTISPAMWIZARD_Naive_Bayes::class );
 
         // We can't change a const, so we test by learning enough unique tokens
         // to hit the cap. Instead, let's verify the cap mechanism by learning
@@ -290,7 +290,7 @@ class NaiveBayesTest extends TestCase {
         // For a practical test, create a classifier and learn tokens up to the cap.
 
         // Generate unique tokens up to the cap + extra.
-        $cap   = ASW_Naive_Bayes::MAX_DICTIONARY_SIZE;
+        $cap   = ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE;
         $batch = $cap + 100;
 
         // Build a huge text with unique tokens.
@@ -316,7 +316,7 @@ class NaiveBayesTest extends TestCase {
 
     public function test_learn_existing_tokens_still_counted_after_cap(): void {
         // Learn enough unique tokens to fill the dictionary.
-        $cap        = ASW_Naive_Bayes::MAX_DICTIONARY_SIZE;
+        $cap        = ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE;
         $tokens_arr = array();
         for ( $i = 0; $i < $cap; $i++ ) {
             $tokens_arr[] = 'token' . $i;

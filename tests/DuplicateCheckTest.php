@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 class DuplicateCheckTest extends TestCase {
 
-    private ASW_Duplicate_Check $check;
+    private ANTISPAMWIZARD_Duplicate_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
@@ -14,7 +14,7 @@ class DuplicateCheckTest extends TestCase {
         $wp_using_ext_object_cache    = false;
         $wp_cache_incr_force_false    = 0;
         $wp_cache_incr_evict_on_force = false;
-        $this->check                  = new ASW_Duplicate_Check();
+        $this->check                  = new ANTISPAMWIZARD_Duplicate_Check();
     }
 
     protected function tearDown(): void {
@@ -31,9 +31,9 @@ class DuplicateCheckTest extends TestCase {
      * Every key in the shared $wp_transients global carrying the given prefix.
      *
      * Both storage layers land in that one global: the file-locked path writes
-     * arrays under bare asw_dup_ keys, the object cache stubs write integers
-     * under group-prefixed asw:asw_dup_ keys. The prefix is what tells them
-     * apart, and 'asw_dup_' deliberately does not match 'asw:asw_dup_'.
+     * arrays under bare antispamwizard_dup_ keys, the object cache stubs write integers
+     * under group-prefixed antispamwizard:antispamwizard_dup_ keys. The prefix is what tells them
+     * apart, and 'antispamwizard_dup_' deliberately does not match 'antispamwizard:antispamwizard_dup_'.
      *
      * @return string[]
      */
@@ -49,26 +49,26 @@ class DuplicateCheckTest extends TestCase {
     }
 
     /**
-     * Locate the asw_dup_ transient key created by a prior check() call.
+     * Locate the antispamwizard_dup_ transient key created by a prior check() call.
      */
     private function find_dup_transient_key(): ?string {
-        return $this->transient_keys( 'asw_dup_' )[0] ?? null;
+        return $this->transient_keys( 'antispamwizard_dup_' )[0] ?? null;
     }
 
     /**
-     * Locate the group-prefixed cache counter key (asw:asw_dup_) written by the
+     * Locate the group-prefixed cache counter key (antispamwizard:antispamwizard_dup_) written by the
      * external-object-cache path. The cache path stores an integer counter here,
-     * whereas the file-locked path writes an array under the bare asw_dup_ key.
+     * whereas the file-locked path writes an array under the bare antispamwizard_dup_ key.
      */
     private function find_cache_counter_key(): ?string {
-        return $this->transient_keys( 'asw:asw_dup_' )[0] ?? null;
+        return $this->transient_keys( 'antispamwizard:antispamwizard_dup_' )[0] ?? null;
     }
 
     private function make_comment( string $content, string $ip = '127.0.0.1' ): array {
         return array(
             'comment_content'          => $content,
             'comment_author_IP'        => $ip,
-            'comment_author_IP_hashed' => ASW_Detector::hash_ip( $ip ),
+            'comment_author_IP_hashed' => ANTISPAMWIZARD_Detector::hash_ip( $ip ),
         );
     }
 
@@ -114,7 +114,7 @@ class DuplicateCheckTest extends TestCase {
     }
 
     public function test_custom_threshold(): void {
-        ASW_Settings::update( array( 'duplicate_threshold' => 2 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'duplicate_threshold' => 2 ) );
         $comment = $this->make_comment( 'Spam spam' );
         $this->check->check( $comment );
         $result = $this->check->check( $comment );
@@ -123,7 +123,7 @@ class DuplicateCheckTest extends TestCase {
     }
 
     public function test_disabled_check_returns_not_spam(): void {
-        ASW_Settings::update( array( 'duplicate_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'duplicate_enabled' => false ) );
         $comment = $this->make_comment( 'Anything' );
         $this->check->check( $comment );
         $this->check->check( $comment );
@@ -145,7 +145,7 @@ class DuplicateCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 
     public function test_near_duplicate_case_difference_matches(): void {
@@ -193,7 +193,7 @@ class DuplicateCheckTest extends TestCase {
 
     public function test_transient_ttl_is_capped_at_max(): void {
         // Set TTL higher than MAX_TTL (86400).
-        ASW_Settings::update( array( 'duplicate_ttl' => 200000 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'duplicate_ttl' => 200000 ) );
 
         $comment = $this->make_comment( 'TTL test comment' );
         $this->check->check( $comment );
@@ -202,34 +202,34 @@ class DuplicateCheckTest extends TestCase {
         global $wp_transients;
         $found_ttl = null;
         foreach ( $wp_transients as $key => $data ) {
-            if ( str_starts_with( $key, 'asw_dup_' ) && isset( $data['__ttl'] ) ) {
+            if ( str_starts_with( $key, 'antispamwizard_dup_' ) && isset( $data['__ttl'] ) ) {
                 $found_ttl = $data['__ttl'];
                 break;
             }
         }
 
-        $this->assertNotNull( $found_ttl, 'Expected a asw_dup_ transient to be set' );
+        $this->assertNotNull( $found_ttl, 'Expected a antispamwizard_dup_ transient to be set' );
         $this->assertLessThanOrEqual(
-            ASW_Duplicate_Check::MAX_TTL,
+            ANTISPAMWIZARD_Duplicate_Check::MAX_TTL,
             $found_ttl,
             'Transient TTL should be capped at MAX_TTL'
         );
     }
 
     public function test_max_ttl_constant_is_86400(): void {
-        $this->assertSame( 86400, ASW_Duplicate_Check::MAX_TTL );
+        $this->assertSame( 86400, ANTISPAMWIZARD_Duplicate_Check::MAX_TTL );
     }
 
     public function test_lock_files_use_uploads_directory(): void {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
 
         $comment = $this->make_comment( 'lock dir test' );
         $this->check->check( $comment );
 
         $this->assertDirectoryExists( $lock_dir );
-        // At least one asw_dup_*.lock file should exist.
-        $lock_files = glob( $lock_dir . '/asw_dup_*.lock' );
+        // At least one antispamwizard_dup_*.lock file should exist.
+        $lock_files = glob( $lock_dir . '/antispamwizard_dup_*.lock' );
         $this->assertNotEmpty( $lock_files );
     }
 
@@ -245,7 +245,7 @@ class DuplicateCheckTest extends TestCase {
      */
     public function test_duplicate_check_still_counts_when_the_lock_file_cannot_be_opened(): void {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
 
         $ip      = '9.9.9.9';
         $comment = $this->make_comment( 'lock fail dup test', $ip );
@@ -257,7 +257,7 @@ class DuplicateCheckTest extends TestCase {
         $key = $this->find_dup_transient_key();
         $this->assertNotNull( $key );
 
-        $lock_file = $lock_dir . '/asw_dup_' . substr( $key, -2 ) . '.lock';
+        $lock_file = $lock_dir . '/antispamwizard_dup_' . substr( $key, -2 ) . '.lock';
         $this->assertFileExists( $lock_file, 'the locked path must have created this file' );
         unlink( $lock_file );
         mkdir( $lock_file );
@@ -265,7 +265,7 @@ class DuplicateCheckTest extends TestCase {
         // The fallback logs the unopenable path through error_log(); route it to
         // a file so the expected diagnostic is not printed over the suite's own
         // output, and assert it was actually emitted.
-        $log      = tempnam( sys_get_temp_dir(), 'asw-lock-log-' );
+        $log      = tempnam( sys_get_temp_dir(), 'antispamwizard-lock-log-' );
         $previous = ini_set( 'error_log', $log );
 
         try {
@@ -286,7 +286,7 @@ class DuplicateCheckTest extends TestCase {
             // name the absolute path: this runs on an unauthenticated comment
             // submission and debug.log is web-readable on misconfigured hosts,
             // so the path would leak the document root. Same rule as
-            // ASW_Detector::run()'s basename().
+            // ANTISPAMWIZARD_Detector::run()'s basename().
             $this->assertStringContainsString( basename( $lock_file ), $logged );
             $this->assertStringNotContainsString( $lock_dir, $logged );
         } finally {
@@ -299,7 +299,7 @@ class DuplicateCheckTest extends TestCase {
     public function test_uses_hashed_ip_from_comment_data(): void {
         $comment_with_hash = array(
             'comment_content'          => 'Test content',
-            'comment_author_IP_hashed' => ASW_Detector::hash_ip( '5.5.5.5' ),
+            'comment_author_IP_hashed' => ANTISPAMWIZARD_Detector::hash_ip( '5.5.5.5' ),
         );
         $comment_with_raw = array(
             'comment_content'   => 'Test content',
@@ -329,11 +329,11 @@ class DuplicateCheckTest extends TestCase {
         $this->assertSame( 'duplicate comment 3/3', $result->get_details() );
 
         // Discriminate the cache branch: the cache path stores an integer
-        // counter under the group-prefixed asw:asw_dup_ key, and must NOT touch
-        // the bare asw_dup_ file-locked transient. These fail if the file path
+        // counter under the group-prefixed antispamwizard:antispamwizard_dup_ key, and must NOT touch
+        // the bare antispamwizard_dup_ file-locked transient. These fail if the file path
         // ran instead of the cache path.
         $cache_key = $this->find_cache_counter_key();
-        $this->assertNotNull( $cache_key, 'Expected a cache counter (asw:asw_dup_) key' );
+        $this->assertNotNull( $cache_key, 'Expected a cache counter (antispamwizard:antispamwizard_dup_) key' );
         $this->assertSame( 3, $wp_transients[ $cache_key ] );
         $this->assertNull( $this->find_dup_transient_key(), 'File-locked transient path must not run on the cache path' );
     }
@@ -446,7 +446,7 @@ class DuplicateCheckTest extends TestCase {
 
     public function test_lock_dir_creation_writes_guard_files(): void {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
 
         // Remove the lock dir so the next check recreates it along with its
         // .htaccess/index.php guard files. scandir picks up dotfiles that a
@@ -534,7 +534,7 @@ class DuplicateCheckTest extends TestCase {
     }
 
     /**
-     * ASW_Detector::evaluate() deliberately leaves comment_author_IP_hashed unset
+     * ANTISPAMWIZARD_Detector::evaluate() deliberately leaves comment_author_IP_hashed unset
      * when another plugin filtering pre_comment_approved hands in a non-string IP,
      * because hash_ip() is typed `string` and an array is a TypeError. This check's
      * own fallback must apply the same rule, or it re-raises that TypeError: the
@@ -569,14 +569,14 @@ class DuplicateCheckTest extends TestCase {
     // --- Per-IP transient storage shape ---
 
     /**
-     * Every asw_dup_ transient key written by the file-locked path. The external
+     * Every antispamwizard_dup_ transient key written by the file-locked path. The external
      * object cache path stores its integer counters under group-prefixed
-     * asw:asw_dup_ keys, which do not start with asw_dup_ and are excluded here.
+     * antispamwizard:antispamwizard_dup_ keys, which do not start with antispamwizard_dup_ and are excluded here.
      *
      * @return string[]
      */
     private function dup_transient_keys(): array {
-        return $this->transient_keys( 'asw_dup_' );
+        return $this->transient_keys( 'antispamwizard_dup_' );
     }
 
     /**
@@ -598,7 +598,7 @@ class DuplicateCheckTest extends TestCase {
      * @return string[]
      */
     private function cache_counter_keys(): array {
-        return $this->transient_keys( 'asw:asw_dup_' );
+        return $this->transient_keys( 'antispamwizard:antispamwizard_dup_' );
     }
 
     /**
@@ -608,13 +608,13 @@ class DuplicateCheckTest extends TestCase {
      */
     public function test_thirty_two_distinct_texts_share_one_transient(): void {
         $ip = '30.30.30.30';
-        for ( $i = 0; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 0; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'text number ' . $i, $ip ) );
         }
 
         $keys = $this->dup_transient_keys();
         $this->assertCount( 1, $keys, 'One hashed IP must own exactly one transient' );
-        $this->assertCount( ASW_Duplicate_Check::MAX_ENTRIES_PER_IP, $this->dup_entries( $keys[0] ) );
+        $this->assertCount( ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP, $this->dup_entries( $keys[0] ) );
     }
 
     /**
@@ -623,7 +623,7 @@ class DuplicateCheckTest extends TestCase {
      * must be a deliberate edit here too rather than a silent one.
      */
     public function test_entry_cap_is_thirty_two(): void {
-        $this->assertSame( 32, ASW_Duplicate_Check::MAX_ENTRIES_PER_IP );
+        $this->assertSame( 32, ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP );
     }
 
     /**
@@ -632,7 +632,7 @@ class DuplicateCheckTest extends TestCase {
      */
     public function test_thirty_third_text_evicts_the_oldest_of_the_least_repeated(): void {
         $ip = '31.31.31.31';
-        for ( $i = 0; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 0; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'capped text ' . $i, $ip ) );
         }
 
@@ -655,7 +655,7 @@ class DuplicateCheckTest extends TestCase {
 
         $this->assertCount( 1, $this->dup_transient_keys() );
         $entries = $this->dup_entries( $key );
-        $this->assertCount( ASW_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
+        $this->assertCount( ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
         $this->assertArrayNotHasKey( $oldest, $entries, 'The oldest of the equally-counted entries must be evicted' );
         $this->assertArrayHasKey( $survivor, $entries, 'A younger entry must survive the eviction' );
     }
@@ -667,14 +667,14 @@ class DuplicateCheckTest extends TestCase {
      * strict minimum and would evict *itself*. increment_stored_count() then
      * reads a key that is no longer in the map - an undefined-index warning and
      * a null out of a `: int` method, i.e. a TypeError swallowed by
-     * ASW_Detector::run()'s fail-open catch - so the check would silently stop
+     * ANTISPAMWIZARD_Detector::run()'s fail-open catch - so the check would silently stop
      * counting while appending a plugin-attributable line to the very debug.log
      * dev/smoke.sh scans. The input that reaches it is routine, not adversarial:
      * a busy or shared IP where 32 texts have each been seen twice.
      */
     public function test_a_new_text_survives_its_own_write_against_a_fully_repeated_map(): void {
         $ip = '52.52.52.52';
-        for ( $i = 0; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 0; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'repeated filler ' . $i, $ip ) );
             $this->check->check( $this->make_comment( 'repeated filler ' . $i, $ip ) );
         }
@@ -693,7 +693,7 @@ class DuplicateCheckTest extends TestCase {
         // Assert it was also stored: a second submission must find it at 1 and
         // report 2, not seed a fresh entry and report 1 again.
         $entries = $this->dup_entries( $key );
-        $this->assertCount( ASW_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
+        $this->assertCount( ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
         $this->assertCount( 1, array_filter( $entries, static fn( array $entry ): bool => 1 === $entry['count'] ), 'The newcomer must hold the only count-1 slot' );
 
         $second = $this->check->check( $this->make_comment( 'the newcomer', $ip ) );
@@ -724,7 +724,7 @@ class DuplicateCheckTest extends TestCase {
         // the tie-break eviction falls back on once every count is equal.
         $this->check->check( $this->make_comment( 'the spam body', $ip ) );
         $this->check->check( $this->make_comment( 'the spam body', $ip ) );
-        for ( $i = 1; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 1; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'wall text ' . $i, $ip ) );
             $this->check->check( $this->make_comment( 'wall text ' . $i, $ip ) );
         }
@@ -739,9 +739,9 @@ class DuplicateCheckTest extends TestCase {
         // The wall is what the policy protects, and it is exactly what makes the
         // body and the throwaway the only spendable pair.
         $entries = $this->dup_entries( $this->find_dup_transient_key() );
-        $this->assertCount( ASW_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
+        $this->assertCount( ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
         $this->assertCount(
-            ASW_Duplicate_Check::MAX_ENTRIES_PER_IP - 1,
+            ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP - 1,
             array_filter( $entries, static fn( array $entry ): bool => 2 === $entry['count'] ),
             'Every count-2 wall entry must survive; only the count-1 slot churns'
         );
@@ -760,7 +760,7 @@ class DuplicateCheckTest extends TestCase {
         $this->check->check( $this->make_comment( 'repeated text', $ip ) );
         $this->check->check( $this->make_comment( 'repeated text', $ip ) );
 
-        for ( $i = 1; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 1; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'filler text ' . $i, $ip ) );
         }
         $this->check->check( $this->make_comment( 'the overflowing text', $ip ) );
@@ -783,7 +783,7 @@ class DuplicateCheckTest extends TestCase {
         $this->check->check( $this->make_comment( 'the spam body', $ip ) );
         $this->check->check( $this->make_comment( 'the spam body', $ip ) );
 
-        for ( $i = 0; $i <= ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 0; $i <= ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'unique filler ' . $filler++, $ip ) );
         }
 
@@ -815,7 +815,7 @@ class DuplicateCheckTest extends TestCase {
 
         for ( $round = 0; $round < 3; $round++ ) {
             $result = $this->check->check( $this->make_comment( 'the spam body', $ip ) );
-            for ( $i = 0; $i <= ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+            for ( $i = 0; $i <= ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
                 $this->check->check( $this->make_comment( 'unique filler ' . $filler++, $ip ) );
             }
         }
@@ -841,7 +841,7 @@ class DuplicateCheckTest extends TestCase {
         $this->check->check( $this->make_comment( 'the spam body', $ip ) );
         $this->check->check( $this->make_comment( 'the spam body', $ip ) );
 
-        for ( $i = 0; $i <= ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 0; $i <= ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'somebody else comment ' . $i, $ip ) );
         }
 
@@ -860,7 +860,7 @@ class DuplicateCheckTest extends TestCase {
         // Every entry ends at count 1, so the first text is the oldest of the
         // least repeated and the 33rd distinct text evicts it.
         $this->check->check( $this->make_comment( 'evictable text', $ip ) );
-        for ( $i = 1; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
+        for ( $i = 1; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP; $i++ ) {
             $this->check->check( $this->make_comment( 'other text ' . $i, $ip ) );
         }
         $this->check->check( $this->make_comment( 'the overflowing text', $ip ) );
@@ -883,7 +883,7 @@ class DuplicateCheckTest extends TestCase {
         $this->assertNotNull( $key );
 
         $data = $this->dup_entries( $key );
-        for ( $i = 0; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP + 10; $i++ ) {
+        for ( $i = 0; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP + 10; $i++ ) {
             $data[ hash( 'sha256', 'legacy entry ' . $i ) ] = array(
                 'count'      => 1,
                 'first_seen' => time(),
@@ -893,7 +893,7 @@ class DuplicateCheckTest extends TestCase {
 
         $this->check->check( $this->make_comment( 'a brand new text', $ip ) );
 
-        $this->assertCount( ASW_Duplicate_Check::MAX_ENTRIES_PER_IP, $this->dup_entries( $key ) );
+        $this->assertCount( ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP, $this->dup_entries( $key ) );
     }
 
     /**
@@ -910,7 +910,7 @@ class DuplicateCheckTest extends TestCase {
         $this->assertNotNull( $key );
 
         $data = $this->dup_entries( $key );
-        for ( $i = 0; $i < ASW_Duplicate_Check::MAX_ENTRIES_PER_IP + 10; $i++ ) {
+        for ( $i = 0; $i < ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP + 10; $i++ ) {
             $data[ hash( 'sha256', 'legacy entry ' . $i ) ] = array(
                 'count'      => 1,
                 'first_seen' => time(),
@@ -922,7 +922,7 @@ class DuplicateCheckTest extends TestCase {
         $result = $this->check->check( $this->make_comment( 'seed entry', $ip ) );
 
         $entries = $this->dup_entries( $key );
-        $this->assertCount( ASW_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
+        $this->assertCount( ANTISPAMWIZARD_Duplicate_Check::MAX_ENTRIES_PER_IP, $entries );
 
         // The repeated text is the entry being written, so it must survive its
         // own trim rather than be evicted as one more count-1 candidate.
@@ -1251,14 +1251,14 @@ class DuplicateCheckTest extends TestCase {
 
     /**
      * uninstall.php deletes the transients with a
-     * `_transient_asw_dup_%` LIKE, so the rekey must keep the prefix.
+     * `_transient_antispamwizard_dup_%` LIKE, so the rekey must keep the prefix.
      */
     public function test_transient_key_keeps_the_uninstall_prefix(): void {
         $this->check->check( $this->make_comment( 'prefix contract', '40.40.40.40' ) );
 
         $key = $this->find_dup_transient_key();
         $this->assertNotNull( $key );
-        $this->assertStringStartsWith( 'asw_dup_', $key );
+        $this->assertStringStartsWith( 'antispamwizard_dup_', $key );
 
         global $wp_options;
         $this->assertArrayHasKey( '_transient_' . $key, $wp_options );
@@ -1267,7 +1267,7 @@ class DuplicateCheckTest extends TestCase {
     /**
      * The object cache path is deliberately NOT rekeyed: wp_cache_incr() can only
      * bump an integer atomically, so it keeps one counter per IP + text and
-     * writes no bare asw_dup_ transient at all.
+     * writes no bare antispamwizard_dup_ transient at all.
      */
     public function test_cache_path_still_counts_per_ip_and_text(): void {
         global $wp_using_ext_object_cache, $wp_transients;

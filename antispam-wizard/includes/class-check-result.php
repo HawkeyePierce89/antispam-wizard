@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Immutable value object representing the result of a spam check.
  */
-class ASW_Check_Result {
+class ANTISPAMWIZARD_Check_Result {
 
     /** @var bool */
     private $spam;

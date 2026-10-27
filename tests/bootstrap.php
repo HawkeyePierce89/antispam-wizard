@@ -18,24 +18,24 @@ if ( ! defined( 'AUTH_SALT' ) ) {
     define( 'AUTH_SALT', 'test-auth-salt-for-unit-tests' );
 }
 
-if ( ! defined( 'ASW_TESTING' ) ) {
-    define( 'ASW_TESTING', true );
+if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
+    define( 'ANTISPAMWIZARD_TESTING', true );
 }
 
-if ( ! defined( 'ASW_PATH' ) ) {
-    define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+    define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
 }
 
-if ( ! defined( 'ASW_VERSION' ) ) {
-    define( 'ASW_VERSION', '1.0.0' );
+if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
+    define( 'ANTISPAMWIZARD_VERSION', '1.0.0' );
 }
 
-if ( ! defined( 'ASW_URL' ) ) {
-    define( 'ASW_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
+if ( ! defined( 'ANTISPAMWIZARD_URL' ) ) {
+    define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
 }
 
-if ( ! defined( 'ASW_FILE' ) ) {
-    define( 'ASW_FILE', ASW_PATH . 'antispam-wizard.php' );
+if ( ! defined( 'ANTISPAMWIZARD_FILE' ) ) {
+    define( 'ANTISPAMWIZARD_FILE', ANTISPAMWIZARD_PATH . 'antispam-wizard.php' );
 }
 
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
@@ -83,7 +83,7 @@ $wpdb = new class {
     public $on_get_var = null;
     /**
      * @var callable|null Invoked with the query at the top of get_results(), the
-     * on_get_var counterpart. ASW_Sample_Repository::script_fingerprint() runs
+     * on_get_var counterpart. ANTISPAMWIZARD_Sample_Repository::script_fingerprint() runs
      * its query inside a suppress_errors( true ) bracket restored in a finally,
      * so the flag can only be observed from inside the query itself.
      */
@@ -125,7 +125,7 @@ $wpdb = new class {
      * left in last_result and recording the message in last_error -- never by
      * returning null. The stub models that exactly, so a caller that must tell
      * a failure from an empty result set has to read last_error, as
-     * ASW_Sample_Repository::script_fingerprint() does.
+     * ANTISPAMWIZARD_Sample_Repository::script_fingerprint() does.
      */
     public $get_results_result = null;
     /** @var string[] */
@@ -290,7 +290,7 @@ $wpdb = new class {
      * Match an option name against a SQL LIKE pattern, as MySQL would.
      *
      * `%` and `_` are wildcards unless escaped by esc_like(), which backslashes
-     * both -- so a pattern built the way WordPress builds one ('_transient_asw\_
+     * both -- so a pattern built the way WordPress builds one ('_transient_antispamwizard\_
      * classifiers\_%') matches the prefix literally and the suffix loosely.
      *
      * @param string $pattern LIKE pattern, esc_like() escapes included.
@@ -395,7 +395,7 @@ $wpdb = new class {
      * Project one GROUP BY group through a SELECT list.
      *
      * Understands a plain column, COUNT(*) and MAX(<col>), each with an optional
-     * AS alias -- exactly the shape ASW_Sample_Repository::script_fingerprint()
+     * AS alias -- exactly the shape ANTISPAMWIZARD_Sample_Repository::script_fingerprint()
      * emits. Counts and maxima come back as ints; real MySQL hands wpdb strings,
      * but every caller casts, so the difference is not observable.
      *
@@ -451,7 +451,7 @@ $wpdb = new class {
         // generic SELECT branch, which would otherwise return the raw rows.
         // A GROUP BY group with no matching rows produces no row at all, as real
         // SQL does -- never a zero-count row -- while an *ungrouped* aggregate
-        // (ASW_Sample_Repository::table_fingerprint()) is always exactly one
+        // (ANTISPAMWIZARD_Sample_Repository::table_fingerprint()) is always exactly one
         // row, zero-count included.
         if ( preg_match( '/SELECT\s+(.+?)\s+FROM\s+(\S+)/is', $query, $m )
             && preg_match( '/\b(?:COUNT|MAX)\s*\(/i', $m[1] ) ) {
@@ -489,7 +489,7 @@ $wpdb = new class {
      * Without this the generic SELECT branch hands rows back in insertion
      * order, which for a table built through insert() is already ascending id
      * order -- so a query's ORDER BY would look honoured whether the caller
-     * wrote one or not, and ASW_Sample_Repository::find_all()'s ordering could
+     * wrote one or not, and ANTISPAMWIZARD_Sample_Repository::find_all()'s ordering could
      * not be tested at all. Numeric values compare as numbers (`id` is what
      * every caller orders by), everything else as strings.
      *
@@ -1029,7 +1029,7 @@ $wp_on_set_transient = null;
  * miss whether or not those deletes landed. So a `false` from get_transient()
  * is not proof that the row is gone, and combined with
  * $wp_transient_delete_fails this is what lets a test drive a caller that must
- * tell the two apart (ASW_Model_Store::delete_units(), which reads the option
+ * tell the two apart (ANTISPAMWIZARD_Model_Store::delete_units(), which reads the option
  * row directly for exactly this reason).
  *
  * @var bool|string[]
@@ -1056,7 +1056,7 @@ if ( ! function_exists( 'get_transient' ) ) {
         // Mirror WordPress: with an external object cache a transient lives in
         // the cache and has no option row at all, so a `_transient_` row left
         // over from before that cache was installed is invisible here -- which
-        // is exactly why ASW_Model_Store sweeps those rows by pattern.
+        // is exactly why ANTISPAMWIZARD_Model_Store sweeps those rows by pattern.
         $option_key = '_transient_' . $transient;
         if ( ! wp_using_ext_object_cache() && isset( $wp_options[ $option_key ] ) ) {
             return $wp_options[ $option_key ];
@@ -1454,9 +1454,9 @@ if ( ! function_exists( 'load_textdomain' ) ) {
 
 if ( ! function_exists( 'load_plugin_textdomain' ) ) {
     function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
-        global $asw_loaded_textdomains;
-        if ( is_array( $asw_loaded_textdomains ) ) {
-            $asw_loaded_textdomains[] = $domain;
+        global $antispamwizard_loaded_textdomains;
+        if ( is_array( $antispamwizard_loaded_textdomains ) ) {
+            $antispamwizard_loaded_textdomains[] = $domain;
         }
         return true;
     }
@@ -1590,7 +1590,7 @@ if ( ! function_exists( 'wp_nonce_url' ) ) {
 global $wp_died;
 $wp_died = array();
 
-// Set true to make asw_test_set_comment_status() -- and therefore
+// Set true to make antispamwizard_test_set_comment_status() -- and therefore
 // wp_spam_comment()/wp_unspam_comment() -- fail the way wp_update_comment() does:
 // no status written, no transition fired, false returned.
 global $wp_comment_status_change_fails;
@@ -1610,56 +1610,56 @@ global $wp_update_option_fails;
 $wp_update_option_fails = false;
 
 /**
- * Set true to make ASW_Model_Store believe this host has no zlib.
+ * Set true to make ANTISPAMWIZARD_Model_Store believe this host has no zlib.
  *
  * A unit is stored compressed wherever gzcompress()/gzuncompress() exist and
  * as a plain array where they do not, and the store is strict on read: the
  * stored form has to match the host's capability or the row is dropped and
  * rebuilt. Neither the plain write path nor either mismatch is reachable on
  * the test image, which has zlib, so the store reads this switch behind a
- * defined( 'ASW_TESTING' ) guard. Initialised once here and reset per test.
+ * defined( 'ANTISPAMWIZARD_TESTING' ) guard. Initialised once here and reset per test.
  *
  * @var bool
  */
-global $asw_zlib_unavailable;
-$asw_zlib_unavailable = false;
+global $antispamwizard_zlib_unavailable;
+$antispamwizard_zlib_unavailable = false;
 
 /**
- * Set true to make ASW_Model_Store::wrap_unit() see a refused gzcompress().
+ * Set true to make ANTISPAMWIZARD_Model_Store::wrap_unit() see a refused gzcompress().
  *
  * A zlib that is present but will not take a particular payload is not
  * reachable otherwise, and the rule it triggers is load-bearing: the store
  * writes *nothing* rather than the plain array, because unwrap_for_read() is
  * strict in both directions and would refuse that array on every later read --
  * a cold rebuild on every submission plus a wasted write and delete each time.
- * Read behind the same defined( 'ASW_TESTING' ) guard as $asw_zlib_unavailable.
+ * Read behind the same defined( 'ANTISPAMWIZARD_TESTING' ) guard as $antispamwizard_zlib_unavailable.
  * Initialised once here and reset per test.
  *
  * @var bool
  */
-global $asw_gzcompress_fails;
-$asw_gzcompress_fails = false;
+global $antispamwizard_gzcompress_fails;
+$antispamwizard_gzcompress_fails = false;
 
 /**
- * Override the per-item size ASW_Model_Store keeps a stored unit under.
+ * Override the per-item size ANTISPAMWIZARD_Model_Store keeps a stored unit under.
  *
- * Null leaves ASW_Model_Store::MAX_CACHED_UNIT_BYTES (1 048 576) in force.
+ * Null leaves ANTISPAMWIZARD_Model_Store::MAX_CACHED_UNIT_BYTES (1 048 576) in force.
  * Set to a small number to drive the prune-and-reweigh loop in
  * storable_unit() over an ordinary fixture: reaching the real limit takes
  * megabytes of novel vocabulary and seconds of wall clock, so pinning the
  * mechanism on it alone would put it behind the suite's slowest test.
- * Read behind the same defined( 'ASW_TESTING' ) guard as the two switches
+ * Read behind the same defined( 'ANTISPAMWIZARD_TESTING' ) guard as the two switches
  * above. Initialised once here and reset per test.
  *
  * @var int|null
  */
-global $asw_max_cached_unit_bytes;
-$asw_max_cached_unit_bytes = null;
+global $antispamwizard_max_cached_unit_bytes;
+$antispamwizard_max_cached_unit_bytes = null;
 
 /**
- * Override the bytes ASW_Model_Store lets a stored unit inflate back to.
+ * Override the bytes ANTISPAMWIZARD_Model_Store lets a stored unit inflate back to.
  *
- * Null leaves ASW_Model_Store::MAX_INFLATED_UNIT_BYTES (64x the item limit) in
+ * Null leaves ANTISPAMWIZARD_Model_Store::MAX_INFLATED_UNIT_BYTES (64x the item limit) in
  * force. It is one value for two sides -- the ceiling inflate_unit() hands
  * gzuncompress(), and the bound storable_unit() prunes against so a unit this
  * host writes is one it can read back. That second half is an axis of its own:
@@ -1668,17 +1668,17 @@ $asw_max_cached_unit_bytes = null;
  * accepted that way is refused, deleted and rebuilt on every later read.
  * Reaching 64 MB honestly takes that much novel vocabulary, so this switch is
  * what makes the rule testable at all. Read behind the same
- * defined( 'ASW_TESTING' ) guard as the three switches above. Initialised once
+ * defined( 'ANTISPAMWIZARD_TESTING' ) guard as the three switches above. Initialised once
  * here and reset per test.
  *
  * @var int|null
  */
-global $asw_max_inflated_unit_bytes;
-$asw_max_inflated_unit_bytes = null;
+global $antispamwizard_max_inflated_unit_bytes;
+$antispamwizard_max_inflated_unit_bytes = null;
 
-if ( ! function_exists( 'asw_test_model_store_call' ) ) {
+if ( ! function_exists( 'antispamwizard_test_model_store_call' ) ) {
     /**
-     * Call one of ASW_Model_Store's private static envelope helpers.
+     * Call one of ANTISPAMWIZARD_Model_Store's private static envelope helpers.
      *
      * The two helpers below go through the store's own code rather than
      * reimplementing the envelope, so a test that seeds or reads a cached unit
@@ -1689,49 +1689,49 @@ if ( ! function_exists( 'asw_test_model_store_call' ) ) {
      * @param array  $args   Positional arguments.
      * @return mixed
      */
-    function asw_test_model_store_call( string $method, array $args ) {
+    function antispamwizard_test_model_store_call( string $method, array $args ) {
         // No setAccessible() call: it has had no effect since PHP 8.1 -- the
         // plugin's floor -- and is deprecated from 8.5, where it would put a
         // notice into a suite that runs with failOnWarning.
-        $reflected = new ReflectionMethod( ASW_Model_Store::class, $method );
+        $reflected = new ReflectionMethod( ANTISPAMWIZARD_Model_Store::class, $method );
 
         return $reflected->invokeArgs( null, $args );
     }
 }
 
-if ( ! function_exists( 'asw_test_wrap_unit' ) ) {
+if ( ! function_exists( 'antispamwizard_test_wrap_unit' ) ) {
     /**
-     * The value ASW_Model_Store would store the given unit as on this host.
+     * The value ANTISPAMWIZARD_Model_Store would store the given unit as on this host.
      *
      * Null when this host cannot store one at all -- a refused gzcompress()
-     * where the envelope applies, which is $asw_gzcompress_fails above.
+     * where the envelope applies, which is $antispamwizard_gzcompress_fails above.
      *
      * @param array $unit Unit payload.
      * @return array|null
      */
-    function asw_test_wrap_unit( array $unit ): ?array {
-        return asw_test_model_store_call( 'wrap_unit', array( $unit ) );
+    function antispamwizard_test_wrap_unit( array $unit ): ?array {
+        return antispamwizard_test_model_store_call( 'wrap_unit', array( $unit ) );
     }
 }
 
-if ( ! function_exists( 'asw_test_unwrap_unit' ) ) {
+if ( ! function_exists( 'antispamwizard_test_unwrap_unit' ) ) {
     /**
      * The unit inside a stored value, read the way the serving path reads it.
      *
      * @param mixed $value Stored value.
      * @return array|null
      */
-    function asw_test_unwrap_unit( $value ): ?array {
-        return asw_test_model_store_call( 'unwrap_for_read', array( $value ) );
+    function antispamwizard_test_unwrap_unit( $value ): ?array {
+        return antispamwizard_test_model_store_call( 'unwrap_for_read', array( $value ) );
     }
 }
 
-if ( ! class_exists( 'ASW_Test_WP_Die_Exception' ) ) {
+if ( ! class_exists( 'ANTISPAMWIZARD_Test_WP_Die_Exception' ) ) {
     /**
      * Thrown by the wp_die() stub so a handler cannot run past it, the way the real
      * wp_die() ends the request. Named (not anonymous) so tests can expectException().
      */
-    class ASW_Test_WP_Die_Exception extends RuntimeException {
+    class ANTISPAMWIZARD_Test_WP_Die_Exception extends RuntimeException {
         public int $response;
 
         public function __construct( string $message, int $response ) {
@@ -1749,7 +1749,7 @@ if ( ! function_exists( 'wp_die' ) ) {
             'message'  => (string) $message,
             'response' => $response,
         );
-        throw new ASW_Test_WP_Die_Exception( (string) $message, $response );
+        throw new ANTISPAMWIZARD_Test_WP_Die_Exception( (string) $message, $response );
     }
 }
 
@@ -1822,13 +1822,13 @@ if ( ! function_exists( 'clean_comment_cache' ) ) {
     }
 }
 
-if ( ! function_exists( 'asw_test_normalize_comment_status' ) ) {
+if ( ! function_exists( 'antispamwizard_test_normalize_comment_status' ) ) {
     /**
      * Normalize a raw comment_approved value the way wp_transition_comment_status()
      * does before it fires the action: 1/approve => approved, 0/hold => unapproved,
      * spam and trash unchanged.
      */
-    function asw_test_normalize_comment_status( $approved ): string {
+    function antispamwizard_test_normalize_comment_status( $approved ): string {
         switch ( (string) $approved ) {
             case '1':
             case 'approve':
@@ -1844,7 +1844,7 @@ if ( ! function_exists( 'asw_test_normalize_comment_status' ) ) {
     }
 }
 
-if ( ! function_exists( 'asw_test_set_comment_status' ) ) {
+if ( ! function_exists( 'antispamwizard_test_set_comment_status' ) ) {
     /**
      * Write a comment's new comment_approved value and fire the transition action.
      *
@@ -1860,7 +1860,7 @@ if ( ! function_exists( 'asw_test_set_comment_status' ) ) {
      * @return bool False when no such comment exists, or when
      *              $wp_comment_status_change_fails models a refused write.
      */
-    function asw_test_set_comment_status( $comment_id, $new_approved ): bool {
+    function antispamwizard_test_set_comment_status( $comment_id, $new_approved ): bool {
         global $wp_comments, $wp_comment_status_change_fails;
         if ( ! isset( $wp_comments[ $comment_id ] ) ) {
             return false;
@@ -1880,8 +1880,8 @@ if ( ! function_exists( 'asw_test_set_comment_status' ) ) {
         // wp_update_comment() cleans the comment cache after it writes the row.
         clean_comment_cache( $comment_id );
 
-        $new_status = asw_test_normalize_comment_status( $new_approved );
-        $old_status = asw_test_normalize_comment_status( $old_approved );
+        $new_status = antispamwizard_test_normalize_comment_status( $new_approved );
+        $old_status = antispamwizard_test_normalize_comment_status( $old_approved );
 
         if ( $new_status === $old_status ) {
             return true;
@@ -1904,7 +1904,7 @@ if ( ! function_exists( 'wp_spam_comment' ) ) {
         $previous = isset( $wp_comments[ $comment_id ]['comment_approved'] )
             ? (string) $wp_comments[ $comment_id ]['comment_approved']
             : '1';
-        if ( ! asw_test_set_comment_status( $comment_id, 'spam' ) ) {
+        if ( ! antispamwizard_test_set_comment_status( $comment_id, 'spam' ) ) {
             return false;
         }
         $wp_comment_meta[ $comment_id ]['_wp_trash_meta_status'] = $previous;
@@ -1912,14 +1912,14 @@ if ( ! function_exists( 'wp_spam_comment' ) ) {
     }
 }
 
-if ( ! function_exists( 'asw_test_restore_stored_status' ) ) {
-    function asw_test_restore_stored_status( $comment_id ): bool {
+if ( ! function_exists( 'antispamwizard_test_restore_stored_status' ) ) {
+    function antispamwizard_test_restore_stored_status( $comment_id ): bool {
         global $wp_comment_meta;
         $status = (string) ( $wp_comment_meta[ $comment_id ]['_wp_trash_meta_status'] ?? '' );
         if ( '' === $status ) {
             $status = '0';
         }
-        if ( ! asw_test_set_comment_status( $comment_id, $status ) ) {
+        if ( ! antispamwizard_test_set_comment_status( $comment_id, $status ) ) {
             return false;
         }
         unset( $wp_comment_meta[ $comment_id ]['_wp_trash_meta_status'] );
@@ -1929,13 +1929,13 @@ if ( ! function_exists( 'asw_test_restore_stored_status' ) ) {
 
 if ( ! function_exists( 'wp_unspam_comment' ) ) {
     function wp_unspam_comment( $comment_id ) {
-        return asw_test_restore_stored_status( $comment_id );
+        return antispamwizard_test_restore_stored_status( $comment_id );
     }
 }
 
 if ( ! function_exists( 'wp_untrash_comment' ) ) {
     function wp_untrash_comment( $comment_id ) {
-        return asw_test_restore_stored_status( $comment_id );
+        return antispamwizard_test_restore_stored_status( $comment_id );
     }
 }
 
@@ -1959,7 +1959,7 @@ if ( ! function_exists( 'wp_get_comment_status' ) ) {
     }
 }
 
-if ( ! function_exists( 'asw_test_comment_matches_status' ) ) {
+if ( ! function_exists( 'antispamwizard_test_comment_matches_status' ) ) {
     /**
      * Model WP_Comment_Query's 'status' semantics for the get_comments() stub.
      *
@@ -1968,7 +1968,7 @@ if ( ! function_exists( 'asw_test_comment_matches_status' ) ) {
      * (spam, trash, hold, approve) matches exactly. A fixture comment without an
      * explicit comment_approved is treated as approved ('1').
      */
-    function asw_test_comment_matches_status( array $comment, string $status ): bool {
+    function antispamwizard_test_comment_matches_status( array $comment, string $status ): bool {
         if ( 'any' === $status ) {
             return true;
         }
@@ -2007,7 +2007,7 @@ if ( ! function_exists( 'get_comments' ) ) {
             if ( '' !== $email && ( ! isset( $comment['comment_author_email'] ) || $comment['comment_author_email'] !== $email ) ) {
                 continue;
             }
-            if ( ! asw_test_comment_matches_status( $comment, $status ) ) {
+            if ( ! antispamwizard_test_comment_matches_status( $comment, $status ) ) {
                 continue;
             }
             if ( null !== $in && ! in_array( (int) $id, $in, true ) ) {
@@ -2071,7 +2071,7 @@ if ( ! function_exists( 'do_action_ref_array' ) ) {
 }
 
 // Visitor identity for the comment-query layer. Initialised once here and
-// reset per test through asw_test_reset_comment_query_stubs().
+// reset per test through antispamwizard_test_reset_comment_query_stubs().
 global $wp_current_commenter, $wp_current_commenter_throws, $wp_current_user_id, $wp_doing_ajax, $wp_doing_cron;
 global $wp_comment_query_cache, $wp_comment_query_cache_keys, $wp_comment_query_log;
 
@@ -2084,7 +2084,7 @@ global $wp_comment_query_cache, $wp_comment_query_cache_keys, $wp_comment_query_
 $wp_current_commenter = array();
 
 /**
- * Makes wp_get_current_commenter() throw -- the seam ASW_Shadow_Display's
+ * Makes wp_get_current_commenter() throw -- the seam ANTISPAMWIZARD_Shadow_Display's
  * fail-open tests use to raise inside a comment-query callback.
  *
  * @var bool
@@ -2116,12 +2116,12 @@ $wp_comment_query_cache_keys = array();
 /** @var string[] The final, post-'comments_clauses' WHERE of every query that missed the cache. */
 $wp_comment_query_log = array();
 
-if ( ! function_exists( 'asw_test_reset_comment_query_stubs' ) ) {
+if ( ! function_exists( 'antispamwizard_test_reset_comment_query_stubs' ) ) {
     /**
      * Put every comment-query-layer switch back to its default. Called from the
      * setUp of each test that drives these stubs.
      */
-    function asw_test_reset_comment_query_stubs(): void {
+    function antispamwizard_test_reset_comment_query_stubs(): void {
         $GLOBALS['wp_current_commenter']        = array();
         $GLOBALS['wp_current_commenter_throws'] = false;
         $GLOBALS['wp_current_user_id']          = 0;
@@ -2133,21 +2133,21 @@ if ( ! function_exists( 'asw_test_reset_comment_query_stubs' ) ) {
     }
 }
 
-if ( ! function_exists( 'asw_test_get_sql_clauses' ) ) {
+if ( ! function_exists( 'antispamwizard_test_get_sql_clauses' ) ) {
     /**
      * Read a query's protected sql_clauses, as only reflection can in core.
      */
-    function asw_test_get_sql_clauses( WP_Comment_Query $query ): array {
+    function antispamwizard_test_get_sql_clauses( WP_Comment_Query $query ): array {
         return ( new ReflectionProperty( WP_Comment_Query::class, 'sql_clauses' ) )->getValue( $query );
     }
 }
 
-if ( ! function_exists( 'asw_test_set_approved_clause' ) ) {
+if ( ! function_exists( 'antispamwizard_test_set_approved_clause' ) ) {
     /**
      * Write (or, with null, remove) a query's protected
      * sql_clauses['where']['approved'].
      */
-    function asw_test_set_approved_clause( WP_Comment_Query $query, ?string $approved ): void {
+    function antispamwizard_test_set_approved_clause( WP_Comment_Query $query, ?string $approved ): void {
         $property = new ReflectionProperty( WP_Comment_Query::class, 'sql_clauses' );
         $clauses  = $property->getValue( $query );
         if ( null === $approved ) {

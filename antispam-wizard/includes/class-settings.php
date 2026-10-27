@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Manages all plugin settings with sensible defaults.
  */
-class ASW_Settings {
+class ANTISPAMWIZARD_Settings {
 
-    const OPTION_KEY = 'asw_settings';
+    const OPTION_KEY = 'antispamwizard_settings';
 
     /**
      * Default settings for all 10 checks.

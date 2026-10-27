@@ -13,14 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Detects words containing characters from multiple Unicode scripts,
  * a common spam/phishing technique (e.g. mixing Latin and Cyrillic).
  */
-class ASW_Multi_Lang_Check implements ASW_Check {
+class ANTISPAMWIZARD_Multi_Lang_Check implements ANTISPAMWIZARD_Check {
 
     /**
      * Unicode script patterns for detection.
      * Each key is a bucket name, value is a PCRE Unicode property pattern.
      *
      * Han, Hiragana, Katakana and Hangul share one bucket, exactly as
-     * ASW_Script_Detector::SCRIPT_PATTERNS groups them under 'cjk'. Splitting
+     * ANTISPAMWIZARD_Script_Detector::SCRIPT_PATTERNS groups them under 'cjk'. Splitting
      * them made ordinary Japanese a false positive: this check splits on
      * whitespace and hyphens, and Japanese has no inter-word spaces, so a whole
      * sentence is a single "word" that routinely mixes kanji with both kana -
@@ -100,25 +100,25 @@ class ASW_Multi_Lang_Check implements ASW_Check {
      * Run the multi-lang check against comment data.
      *
      * @param array $comment_data WordPress comment data array.
-     * @return ASW_Check_Result
+     * @return ANTISPAMWIZARD_Check_Result
      */
-    public function check( array $comment_data ): ASW_Check_Result {
-        $settings = ASW_Settings::get_all();
+    public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
+        $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['multi_lang_enabled'] ) ) {
-            return new ASW_Check_Result( false, 'multi_lang', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'multi_lang', __( 'check disabled', 'antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ASW_Check_Result( false, 'multi_lang', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'multi_lang', __( 'empty comment', 'antispam-wizard' ) );
         }
 
         $threshold = (int) $settings['multi_lang_threshold'];
         $count     = self::count_multi_script_words( $text );
 
         if ( $count >= $threshold ) {
-            return new ASW_Check_Result(
+            return new ANTISPAMWIZARD_Check_Result(
                 true,
                 'multi_lang',
                 // translators: 1: Number of distinct scripts detected, 2: Configured threshold.
@@ -126,7 +126,7 @@ class ASW_Multi_Lang_Check implements ASW_Check {
             );
         }
 
-        return new ASW_Check_Result(
+        return new ANTISPAMWIZARD_Check_Result(
             false,
             'multi_lang',
             // translators: 1: Number of distinct scripts detected, 2: Configured threshold.
@@ -151,7 +151,7 @@ class ASW_Multi_Lang_Check implements ASW_Check {
             // (the comment body, or a Contact Form 7 field joined into it), so drop the
             // invalid sequences and classify what remains instead. sanitize_utf8()
             // substitutes them with '?', which is Common and therefore ignored below.
-            $text  = ASW_Detector::sanitize_utf8( $text );
+            $text  = ANTISPAMWIZARD_Detector::sanitize_utf8( $text );
             $words = preg_split( '/[\s\-]+/u', $text, -1, PREG_SPLIT_NO_EMPTY );
         }
 

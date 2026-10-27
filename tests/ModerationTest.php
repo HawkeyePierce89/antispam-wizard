@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for ASW_Moderation: training the classifier from comment status
+ * Tests for ANTISPAMWIZARD_Moderation: training the classifier from comment status
  * transitions.
  */
 
@@ -14,10 +14,10 @@ use PHPUnit\Framework\TestCase;
  * NUL byte, and error_log() writes a C string, so the diagnostic under test
  * would be truncated at the name.
  */
-class ASW_Throwing_Sample_Repository extends ASW_Sample_Repository {
+class ANTISPAMWIZARD_Throwing_Sample_Repository extends ANTISPAMWIZARD_Sample_Repository {
 
     public function insert( string $script, string $category, string $content, int $comment_id, string $email_hash = '' ) {
-        throw new RuntimeException( 'database is on fire: SELECT * FROM wp_asw_samples' );
+        throw new RuntimeException( 'database is on fire: SELECT * FROM wp_antispamwizard_samples' );
     }
 }
 
@@ -28,10 +28,10 @@ class ASW_Throwing_Sample_Repository extends ASW_Sample_Repository {
  * Named rather than anonymous for the same reason as the class above: the
  * diagnostic under test goes through error_log().
  */
-class ASW_Option_Breaking_Sample_Repository extends ASW_Sample_Repository {
+class ANTISPAMWIZARD_Option_Breaking_Sample_Repository extends ANTISPAMWIZARD_Sample_Repository {
 
     public function insert( string $script, string $category, string $content, int $comment_id, string $email_hash = '' ) {
-        $GLOBALS['wp_update_option_fails'] = array( ASW_Spam_Log::OPTION_KEY );
+        $GLOBALS['wp_update_option_fails'] = array( ANTISPAMWIZARD_Spam_Log::OPTION_KEY );
         return false;
     }
 }
@@ -56,20 +56,20 @@ class ModerationTest extends TestCase {
         $GLOBALS['wp_update_option_fails']         = false;
         $GLOBALS['wp_comment_status_change_fails'] = false;
 
-        if ( ! defined( 'ASW_PATH' ) ) {
-            define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
         }
 
         $wpdb->reset_tables();
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $instance   = $reflection->getProperty( 'instance' );
         $instance->setValue( null, null );
 
         // init() registers the transition hook alongside everything else.
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
     }
 
     protected function tearDown(): void {
@@ -93,8 +93,8 @@ class ModerationTest extends TestCase {
         return $id;
     }
 
-    private function repository(): ASW_Sample_Repository {
-        return ASW::get_instance()->get_repository();
+    private function repository(): ANTISPAMWIZARD_Sample_Repository {
+        return ANTISPAMWIZARD::get_instance()->get_repository();
     }
 
     /**
@@ -102,7 +102,7 @@ class ModerationTest extends TestCase {
      * the entry exists but is untrained and null when there is no entry.
      */
     private function trained_as( int $comment_id ): ?string {
-        $entries = ASW_Spam_Log::get_entries_by_comment_ids( array( $comment_id ) );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $comment_id ) );
         if ( empty( $entries ) ) {
             return null;
         }
@@ -112,19 +112,19 @@ class ModerationTest extends TestCase {
     public function test_approved_to_spam_stores_one_sample_and_one_manual_entry(): void {
         $id = $this->seed_comment( 101, 'Buy cheap pills from our online pharmacy now.' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $samples = $this->repository()->find_all( 'latin', 'spam' );
         $this->assertSame( array( 'Buy cheap pills from our online pharmacy now.' ), $samples );
 
-        $entries = ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) );
         $this->assertCount( 1, $entries );
-        $this->assertSame( array( ASW_Moderation::CHECK_NAME ), $entries[0]['checks_triggered'] );
+        $this->assertSame( array( ANTISPAMWIZARD_Moderation::CHECK_NAME ), $entries[0]['checks_triggered'] );
         $this->assertSame( 'spam', $entries[0]['trained_as'] );
 
         // The IP is stored hashed and the raw address never appears anywhere in
         // the entry; neither does the author's email address.
-        $this->assertSame( ASW_Detector::hash_ip( '203.0.113.9' ), $entries[0]['ip_hash'] );
+        $this->assertSame( ANTISPAMWIZARD_Detector::hash_ip( '203.0.113.9' ), $entries[0]['ip_hash'] );
         $serialized = serialize( $entries[0] );
         $this->assertStringNotContainsString( '203.0.113.9', $serialized );
         $this->assertStringNotContainsString( 'author@example.com', $serialized );
@@ -133,9 +133,9 @@ class ModerationTest extends TestCase {
     public function test_a_comment_without_an_ip_records_an_empty_hash(): void {
         $id = $this->seed_comment( 102, 'Cheap loans approved instantly, write to us.', '1', 'a@example.com', '' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
-        $entries = ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) );
         $this->assertCount( 1, $entries );
         $this->assertSame( '', $entries[0]['ip_hash'] );
     }
@@ -147,13 +147,13 @@ class ModerationTest extends TestCase {
         // spam again, and neither ever duplicates a sample or a log entry. The
         // second spam leg must be a real approved -> spam move, not spam -> spam,
         // which core (and the stub) short-circuits before the action fires.
-        asw_test_set_comment_status( $id, 'spam' );
-        asw_test_set_comment_status( $id, '1' );
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'ham' ) );
-        $this->assertCount( 1, ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
+        $this->assertCount( 1, ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
     }
 
@@ -164,9 +164,9 @@ class ModerationTest extends TestCase {
         // restores it to '0' -- unapproved, not approved -- and that transition is
         // the single most valuable ham signal there is.
         $id = $this->seed_comment( 104, 'A perfectly ordinary reader comment.', 'spam' );
-        ASW_Spam_Log::add_entry( 'A perfectly ordinary reader comment.', array( 'bayesian' ), 'iphash', $id );
+        ANTISPAMWIZARD_Spam_Log::add_entry( 'A perfectly ordinary reader comment.', array( 'bayesian' ), 'iphash', $id );
 
-        asw_test_set_comment_status( $id, '0' );
+        antispamwizard_test_set_comment_status( $id, '0' );
 
         $this->assertSame(
             array( 'A perfectly ordinary reader comment.' ),
@@ -178,10 +178,10 @@ class ModerationTest extends TestCase {
     public function test_not_spam_to_unapproved_replaces_the_spam_sample(): void {
         $id = $this->seed_comment( 105, 'Thanks, that solved my caching problem.' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
 
-        asw_test_set_comment_status( $id, '0' );
+        antispamwizard_test_set_comment_status( $id, '0' );
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'ham' ) );
@@ -195,17 +195,17 @@ class ModerationTest extends TestCase {
             $id                            = $this->seed_comment( 106 + $index, 'An excerpt lifted from another blog post.' );
             $wp_comments[ $id ]['comment_type'] = $type;
 
-            asw_test_set_comment_status( $id, 'spam' );
+            antispamwizard_test_set_comment_status( $id, 'spam' );
 
             $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ), $type );
-            $this->assertSame( array(), ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) ), $type );
+            $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) ), $type );
         }
 
         // The control: an explicit 'comment' type still trains, so the guard
         // cannot pass by refusing everything.
         $id                                 = $this->seed_comment( 108, 'Ordinary comment spam about pills.' );
         $wp_comments[ $id ]['comment_type'] = 'comment';
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
     }
@@ -216,7 +216,7 @@ class ModerationTest extends TestCase {
         $third  = $this->seed_comment( 113, 'Followers and likes for sale, cheapest rates.' );
 
         foreach ( array( $first, $second, $third ) as $id ) {
-            asw_test_set_comment_status( $id, 'spam' );
+            antispamwizard_test_set_comment_status( $id, 'spam' );
         }
 
         $this->assertCount( 3, $this->repository()->find_all( 'latin', 'spam' ) );
@@ -228,10 +228,10 @@ class ModerationTest extends TestCase {
     public function test_spam_to_approved_replaces_the_spam_sample_with_a_ham_sample(): void {
         $id = $this->seed_comment( 121, 'Thanks for the write-up, this cleared things up.' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
 
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame(
@@ -245,12 +245,12 @@ class ModerationTest extends TestCase {
         $id = $this->seed_comment( 131, 'A perfectly ordinary reader comment.', 'spam' );
 
         // The plugin itself blocked this one, so the entry already exists.
-        $entry_id = ASW_Spam_Log::add_entry( 'A perfectly ordinary reader comment.', array( 'bayesian' ), 'iphash', $id );
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'A perfectly ordinary reader comment.', array( 'bayesian' ), 'iphash', $id );
         $this->assertNotSame( '', $entry_id );
 
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
-        $entries = ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) );
         $this->assertCount( 1, $entries );
         $this->assertSame( array( 'bayesian' ), $entries[0]['checks_triggered'] );
         $this->assertSame( 'ham', $entries[0]['trained_as'] );
@@ -260,9 +260,9 @@ class ModerationTest extends TestCase {
     public function test_marking_as_ham_never_creates_a_log_entry(): void {
         $id = $this->seed_comment( 132, 'Just a friendly hello from a reader.', 'spam' );
 
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
-        $this->assertSame( array(), ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
         // The sample is still stored: 'not_found' proceeds unlocked.
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'ham' ) );
     }
@@ -278,15 +278,15 @@ class ModerationTest extends TestCase {
         $held      = $this->seed_comment( 144, 'Held for moderation and then approved.', '0' );
         $untrashed = $this->seed_comment( 145, 'Trashed and then approved.', 'trash' );
 
-        asw_test_set_comment_status( $trashed, 'trash' );
-        asw_test_set_comment_status( $unapproved, '0' );
-        asw_test_set_comment_status( $out_of_spam, 'trash' );
-        asw_test_set_comment_status( $held, '1' );
-        asw_test_set_comment_status( $untrashed, '1' );
+        antispamwizard_test_set_comment_status( $trashed, 'trash' );
+        antispamwizard_test_set_comment_status( $unapproved, '0' );
+        antispamwizard_test_set_comment_status( $out_of_spam, 'trash' );
+        antispamwizard_test_set_comment_status( $held, '1' );
+        antispamwizard_test_set_comment_status( $untrashed, '1' );
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'ham' ) );
-        $this->assertSame( array(), ASW_Spam_Log::get_entries() );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries() );
     }
 
     public function test_spam_to_spam_teaches_nothing(): void {
@@ -296,43 +296,43 @@ class ModerationTest extends TestCase {
 
         // The stub mirrors core and does not fire the action at all when the
         // status is unchanged...
-        asw_test_set_comment_status( $id, 'spam' );
-        $this->assertSame( array(), ASW_Spam_Log::get_entries() );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries() );
 
         // ...and the handler itself refuses the transition when called directly.
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->on_transition( 'spam', 'spam', (object) $wp_comments[ $id ] );
 
-        $this->assertSame( array(), ASW_Spam_Log::get_entries() );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries() );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
     }
 
     public function test_an_empty_body_teaches_nothing_and_creates_no_entry(): void {
         $id = $this->seed_comment( 151, "   \n\t  " );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
-        $this->assertSame( array(), ASW_Spam_Log::get_entries() );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries() );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( array(), $this->repository()->find_all( 'unknown', 'spam' ) );
     }
 
     public function test_a_non_comment_payload_teaches_nothing(): void {
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
 
         $moderation->on_transition( 'spam', 'approved', null );
         $moderation->on_transition( 'spam', 'approved', 'not a comment' );
         $moderation->on_transition( 'spam', 'approved', (object) array( 'comment_content' => 'No ID here.' ) );
         $moderation->on_transition( 'spam', 'approved', (object) array( 'comment_ID' => 0, 'comment_content' => 'Zero ID.' ) );
 
-        $this->assertSame( array(), ASW_Spam_Log::get_entries() );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries() );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
     }
 
     public function test_the_content_is_whitespace_normalised(): void {
         $id = $this->seed_comment( 152, "  Buy   cheap\npills\tnow.  " );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( array( 'Buy cheap pills now.' ), $this->repository()->find_all( 'latin', 'spam' ) );
     }
@@ -340,13 +340,13 @@ class ModerationTest extends TestCase {
     public function test_the_stored_sample_carries_both_privacy_subject_keys(): void {
         $id = $this->seed_comment( 161, 'Cheap watches, best replicas online.', '1', 'Subject@Example.COM' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $by_comment = $this->repository()->find_by_comment_ids( array( $id ) );
         $this->assertCount( 1, $by_comment );
         $this->assertSame( 'Cheap watches, best replicas online.', $by_comment[0]['content'] );
 
-        $by_hash = $this->repository()->find_by_email_hash( ASW_Detector::hash_email( 'subject@example.com' ) );
+        $by_hash = $this->repository()->find_by_email_hash( ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' ) );
         $this->assertCount( 1, $by_hash );
         $this->assertSame( (int) $by_comment[0]['id'], (int) $by_hash[0]['id'] );
     }
@@ -357,7 +357,7 @@ class ModerationTest extends TestCase {
         $id = $this->seed_comment( 171, 'Cheap pills, no prescription needed.' );
 
         $wpdb->insert_result = false;
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $wpdb->insert_result = null;
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
@@ -366,8 +366,8 @@ class ModerationTest extends TestCase {
         $this->assertSame( '', $this->trained_as( $id ) );
 
         // Out of spam and back in; the retry succeeds.
-        asw_test_set_comment_status( $id, '1' );
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( array( 'Cheap pills, no prescription needed.' ), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
@@ -378,13 +378,13 @@ class ModerationTest extends TestCase {
 
         $id = $this->seed_comment( 181, 'Genuinely useful comment about caching.' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
 
         // Now flip it to ham with the insert forced to fail.
         $wpdb->insert_result = false;
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
         $wpdb->insert_result = null;
 
         // The flag must read 'spam', not untrained: the spam sample is still in
@@ -395,8 +395,8 @@ class ModerationTest extends TestCase {
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'ham' ) );
 
         // The retry then flips cleanly.
-        asw_test_set_comment_status( $id, 'spam' );
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
         $this->assertSame( 'ham', $this->trained_as( $id ) );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
@@ -406,11 +406,11 @@ class ModerationTest extends TestCase {
     public function test_a_null_repository_rolls_the_claim_back(): void {
         $id = $this->seed_comment( 191, 'Cheap tours to anywhere, call now.' );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), null );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), null );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( '', $this->trained_as( $id ) );
     }
@@ -419,10 +419,10 @@ class ModerationTest extends TestCase {
         global $wp_json_responses;
 
         $id = $this->seed_comment( 201, 'Promotional junk about crypto doubling.' );
-        ASW_Spam_Log::add_entry( 'Promotional junk about crypto doubling.', array( 'bayesian' ), 'iphash', $id );
+        ANTISPAMWIZARD_Spam_Log::add_entry( 'Promotional junk about crypto doubling.', array( 'bayesian' ), 'iphash', $id );
 
-        $admin_page          = new ASW_Admin_Page();
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $admin_page          = new ANTISPAMWIZARD_Admin_Page();
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = (string) $id;
         $_POST['category']   = 'spam';
 
@@ -432,7 +432,7 @@ class ModerationTest extends TestCase {
 
         $this->assertTrue( $wp_json_responses[0]['success'] );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
-        $this->assertCount( 1, ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
+        $this->assertCount( 1, ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
     }
 
@@ -441,11 +441,11 @@ class ModerationTest extends TestCase {
 
         $id = $this->seed_comment( 202, 'Promotional junk about loan offers.' );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
 
-        $admin_page          = new ASW_Admin_Page();
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $admin_page          = new ANTISPAMWIZARD_Admin_Page();
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = (string) $id;
         $_POST['category']   = 'spam';
 
@@ -461,26 +461,26 @@ class ModerationTest extends TestCase {
     public function test_a_throwing_repository_does_not_fatal_the_moderation_action(): void {
         $id = $this->seed_comment( 205, 'Cheap pills and cheaper watches.' );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Throwing_Sample_Repository( $GLOBALS['wpdb'] ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Throwing_Sample_Repository( $GLOBALS['wpdb'] ) );
 
         // The hook runs inside wp_set_comment_status(); an uncaught throw would
         // fatal the Comments screen mid-moderation. It must fail open instead.
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( 'spam', $GLOBALS['wp_comments'][ $id ]['comment_approved'] );
         // The entry still records what the moderator did, and the claim is rolled
         // back: a claim left standing past a throw would come back
         // 'already_trained' on every later transition, so no sample would ever be
         // stored for this comment again.
-        $this->assertCount( 1, ASW_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
+        $this->assertCount( 1, ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $id ) ) );
         $this->assertSame( '', $this->trained_as( $id ) );
 
         // With a working repository the next moderation stores the sample.
-        $repo->setValue( ASW::get_instance(), new ASW_Sample_Repository( $GLOBALS['wpdb'] ) );
-        asw_test_set_comment_status( $id, '1' );
-        asw_test_set_comment_status( $id, 'spam' );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Sample_Repository( $GLOBALS['wpdb'] ) );
+        antispamwizard_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( array( 'Cheap pills and cheaper watches.' ), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
@@ -492,14 +492,14 @@ class ModerationTest extends TestCase {
         $id = $this->seed_comment( 210, 'Thoughtful note about caching headers.' );
 
         // Trained as spam first, so the flip below has a real row to delete.
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
 
         // Not Spam: the ham insert lands and the DELETE that should clear the
         // spam row is refused, so the rollback restores 'spam' on the log while
         // the table holds the text in both categories.
         $wpdb->delete_result = false;
-        asw_test_set_comment_status( $id, '0' );
+        antispamwizard_test_set_comment_status( $id, '0' );
         $wpdb->delete_result = null;
 
         $this->assertSame( 'spam', $this->trained_as( $id ) );
@@ -510,7 +510,7 @@ class ModerationTest extends TestCase {
         // log already names -- so the 'already_trained' claim must not
         // short-circuit while the contradicting row is still stored, or the text
         // stays trained as both categories for good.
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( 'spam', $this->trained_as( $id ) );
         $this->assertSame( array( 'Thoughtful note about caching headers.' ), $this->repository()->find_all( 'latin', 'spam' ) );
@@ -536,7 +536,7 @@ class ModerationTest extends TestCase {
 
         // The spam row is trained from one comment ...
         $other = $this->seed_comment( 220, $text );
-        asw_test_set_comment_status( $other, 'spam' );
+        antispamwizard_test_set_comment_status( $other, 'spam' );
         $this->assertSame( array( $text ), $this->repository()->find_all( 'latin', 'spam' ) );
 
         // ... and the ham row from another comment carrying the identical body,
@@ -545,8 +545,8 @@ class ModerationTest extends TestCase {
         // the stuck state, not the sequence of failures that reaches it.
         $id = $this->seed_comment( 221, $text, 'spam' );
         $this->repository()->insert( 'latin', 'ham', $text, $id );
-        ASW_Spam_Log::add_entry( $text, array( 'manual' ), '', $id );
-        ASW_Spam_Log::mark_trained( $id, 'ham' );
+        ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'manual' ), '', $id );
+        ANTISPAMWIZARD_Spam_Log::mark_trained( $id, 'ham' );
 
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'ham' ) );
@@ -554,7 +554,7 @@ class ModerationTest extends TestCase {
         // Not Spam again: the claim comes back 'already_trained', and the
         // contradicting spam row -- owned by the other comment -- must still be
         // cleaned up rather than skipped.
-        asw_test_set_comment_status( $id, '0' );
+        antispamwizard_test_set_comment_status( $id, '0' );
 
         $this->assertSame( 'ham', $this->trained_as( $id ) );
         $this->assertSame( array( $text ), $this->repository()->find_all( 'latin', 'ham' ) );
@@ -572,9 +572,9 @@ class ModerationTest extends TestCase {
      */
     public function test_comments_with_identical_text_take_the_same_moderation_lock(): void {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
 
-        foreach ( glob( $lock_dir . '/asw_moderation_*.lock' ) ?: array() as $stale ) {
+        foreach ( glob( $lock_dir . '/antispamwizard_moderation_*.lock' ) ?: array() as $stale ) {
             unlink( $stale );
         }
 
@@ -584,13 +584,13 @@ class ModerationTest extends TestCase {
         // so a single lock file can only mean the key is the body.
         $this->assertNotSame( substr( md5( '230' ), -2 ), substr( md5( '231' ), -2 ) );
 
-        asw_test_set_comment_status( $this->seed_comment( 230, $text ), 'spam' );
-        asw_test_set_comment_status( $this->seed_comment( 231, $text ), 'spam' );
+        antispamwizard_test_set_comment_status( $this->seed_comment( 230, $text ), 'spam' );
+        antispamwizard_test_set_comment_status( $this->seed_comment( 231, $text ), 'spam' );
 
-        $locks = glob( $lock_dir . '/asw_moderation_*.lock' ) ?: array();
+        $locks = glob( $lock_dir . '/antispamwizard_moderation_*.lock' ) ?: array();
         $this->assertCount( 1, $locks );
         $this->assertSame(
-            $lock_dir . '/asw_moderation_' . md5( ABSPATH ) . '_' . substr( md5( $text ), -2 ) . '.lock',
+            $lock_dir . '/antispamwizard_moderation_' . md5( ABSPATH ) . '_' . substr( md5( $text ), -2 ) . '.lock',
             $locks[0]
         );
     }
@@ -607,7 +607,7 @@ class ModerationTest extends TestCase {
         // keep this text trained as both categories for good, because every later
         // transition would return 'already_trained'.
         $wpdb->delete_result = false;
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $wpdb->delete_result = null;
 
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
@@ -615,8 +615,8 @@ class ModerationTest extends TestCase {
 
         // The retry re-runs the whole sequence: the insert dedups to 'exists' and
         // the delete succeeds, so the claim finally stands.
-        asw_test_set_comment_status( $id, '1' );
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( 'spam', $this->trained_as( $id ) );
         $this->assertCount( 1, $this->repository()->find_all( 'latin', 'spam' ) );
@@ -627,23 +627,23 @@ class ModerationTest extends TestCase {
         global $wp_update_option_fails;
 
         $id = $this->seed_comment( 207, 'Another comment about cheap watches.' );
-        ASW_Spam_Log::add_entry( 'Another comment about cheap watches.', array( 'links' ), 'iphash', $id );
+        ANTISPAMWIZARD_Spam_Log::add_entry( 'Another comment about cheap watches.', array( 'links' ), 'iphash', $id );
 
         // A refused options write means the entry exists but was never claimed,
         // so claim_training() reports 'failed' and nothing is stored: writing the
         // sample anyway would move the table under a log entry that does not
         // record it. Nothing was written, so there is nothing to roll back
         // either.
-        $wp_update_option_fails = array( 'asw_spam_log' );
-        asw_test_set_comment_status( $id, 'spam' );
+        $wp_update_option_fails = array( 'antispamwizard_spam_log' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $wp_update_option_fails = false;
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( '', $this->trained_as( $id ) );
 
         // The next moderation retries and stores the sample.
-        asw_test_set_comment_status( $id, '1' );
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( array( 'Another comment about cheap watches.' ), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
@@ -653,7 +653,7 @@ class ModerationTest extends TestCase {
         global $wp_update_option_fails;
 
         $id = $this->seed_comment( 208, 'A note about caching plugins.' );
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
 
         // Not Spam, with the log write refused. Training unlocked here would
@@ -661,8 +661,8 @@ class ModerationTest extends TestCase {
         // still says 'spam' -- and the next spam transition would then come back
         // 'already_trained' and store nothing, leaving the corpus holding ham for
         // a comment the log calls spam, for good.
-        $wp_update_option_fails = array( 'asw_spam_log' );
-        asw_test_set_comment_status( $id, '1' );
+        $wp_update_option_fails = array( 'antispamwizard_spam_log' );
+        antispamwizard_test_set_comment_status( $id, '1' );
         $wp_update_option_fails = false;
 
         $this->assertSame( array( 'A note about caching plugins.' ), $this->repository()->find_all( 'latin', 'spam' ) );
@@ -670,8 +670,8 @@ class ModerationTest extends TestCase {
         $this->assertSame( 'spam', $this->trained_as( $id ) );
 
         // The next Not Spam retries the flip in full.
-        asw_test_set_comment_status( $id, 'spam' );
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( array( 'A note about caching plugins.' ), $this->repository()->find_all( 'latin', 'ham' ) );
@@ -686,11 +686,11 @@ class ModerationTest extends TestCase {
         // that its decision was superseded -- and must stand down rather than
         // insert spam and delete the ham sample the newer transition stored.
         $id = $this->seed_comment( 209, 'Thanks, this fixed my sidebar.', 'spam' );
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
         $this->assertSame( array( 'Thanks, this fixed my sidebar.' ), $this->repository()->find_all( 'latin', 'ham' ) );
 
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->on_transition( 'spam', 'approved', (object) array(
             'comment_ID'           => $id,
             'comment_content'      => 'Thanks, this fixed my sidebar.',
@@ -707,7 +707,7 @@ class ModerationTest extends TestCase {
 
         // The same call once the row really does say spam trains normally, so the
         // guard is reading the status rather than refusing every replay.
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         $this->assertSame( array( 'Thanks, this fixed my sidebar.' ), $this->repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame( 'spam', $this->trained_as( $id ) );
@@ -725,7 +725,7 @@ class ModerationTest extends TestCase {
         global $wp_comment_cache;
 
         $id = $this->seed_comment( 211, 'Thanks, this fixed my sidebar.', 'spam' );
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
         $this->assertSame( array( 'Thanks, this fixed my sidebar.' ), $this->repository()->find_all( 'latin', 'ham' ) );
 
@@ -739,7 +739,7 @@ class ModerationTest extends TestCase {
             'comment_author_IP'    => '203.0.113.9',
         );
 
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->on_transition( 'spam', 'approved', (object) array(
             'comment_ID'           => $id,
             'comment_content'      => 'Thanks, this fixed my sidebar.',
@@ -757,12 +757,12 @@ class ModerationTest extends TestCase {
         // The comment was hard-deleted between the status write and this
         // callback -- by a concurrent request, or by an earlier hook on this same
         // action. A Spam Log entry is keyed by comment_id alone (a sample also
-        // carries the salted email_hash, a form entry too), and ASW_Privacy
+        // carries the salted email_hash, a form entry too), and ANTISPAMWIZARD_Privacy
         // reaches those entries only through the subject's existing comments, so
         // an entry written here could never be exported or erased and its
         // fragment and IP hash would outlive every request that could reach them.
         // Its Spam Log pill would be dead as well. Nothing is persisted.
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->on_transition( 'spam', 'approved', (object) array(
             'comment_ID'           => 4242,
             'comment_content'      => 'Buy cheap pills from our online pharmacy now.',
@@ -772,7 +772,7 @@ class ModerationTest extends TestCase {
         ) );
 
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
-        $this->assertSame( array(), ASW_Spam_Log::get_entries_by_comment_ids( array( 4242 ) ) );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( 4242 ) ) );
         $this->assertNull( $this->trained_as( 4242 ) );
 
         // The same payload once the row really is readable trains normally, so
@@ -796,18 +796,18 @@ class ModerationTest extends TestCase {
     public function test_a_refused_rollback_is_reported_because_it_blocks_every_later_retry(): void {
         $id = $this->seed_comment( 210, 'Buy followers cheap today.' );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Option_Breaking_Sample_Repository( $GLOBALS['wpdb'] ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Option_Breaking_Sample_Repository( $GLOBALS['wpdb'] ) );
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         // The claim is written, the insert then fails, and the rollback write is
         // refused: the entry stays claimed over a training that never happened,
         // so every later transition reads 'already_trained' and stores nothing.
         // Nothing else on the site would show that, so it is logged.
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         ini_set( 'error_log', $old_log );
         $logged                            = file_get_contents( $tmp );
@@ -827,26 +827,26 @@ class ModerationTest extends TestCase {
         // in the log, so the claim is verified against the table instead.
         $id = $this->seed_comment( 213, 'Buy followers cheap today.' );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Option_Breaking_Sample_Repository( $GLOBALS['wpdb'] ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Option_Breaking_Sample_Repository( $GLOBALS['wpdb'] ) );
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         ini_set( 'error_log', $old_log );
         $GLOBALS['wp_update_option_fails'] = false;
         unlink( $tmp );
 
-        $repo->setValue( ASW::get_instance(), new ASW_Sample_Repository( $GLOBALS['wpdb'] ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Sample_Repository( $GLOBALS['wpdb'] ) );
 
         $this->assertSame( 'spam', $this->trained_as( $id ), 'The refused rollback should have left the claim standing.' );
         $this->assertSame( array(), $this->repository()->find_all( 'latin', 'spam' ) );
 
         // The database recovers and the comment is moderated again.
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->on_transition( 'spam', 'approved', (object) array(
             'comment_ID'           => $id,
             'comment_content'      => 'Buy followers cheap today.',
@@ -867,29 +867,29 @@ class ModerationTest extends TestCase {
         // sample for this comment" would find the ham row and stand down, leaving
         // the two disagreeing for good.
         $id = $this->seed_comment( 214, 'Thanks, this fixed my sidebar.', 'spam' );
-        asw_test_set_comment_status( $id, '1' );
+        antispamwizard_test_set_comment_status( $id, '1' );
 
         $this->assertSame( array( 'Thanks, this fixed my sidebar.' ), $this->repository()->find_all( 'latin', 'ham' ) );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Option_Breaking_Sample_Repository( $GLOBALS['wpdb'] ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Option_Breaking_Sample_Repository( $GLOBALS['wpdb'] ) );
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
-        asw_test_set_comment_status( $id, 'spam' );
+        antispamwizard_test_set_comment_status( $id, 'spam' );
 
         ini_set( 'error_log', $old_log );
         $GLOBALS['wp_update_option_fails'] = false;
         unlink( $tmp );
 
-        $repo->setValue( ASW::get_instance(), new ASW_Sample_Repository( $GLOBALS['wpdb'] ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Sample_Repository( $GLOBALS['wpdb'] ) );
 
         $this->assertSame( 'spam', $this->trained_as( $id ) );
         $this->assertSame( array( 'Thanks, this fixed my sidebar.' ), $this->repository()->find_all( 'latin', 'ham' ) );
 
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->on_transition( 'spam', 'approved', (object) array(
             'comment_ID'           => $id,
             'comment_content'      => 'Thanks, this fixed my sidebar.',
@@ -904,7 +904,7 @@ class ModerationTest extends TestCase {
     }
 
     public function test_the_fail_open_diagnostic_never_logs_the_exception_message(): void {
-        // Same rule as ASW_Detector::run() and ASW_CF7_Integration::filter_spam():
+        // Same rule as ANTISPAMWIZARD_Detector::run() and ANTISPAMWIZARD_CF7_Integration::filter_spam():
         // a $wpdb or file-I/O exception can carry a query, an absolute path or a
         // credential, and debug.log is web-readable on misconfigured hosts. A
         // name-only grep for getMessage() would be passed unchanged by `. $e` or
@@ -944,13 +944,13 @@ class ModerationTest extends TestCase {
 
         $found = null;
         foreach ( $wp_actions['transition_comment_status'] as $hook ) {
-            if ( is_array( $hook['callback'] ) && $hook['callback'][0] instanceof ASW_Moderation ) {
+            if ( is_array( $hook['callback'] ) && $hook['callback'][0] instanceof ANTISPAMWIZARD_Moderation ) {
                 $found = $hook;
                 break;
             }
         }
 
-        $this->assertNotNull( $found, 'ASW_Moderation is not hooked on transition_comment_status.' );
+        $this->assertNotNull( $found, 'ANTISPAMWIZARD_Moderation is not hooked on transition_comment_status.' );
         $this->assertSame( 10, $found['priority'] );
         $this->assertSame( 3, $found['accepted_args'] );
         $this->assertSame( 'on_transition', $found['callback'][1] );

@@ -12,18 +12,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Bootstraps the AntiSpam Wizard plugin: registers hooks and initializes components.
  */
-class ASW {
+class ANTISPAMWIZARD {
 
-    /** @var ASW|null Singleton instance. */
+    /** @var ANTISPAMWIZARD|null Singleton instance. */
     private static $instance = null;
 
-    /** @var ASW_Sample_Repository|null */
+    /** @var ANTISPAMWIZARD_Sample_Repository|null */
     private $repository = null;
 
     /**
      * Get the singleton instance.
      *
-     * @return ASW
+     * @return ANTISPAMWIZARD
      */
     public static function get_instance(): self {
         if ( null === self::$instance ) {
@@ -41,7 +41,7 @@ class ASW {
 
         // Create shared Sample_Repository for DB-stored user samples.
         global $wpdb;
-        $this->repository = new ASW_Sample_Repository( $wpdb );
+        $this->repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         // Apply pending schema changes. register_activation_hook() does not fire
         // on a plugin update, so activate()'s dbDelta() alone would leave an
@@ -52,13 +52,13 @@ class ASW {
         add_action( 'admin_init', array( $this, 'maybe_upgrade_schema' ) );
 
         // Register form hooks for bot checks.
-        $comment_form = new ASW_Comment_Form();
+        $comment_form = new ANTISPAMWIZARD_Comment_Form();
         $comment_form->register_hooks();
 
         // Register spam detection with lazy check initialization.
         // Classifiers and training data are only loaded when a comment is actually being checked,
         // avoiding heavy I/O and computation on every page request.
-        $detector = new ASW_Detector( array( $this, 'build_checks' ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( $this, 'build_checks' ) );
         $detector->register_hooks();
 
         // Register CF7 integration on plugins_loaded when CF7 is active.
@@ -66,8 +66,8 @@ class ASW {
         add_action(
             'plugins_loaded',
             function () {
-                if ( ASW_CF7_Integration::is_available() ) {
-                    $cf7 = new ASW_CF7_Integration();
+                if ( ANTISPAMWIZARD_CF7_Integration::is_available() ) {
+                    $cf7 = new ANTISPAMWIZARD_CF7_Integration();
                     $cf7->register_hooks();
                 }
             }
@@ -77,22 +77,22 @@ class ASW {
         // text). Not gated on is_admin(): privacy requests and policy content
         // run in admin/cron contexts and the exporter/eraser filters are
         // harmless elsewhere.
-        $privacy = new ASW_Privacy();
+        $privacy = new ANTISPAMWIZARD_Privacy();
         $privacy->register_hooks();
 
         // Learn from moderation decisions. Not gated on is_admin(): the comment
         // status transition it listens on is fired from the front end too (the
         // "Mark as spam" link, and any plugin that moderates outside wp-admin).
-        $moderation = new ASW_Moderation();
+        $moderation = new ANTISPAMWIZARD_Moderation();
         $moderation->register_hooks();
 
         // Show a flagged comment to its own author as held. Not gated on
         // is_admin(): the hooks gate themselves (front-end listings only).
-        ( new ASW_Shadow_Display() )->register_hooks();
+        ( new ANTISPAMWIZARD_Shadow_Display() )->register_hooks();
 
         // Initialize admin page (only on admin requests).
         if ( is_admin() ) {
-            $admin_page = new ASW_Admin_Page();
+            $admin_page = new ANTISPAMWIZARD_Admin_Page();
             $admin_page->init();
         }
     }
@@ -122,8 +122,8 @@ class ASW {
         // manage_options is the right gate rather than a bare wp_doing_ajax()
         // check: it covers admin-post.php too, it holds on multisite subsites
         // where activate_plugins does not, and it is the capability the Spam Log
-        // pill (ASW_Admin_Page::ajax_mark_comment()) already requires, so the
-        // migration runs before an admin can train anything. ASW_Moderation's
+        // pill (ANTISPAMWIZARD_Admin_Page::ajax_mark_comment()) already requires, so the
+        // migration runs before an admin can train anything. ANTISPAMWIZARD_Moderation's
         // transition hook is a second caller of insert() and is not gated on it:
         // a status change driven by cron or another plugin before any capable
         // admin_init has run will simply see insert() fail and roll its claim
@@ -132,8 +132,8 @@ class ASW {
             return;
         }
 
-        $installed = (string) get_option( ASW_Sample_Repository::DB_VERSION_OPTION, '' );
-        if ( ASW_Sample_Repository::DB_VERSION === $installed ) {
+        $installed = (string) get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '' );
+        if ( ANTISPAMWIZARD_Sample_Repository::DB_VERSION === $installed ) {
             return;
         }
 
@@ -165,15 +165,15 @@ class ASW {
             return;
         }
 
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, ASW_Sample_Repository::DB_VERSION );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, ANTISPAMWIZARD_Sample_Repository::DB_VERSION );
     }
 
     /**
      * Get the Sample_Repository instance.
      *
-     * @return ASW_Sample_Repository|null
+     * @return ANTISPAMWIZARD_Sample_Repository|null
      */
-    public function get_repository(): ?ASW_Sample_Repository {
+    public function get_repository(): ?ANTISPAMWIZARD_Sample_Repository {
         return $this->repository;
     }
 
@@ -183,35 +183,35 @@ class ASW {
      * Note: bot checks (Honeypot, Submit Time) are placed first so the detector
      * short-circuits on bot traffic before running CPU-heavy content checks.
      * Nothing here loads a corpus file or reads a model transient: the Bayesian
-     * and Similarity checks are handed an ASW_Model_Store, which loads the one
+     * and Similarity checks are handed an ANTISPAMWIZARD_Model_Store, which loads the one
      * writing system's unit the submission turns out to need -- and only if
      * those checks are enabled and the body is long enough to reach them.
      *
      * @param array|null $request Optional request array for bot checks (CF7 path).
-     * @return ASW_Check[]
+     * @return ANTISPAMWIZARD_Check[]
      */
     public function build_checks( ?array $request = null ): array {
-        $excluded_tokens = ASW_Settings::get( 'excluded_tokens_list', array() );
-        $tokenizer       = new ASW_Tokenizer( $excluded_tokens );
+        $excluded_tokens = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
+        $tokenizer       = new ANTISPAMWIZARD_Tokenizer( $excluded_tokens );
 
-        $store = new ASW_Model_Store(
+        $store = new ANTISPAMWIZARD_Model_Store(
             $tokenizer,
             $excluded_tokens,
-            new ASW_Training_Data( $this->repository ),
+            new ANTISPAMWIZARD_Training_Data( $this->repository ),
             $this->repository
         );
 
         return array(
-            new ASW_Honeypot_Check( $request ),
-            new ASW_Submit_Time_Check( $request ),
-            new ASW_Stop_Words_Check( true ),
-            new ASW_Links_Check(),
-            new ASW_Emoji_Check(),
-            new ASW_Spacing_Check(),
-            new ASW_Multi_Lang_Check(),
-            new ASW_Duplicate_Check(),
-            new ASW_Bayesian_Check( $store ),
-            new ASW_Similarity_Check( $tokenizer, new ASW_Cosine_Similarity(), $store ),
+            new ANTISPAMWIZARD_Honeypot_Check( $request ),
+            new ANTISPAMWIZARD_Submit_Time_Check( $request ),
+            new ANTISPAMWIZARD_Stop_Words_Check( true ),
+            new ANTISPAMWIZARD_Links_Check(),
+            new ANTISPAMWIZARD_Emoji_Check(),
+            new ANTISPAMWIZARD_Spacing_Check(),
+            new ANTISPAMWIZARD_Multi_Lang_Check(),
+            new ANTISPAMWIZARD_Duplicate_Check(),
+            new ANTISPAMWIZARD_Bayesian_Check( $store ),
+            new ANTISPAMWIZARD_Similarity_Check( $tokenizer, new ANTISPAMWIZARD_Cosine_Similarity(), $store ),
         );
     }
 
@@ -220,7 +220,7 @@ class ASW {
      */
     public function load_textdomain(): void {
         // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Kept deliberately: WordPress.org's automatic loading only covers directory-hosted installs, and the bundled .mo files in languages/ are the only translation source for self-hosted copies and for the dev smoke harness. Removing this call would silently drop all nine shipped translations there.
-        load_plugin_textdomain( 'antispam-wizard', false, dirname( plugin_basename( ASW_FILE ) ) . '/languages' );
+        load_plugin_textdomain( 'antispam-wizard', false, dirname( plugin_basename( ANTISPAMWIZARD_FILE ) ) . '/languages' );
     }
 
     /**
@@ -228,13 +228,13 @@ class ASW {
      */
     public static function activate(): void {
         // Ensure default settings exist.
-        if ( false === get_option( ASW_Settings::OPTION_KEY ) ) {
-            update_option( ASW_Settings::OPTION_KEY, ASW_Settings::get_defaults() );
+        if ( false === get_option( ANTISPAMWIZARD_Settings::OPTION_KEY ) ) {
+            update_option( ANTISPAMWIZARD_Settings::OPTION_KEY, ANTISPAMWIZARD_Settings::get_defaults() );
         }
 
         // Create or update the samples table.
         global $wpdb;
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         if ( ! function_exists( 'dbDelta' ) ) {
             require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         }
@@ -255,7 +255,7 @@ class ASW {
         // predate the two subject keys in place for good. It is a no-op on a
         // fresh install, where the table was just created empty.
         if ( $repository->schema_is_current() && false !== $repository->delete_unattributed() ) {
-            update_option( ASW_Sample_Repository::DB_VERSION_OPTION, ASW_Sample_Repository::DB_VERSION );
+            update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, ANTISPAMWIZARD_Sample_Repository::DB_VERSION );
         }
     }
 

@@ -15,15 +15,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * When a Sample_Repository is provided, DB-stored user samples are merged with
  * the seed corpus loaded from data/*.txt files.
  */
-class ASW_Training_Data {
+class ANTISPAMWIZARD_Training_Data {
 
-    /** @var ASW_Sample_Repository|null */
+    /** @var ANTISPAMWIZARD_Sample_Repository|null */
     private $repository;
 
     /**
-     * @param ASW_Sample_Repository|null $repository Optional DB repository for user-added samples.
+     * @param ANTISPAMWIZARD_Sample_Repository|null $repository Optional DB repository for user-added samples.
      */
-    public function __construct( ?ASW_Sample_Repository $repository = null ) {
+    public function __construct( ?ANTISPAMWIZARD_Sample_Repository $repository = null ) {
         $this->repository = $repository;
     }
 
@@ -69,12 +69,12 @@ class ASW_Training_Data {
     /**
      * Train the classifier using pre-loaded sample arrays.
      *
-     * @param ASW_Naive_Bayes $classifier  Classifier instance.
+     * @param ANTISPAMWIZARD_Naive_Bayes $classifier  Classifier instance.
      * @param array<int, string>         $spam_samples Spam text samples.
      * @param array<int, string>         $ham_samples  Ham text samples.
      */
     public function train_classifier_with_samples(
-        ASW_Naive_Bayes $classifier,
+        ANTISPAMWIZARD_Naive_Bayes $classifier,
         array $spam_samples,
         array $ham_samples
     ): void {
@@ -99,7 +99,7 @@ class ASW_Training_Data {
      * @return string Absolute path to the samples file.
      */
     public function get_script_file_path( string $script, string $category ): string {
-        $valid_scripts    = array_keys( ASW_Script_Detector::SCRIPT_GROUPS );
+        $valid_scripts    = array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS );
         $valid_categories = array( 'spam', 'ham' );
 
         if ( ! in_array( $script, $valid_scripts, true ) || ! in_array( $category, $valid_categories, true ) ) {
@@ -112,7 +112,7 @@ class ASW_Training_Data {
     /**
      * Load the *shipped* samples for a script group and category.
      *
-     * The file half of load_script_samples(), split out so ASW_Model_Store can
+     * The file half of load_script_samples(), split out so ANTISPAMWIZARD_Model_Store can
      * tell the two apart without reading the sample table a second time. The
      * shipped corpus is fixed and measured, so it is never subject to the
      * learned-sample budget that bounds a cached unit's similarity corpus.
@@ -128,9 +128,9 @@ class ASW_Training_Data {
     /**
      * Load the samples this site has *learned* for a script group and category.
      *
-     * The repository half of load_script_samples(). ASW_Sample_Repository::find_all()
+     * The repository half of load_script_samples(). ANTISPAMWIZARD_Sample_Repository::find_all()
      * orders by ascending id, so the newest sample is last -- which is the end
-     * ASW_Model_Store::admit_within_budget() spends its byte budget from.
+     * ANTISPAMWIZARD_Model_Store::admit_within_budget() spends its byte budget from.
      *
      * @param string $script  The script group name.
      * @param string $category The category ('spam' or 'ham').
@@ -173,7 +173,7 @@ class ASW_Training_Data {
         $counts   = array();
         $data_dir = dirname( __DIR__ ) . '/data/';
 
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $spam_file = $data_dir . 'spam-samples-' . $script . '.txt';
             $ham_file  = $data_dir . 'ham-samples-' . $script . '.txt';
 
@@ -197,11 +197,11 @@ class ASW_Training_Data {
     /**
      * Train a classifier using script-specific samples.
      *
-     * @param ASW_Naive_Bayes $classifier The classifier to train.
+     * @param ANTISPAMWIZARD_Naive_Bayes $classifier The classifier to train.
      * @param string                     $script     The script group name.
      */
     public function train_script_classifier(
-        ASW_Naive_Bayes $classifier,
+        ANTISPAMWIZARD_Naive_Bayes $classifier,
         string $script
     ): void {
         $spam_samples = $this->load_script_samples( $script, 'spam' );
@@ -214,9 +214,9 @@ class ASW_Training_Data {
      *
      * Used as a fallback for unknown scripts.
      *
-     * @param ASW_Naive_Bayes $classifier The classifier to train.
+     * @param ANTISPAMWIZARD_Naive_Bayes $classifier The classifier to train.
      */
-    public function train_combined_classifier( ASW_Naive_Bayes $classifier ): void {
+    public function train_combined_classifier( ANTISPAMWIZARD_Naive_Bayes $classifier ): void {
         $data_dir    = dirname( __DIR__ ) . '/data/';
         $all_spam    = array();
         $all_ham     = array();
@@ -226,7 +226,7 @@ class ASW_Training_Data {
         $all_ham  = array_merge( $all_ham, $this->load_samples( $data_dir . 'ham-samples.txt' ) );
 
         // Load all script-specific files.
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $all_spam = array_merge( $all_spam, $this->load_script_samples( $script, 'spam' ) );
             $all_ham  = array_merge( $all_ham, $this->load_script_samples( $script, 'ham' ) );
         }

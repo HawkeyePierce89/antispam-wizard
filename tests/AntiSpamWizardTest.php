@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 
-class ASWTest extends TestCase {
+class AntiSpamWizardTest extends TestCase {
 
     /**
      * An ordinary Cyrillic comment: long enough for the Bayesian and
@@ -21,13 +21,13 @@ class ASWTest extends TestCase {
 
     protected function setUp(): void {
         global $wp_options, $wp_actions, $wp_filters, $wp_transients, $wp_transient_reads,
-            $asw_loaded_textdomains, $wp_dbdelta_queries, $wpdb, $wp_current_user_caps;
+            $antispamwizard_loaded_textdomains, $wp_dbdelta_queries, $wpdb, $wp_current_user_caps;
         $wp_options             = array();
         $wp_actions             = array();
         $wp_filters             = array();
         $wp_transients          = array();
         $wp_transient_reads     = array();
-        $asw_loaded_textdomains = array();
+        $antispamwizard_loaded_textdomains = array();
         $wp_dbdelta_queries     = array();
         // maybe_upgrade_schema() gates on manage_options, and other suites leave
         // the capability global emptied. Restore the bootstrap default so these
@@ -38,19 +38,19 @@ class ASWTest extends TestCase {
         // this test's DDL and not a neighbour's.
         $wpdb->reset_tables();
 
-        if ( ! defined( 'ASW_PATH' ) ) {
-            define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
         }
 
         // Reset singleton for each test.
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $instance   = $reflection->getProperty( 'instance' );
         $instance->setValue( null, null );
     }
 
     public function test_singleton_returns_same_instance() {
-        $a = ASW::get_instance();
-        $b = ASW::get_instance();
+        $a = ANTISPAMWIZARD::get_instance();
+        $b = ANTISPAMWIZARD::get_instance();
 
         $this->assertSame( $a, $b );
     }
@@ -58,12 +58,12 @@ class ASWTest extends TestCase {
     public function test_init_registers_actions() {
         global $wp_actions;
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
         // Settings::register() was removed as dead code — verify it is NOT registered.
         $admin_init_callbacks = array_column( $wp_actions['admin_init'] ?? array(), 'callback' );
         $this->assertNotContains(
-            array( 'ASW_Settings', 'register' ),
+            array( 'ANTISPAMWIZARD_Settings', 'register' ),
             $admin_init_callbacks
         );
 
@@ -78,7 +78,7 @@ class ASWTest extends TestCase {
     public function test_init_registers_the_shadow_display_hooks(): void {
         global $wp_actions, $wp_filters;
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
         $expected = array(
             array( $wp_actions, 'pre_get_comments', 'on_pre_get_comments', 1 ),
@@ -90,43 +90,43 @@ class ASWTest extends TestCase {
             $found = false;
             foreach ( $registry[ $hook ] ?? array() as $registered ) {
                 $callback = $registered['callback'];
-                if ( is_array( $callback ) && $callback[0] instanceof ASW_Shadow_Display && $method === $callback[1] ) {
+                if ( is_array( $callback ) && $callback[0] instanceof ANTISPAMWIZARD_Shadow_Display && $method === $callback[1] ) {
                     $found = true;
                     $this->assertSame( $args, $registered['accepted_args'], "{$hook} must take {$args} argument(s)." );
                 }
             }
-            $this->assertTrue( $found, "init() must register ASW_Shadow_Display::{$method} on {$hook}." );
+            $this->assertTrue( $found, "init() must register ANTISPAMWIZARD_Shadow_Display::{$method} on {$hook}." );
         }
     }
 
     public function test_activate_creates_default_settings() {
         global $wp_options;
 
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
-        $this->assertArrayHasKey( ASW_Settings::OPTION_KEY, $wp_options );
+        $this->assertArrayHasKey( ANTISPAMWIZARD_Settings::OPTION_KEY, $wp_options );
         $this->assertSame(
-            ASW_Settings::get_defaults(),
-            $wp_options[ ASW_Settings::OPTION_KEY ]
+            ANTISPAMWIZARD_Settings::get_defaults(),
+            $wp_options[ ANTISPAMWIZARD_Settings::OPTION_KEY ]
         );
     }
 
     public function test_activate_does_not_overwrite_existing_settings() {
         global $wp_options;
         $custom = array( 'links_max' => 99 );
-        $wp_options[ ASW_Settings::OPTION_KEY ] = $custom;
+        $wp_options[ ANTISPAMWIZARD_Settings::OPTION_KEY ] = $custom;
 
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
-        $this->assertSame( $custom, $wp_options[ ASW_Settings::OPTION_KEY ] );
+        $this->assertSame( $custom, $wp_options[ ANTISPAMWIZARD_Settings::OPTION_KEY ] );
     }
 
     public function test_activate_default_settings_include_bayesian() {
         global $wp_options;
 
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
-        $settings = $wp_options[ ASW_Settings::OPTION_KEY ];
+        $settings = $wp_options[ ANTISPAMWIZARD_Settings::OPTION_KEY ];
         $this->assertArrayHasKey( 'bayesian_enabled', $settings );
         $this->assertTrue( $settings['bayesian_enabled'] );
         $this->assertArrayHasKey( 'bayesian_threshold', $settings );
@@ -136,18 +136,18 @@ class ASWTest extends TestCase {
     // --- samples schema version ---
 
     public function test_activate_records_the_samples_schema_version(): void {
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
     public function test_init_registers_the_schema_upgrade_check(): void {
         global $wp_actions;
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
         $admin_init_callbacks = array_column( $wp_actions['admin_init'] ?? array(), 'callback' );
         $registered = false;
@@ -167,19 +167,19 @@ class ASWTest extends TestCase {
         global $wp_dbdelta_queries;
 
         // Model a site whose stored schema version is behind DB_VERSION.
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
         $wp_dbdelta_queries = array();
 
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $this->assertCount( 1, $wp_dbdelta_queries );
         $this->assertStringContainsString( 'comment_id', $wp_dbdelta_queries[0] );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -187,29 +187,29 @@ class ASWTest extends TestCase {
         global $wp_dbdelta_queries;
 
         // A table created by 1.0.0 predates the version option entirely.
-        $asw = ASW::get_instance();
-        $asw->init();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
         $wp_dbdelta_queries = array();
 
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $this->assertCount( 1, $wp_dbdelta_queries );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
     public function test_maybe_upgrade_schema_is_a_no_op_when_the_version_matches(): void {
         global $wp_dbdelta_queries;
 
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, ASW_Sample_Repository::DB_VERSION );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, ANTISPAMWIZARD_Sample_Repository::DB_VERSION );
 
-        $asw = ASW::get_instance();
-        $asw->init();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
         $wp_dbdelta_queries = array();
 
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         // dbDelta() is expensive (it reads the live schema); it must not run on
         // every admin request once the table is current.
@@ -225,33 +225,33 @@ class ASWTest extends TestCase {
         // success. Recording the version anyway would short-circuit every later
         // attempt and leave the table on the old layout for good.
         $wp_dbdelta_applies = false;
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
-        $asw->maybe_upgrade_schema();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
+        $antispamwizard->maybe_upgrade_schema();
 
-        $this->assertSame( '0', get_option( ASW_Sample_Repository::DB_VERSION_OPTION ) );
+        $this->assertSame( '0', get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION ) );
     }
 
     public function test_maybe_upgrade_schema_retries_after_a_failed_ddl(): void {
         global $wp_dbdelta_applies, $wp_dbdelta_queries;
 
         $wp_dbdelta_applies = false;
-        $asw                = ASW::get_instance();
-        $asw->init();
-        $asw->maybe_upgrade_schema();
+        $antispamwizard                = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
+        $antispamwizard->maybe_upgrade_schema();
 
         // The refusal was transient: the next admin request must run the DDL
         // again rather than treat the site as migrated.
         $wp_dbdelta_applies = true;
         $wp_dbdelta_queries = array();
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $this->assertCount( 1, $wp_dbdelta_queries );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -264,21 +264,21 @@ class ASWTest extends TestCase {
         // short-circuit every later attempt and the index would stay missing for
         // good -- putting the Privacy API's lookups on a permanent table scan.
         $wp_dbdelta_index_applies = false;
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
-        $asw->maybe_upgrade_schema();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
+        $antispamwizard->maybe_upgrade_schema();
 
-        $this->assertSame( '0', get_option( ASW_Sample_Repository::DB_VERSION_OPTION ) );
+        $this->assertSame( '0', get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION ) );
 
         // And the retry lands once the database accepts the index.
         $wp_dbdelta_index_applies = true;
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -290,39 +290,39 @@ class ASWTest extends TestCase {
         // the handler. When the DDL keeps being refused the version option is
         // deliberately left behind to force a retry, so an ungated handler would
         // re-run a full dbDelta() on every unauthenticated hit.
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
         $wp_dbdelta_queries   = array();
         $wp_current_user_caps = array();
 
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $this->assertSame( array(), $wp_dbdelta_queries );
         // The migration is only deferred, never abandoned: the stored version
         // must stay behind so the next capable admin request still applies it.
-        $this->assertSame( '0', get_option( ASW_Sample_Repository::DB_VERSION_OPTION ) );
+        $this->assertSame( '0', get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION ) );
     }
 
     public function test_maybe_upgrade_schema_runs_for_a_capable_user_after_an_anonymous_request(): void {
         global $wp_dbdelta_queries, $wp_current_user_caps;
 
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
         $wp_dbdelta_queries   = array();
         $wp_current_user_caps = array();
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $wp_current_user_caps = array( 'manage_options' => true );
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
         $this->assertCount( 1, $wp_dbdelta_queries );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -331,9 +331,9 @@ class ASWTest extends TestCase {
 
         $wp_dbdelta_applies = false;
 
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
-        $this->assertFalse( get_option( ASW_Sample_Repository::DB_VERSION_OPTION ) );
+        $this->assertFalse( get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION ) );
     }
 
     /**
@@ -344,7 +344,7 @@ class ASWTest extends TestCase {
     private function seed_legacy_sample(): void {
         global $wpdb;
         $wpdb->insert(
-            'wp_asw_samples',
+            'wp_antispamwizard_samples',
             array(
                 'comment_id'   => 0,
                 'email_hash'   => '',
@@ -365,16 +365,16 @@ class ASWTest extends TestCase {
         // lookup can ever match it -- while it still holds the trained comment's
         // full text that readme.txt promises is exportable and erasable.
         $this->seed_legacy_sample();
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
-        $asw->maybe_upgrade_schema();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
+        $antispamwizard->maybe_upgrade_schema();
 
-        $this->assertSame( array(), $asw->get_repository()->find_all( 'latin', 'spam' ) );
+        $this->assertSame( array(), $antispamwizard->get_repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -382,28 +382,28 @@ class ASWTest extends TestCase {
         global $wpdb;
 
         $this->seed_legacy_sample();
-        update_option( ASW_Sample_Repository::DB_VERSION_OPTION, '0' );
+        update_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION, '0' );
 
-        $asw = ASW::get_instance();
-        $asw->init();
+        $antispamwizard = ANTISPAMWIZARD::get_instance();
+        $antispamwizard->init();
 
         // A refused DELETE must leave the version behind so the next admin
         // request retries: stamping it would strand the unreachable rows for
         // good, exactly as stamping over a refused ALTER strands the layout.
         $wpdb->query_result = false;
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
         $wpdb->query_result = null;
 
-        $this->assertSame( '0', get_option( ASW_Sample_Repository::DB_VERSION_OPTION ) );
-        $this->assertCount( 1, $asw->get_repository()->find_all( 'latin', 'spam' ) );
+        $this->assertSame( '0', get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION ) );
+        $this->assertCount( 1, $antispamwizard->get_repository()->find_all( 'latin', 'spam' ) );
 
         // The retry succeeds and completes the migration.
-        $asw->maybe_upgrade_schema();
+        $antispamwizard->maybe_upgrade_schema();
 
-        $this->assertSame( array(), $asw->get_repository()->find_all( 'latin', 'spam' ) );
+        $this->assertSame( array(), $antispamwizard->get_repository()->find_all( 'latin', 'spam' ) );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -415,12 +415,12 @@ class ASWTest extends TestCase {
         // never gets the chance.
         $this->seed_legacy_sample();
 
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
-        $this->assertSame( array(), ( new ASW_Sample_Repository( $wpdb ) )->find_all( 'latin', 'spam' ) );
+        $this->assertSame( array(), ( new ANTISPAMWIZARD_Sample_Repository( $wpdb ) )->find_all( 'latin', 'spam' ) );
         $this->assertSame(
-            ASW_Sample_Repository::DB_VERSION,
-            get_option( ASW_Sample_Repository::DB_VERSION_OPTION )
+            ANTISPAMWIZARD_Sample_Repository::DB_VERSION,
+            get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION )
         );
     }
 
@@ -430,26 +430,26 @@ class ASWTest extends TestCase {
         $this->seed_legacy_sample();
         $wpdb->query_result = false;
 
-        ASW::activate();
+        ANTISPAMWIZARD::activate();
 
         $wpdb->query_result = null;
-        $this->assertFalse( get_option( ASW_Sample_Repository::DB_VERSION_OPTION ) );
+        $this->assertFalse( get_option( ANTISPAMWIZARD_Sample_Repository::DB_VERSION_OPTION ) );
     }
 
     public function test_init_registers_bayesian_check(): void {
         global $wp_filters;
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
         // Verify that the pre_comment_approved filter is registered (which means detector with bayesian check is wired).
         $this->assertArrayHasKey( 'pre_comment_approved', $wp_filters );
     }
 
     public function test_build_checks_returns_bot_checks_first(): void {
-        $checks = ASW::get_instance()->build_checks();
+        $checks = ANTISPAMWIZARD::get_instance()->build_checks();
         $this->assertCount( 10, $checks );
-        $this->assertInstanceOf( ASW_Honeypot_Check::class, $checks[0] );
-        $this->assertInstanceOf( ASW_Submit_Time_Check::class, $checks[1] );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Honeypot_Check::class, $checks[0] );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Submit_Time_Check::class, $checks[1] );
     }
 
     /**
@@ -459,7 +459,7 @@ class ASWTest extends TestCase {
      * @return array Detector verdict.
      */
     private function evaluate_body( string $body ): array {
-        $detector = new ASW_Detector( array( ASW::get_instance(), 'build_checks' ) );
+        $detector = new ANTISPAMWIZARD_Detector( array( ANTISPAMWIZARD::get_instance(), 'build_checks' ) );
 
         return $detector->evaluate( array( 'comment_content' => $body ) );
     }
@@ -479,7 +479,7 @@ class ASWTest extends TestCase {
             array_filter(
                 $wp_transient_reads,
                 static function ( $key ) {
-                    return str_starts_with( $key, ASW_Model_Store::TRANSIENT_PREFIX );
+                    return str_starts_with( $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX );
                 }
             )
         );
@@ -497,7 +497,7 @@ class ASWTest extends TestCase {
             array_filter(
                 array_keys( $wp_transients ),
                 static function ( $key ) {
-                    return str_starts_with( $key, ASW_Model_Store::TRANSIENT_PREFIX );
+                    return str_starts_with( $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX );
                 }
             )
         );
@@ -506,7 +506,7 @@ class ASWTest extends TestCase {
     public function test_build_checks_loads_no_model_and_reads_no_transient(): void {
         global $wp_transient_reads;
 
-        $checks = ASW::get_instance()->build_checks();
+        $checks = ANTISPAMWIZARD::get_instance()->build_checks();
 
         $this->assertCount( 10, $checks );
         // Models are now loaded by the store, on the submission that needs them,
@@ -540,7 +540,7 @@ class ASWTest extends TestCase {
         // not pin the routing. Exactly one unit read, and it is the Cyrillic one.
         $reads = $this->unit_reads();
         $this->assertCount( 1, $reads, 'The combined unit must not be touched: ' . implode( ',', $reads ) );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
     }
 
     public function test_a_cyrillic_ham_body_is_not_flagged_through_the_store_backed_checks(): void {
@@ -559,7 +559,7 @@ class ASWTest extends TestCase {
 
         $cold_reads = $this->unit_reads();
         $this->assertCount( 1, $cold_reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $cold_reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $cold_reads[0] );
 
         $wp_transient_reads = array();
         $this->evaluate_body( self::CYRILLIC_HAM );
@@ -572,23 +572,23 @@ class ASWTest extends TestCase {
     }
 
     public function test_an_unknown_script_body_reads_only_the_combined_unit(): void {
-        // Digits delimited by commas: no letters, so ASW_Script_Detector::detect()
+        // Digits delimited by commas: no letters, so ANTISPAMWIZARD_Script_Detector::detect()
         // returns 'unknown', which has no unit of its own. (Commas matter - the
         // tokenizer folds space-separated digit runs into one phone number.)
         $this->evaluate_body( '12345, 67890, 13579, 24680, 11223, 44556, 77889' );
 
         $reads = $this->unit_reads();
         $this->assertCount( 1, $reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[0] );
     }
 
     public function test_disabled_bayesian_and_similarity_read_no_model_unit(): void {
         global $wp_options;
 
-        $settings                       = ASW_Settings::get_defaults();
+        $settings                       = ANTISPAMWIZARD_Settings::get_defaults();
         $settings['bayesian_enabled']   = false;
         $settings['similarity_enabled'] = false;
-        $wp_options[ ASW_Settings::OPTION_KEY ] = $settings;
+        $wp_options[ ANTISPAMWIZARD_Settings::OPTION_KEY ] = $settings;
 
         $this->evaluate_body( self::CYRILLIC_HAM );
 
@@ -604,9 +604,9 @@ class ASWTest extends TestCase {
 
         $keys = $this->cached_unit_keys();
         $this->assertCount( 1, $keys, 'Expected exactly one cached model unit' );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $keys[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $keys[0] );
 
-        $cached = asw_test_unwrap_unit( $wp_transients[ $keys[0] ] );
+        $cached = antispamwizard_test_unwrap_unit( $wp_transients[ $keys[0] ] );
         $this->assertIsArray( $cached );
         $this->assertArrayHasKey( 'classifier', $cached );
         $this->assertArrayHasKey( 'samples', $cached );
@@ -648,7 +648,7 @@ class ASWTest extends TestCase {
         $corrupted = array(
             // Carried forward, or the unit is rebuilt for being stale rather
             // than for being corrupt and the test would pass vacuously.
-            'fingerprint' => asw_test_unwrap_unit( $wp_transients[ $key ] )['fingerprint'],
+            'fingerprint' => antispamwizard_test_unwrap_unit( $wp_transients[ $key ] )['fingerprint'],
             'classifier'  => array( 'token_counts' => 'bad' ),
             'samples'     => array(),
         );
@@ -656,13 +656,13 @@ class ASWTest extends TestCase {
         // explicit envelope wherever zlib is present, and the serving path
         // rejects the other form outright -- which would rebuild this unit for
         // the wrong reason and pass the test vacuously.
-        $corrupted                          = asw_test_wrap_unit( $corrupted );
+        $corrupted                          = antispamwizard_test_wrap_unit( $corrupted );
         $wp_transients[ $key ]              = $corrupted;
         $wp_options[ '_transient_' . $key ] = $corrupted;
 
         $this->evaluate_body( self::CYRILLIC_HAM );
 
-        $rebuilt = asw_test_unwrap_unit( $wp_transients[ $key ] );
+        $rebuilt = antispamwizard_test_unwrap_unit( $wp_transients[ $key ] );
         $this->assertIsArray( $rebuilt['classifier']['token_counts'],
             'A corrupted unit must be replaced with freshly trained state' );
         $this->assertNotEmpty( $rebuilt['samples'] );
@@ -677,22 +677,22 @@ class ASWTest extends TestCase {
 
         $this->assertSame( $first, $second,
             'Unchanged corpus, settings and samples must resolve to the same unit key' );
-        $this->assertStringStartsWith( ASW_Model_Store::TRANSIENT_PREFIX, $first[0],
+        $this->assertStringStartsWith( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX, $first[0],
             'uninstall.php removes the cache by LIKE over this prefix' );
     }
 
     public function test_init_action_loads_textdomain(): void {
-        // setUp() resets $asw_loaded_textdomains for every test; declare it here
+        // setUp() resets $antispamwizard_loaded_textdomains for every test; declare it here
         // only to read the accumulated callback result in the assertion below.
-        global $asw_loaded_textdomains;
+        global $antispamwizard_loaded_textdomains;
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
         // Firing the init action must invoke the registered load_textdomain
         // callback, which delegates to load_plugin_textdomain().
         do_action( 'init' );
 
-        $this->assertContains( 'antispam-wizard', $asw_loaded_textdomains,
+        $this->assertContains( 'antispam-wizard', $antispamwizard_loaded_textdomains,
             'do_action( init ) should trigger load_plugin_textdomain for the text domain' );
     }
 }

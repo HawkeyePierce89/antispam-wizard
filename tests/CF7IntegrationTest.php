@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for ASW_CF7_Integration.
+ * Tests for ANTISPAMWIZARD_CF7_Integration.
  */
 
 use PHPUnit\Framework\TestCase;
@@ -27,10 +27,10 @@ class CF7IntegrationTest extends TestCase {
         $wp_cf7_is_available = null;
         $wp_cf7_remote_ip = null;
         $_POST = array();
-        ASW_Spam_Log::clear();
-        ASW_Stats::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
+        ANTISPAMWIZARD_Stats::clear();
         // Reset singleton.
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $prop = $reflection->getProperty( 'instance' );
         $prop->setValue( null, null );
         // Ensure CF7 is considered available.
@@ -49,7 +49,7 @@ class CF7IntegrationTest extends TestCase {
         $wp_cf7_meta = array();
         $wp_cf7_spam_log = array();
         $_POST = array();
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
         parent::tearDown();
     }
 
@@ -74,10 +74,10 @@ class CF7IntegrationTest extends TestCase {
         return $sub;
     }
 
-    private function make_integration(): ASW_CF7_Integration {
-        ASW::get_instance()->init();
-        // filter_spam builds its own request-scoped detector via ASW::build_checks.
-        return new ASW_CF7_Integration();
+    private function make_integration(): ANTISPAMWIZARD_CF7_Integration {
+        ANTISPAMWIZARD::get_instance()->init();
+        // filter_spam builds its own request-scoped detector via ANTISPAMWIZARD::build_checks.
+        return new ANTISPAMWIZARD_CF7_Integration();
     }
 
     private function base_tags(): array {
@@ -98,19 +98,19 @@ class CF7IntegrationTest extends TestCase {
         );
         $sub = $this->make_submission( $form, $posted );
         // Provide valid token that is not too fresh (30s ago) and empty honeypot.
-        $token = ASW_Comment_Form::mint_token( time() - 30, 10 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, 10 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         $_POST['comment_post_ID'] = 10;
 
         $integration = $this->make_integration();
         $result = $integration->filter_spam( false, $sub );
         $this->assertTrue( $result );
         // Verify logging.
-        $entries = ASW_Spam_Log::get_entries();
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $entries );
         $this->assertSame( 'form', $entries[0]['source'] );
-        $this->assertSame( ASW_Detector::hash_email( 'spam@example.com' ), $entries[0]['email_hash'] );
+        $this->assertSame( ANTISPAMWIZARD_Detector::hash_email( 'spam@example.com' ), $entries[0]['email_hash'] );
         global $wp_cf7_spam_log;
         $this->assertNotEmpty( $wp_cf7_spam_log );
         $this->assertSame( 'antispam-wizard', $wp_cf7_spam_log[0]['agent'] );
@@ -124,15 +124,15 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'alice@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $token = ASW_Comment_Form::mint_token( time() - 30, 11 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, 11 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         $_POST['comment_post_ID'] = 11;
 
         $integration = $this->make_integration();
         $result = $integration->filter_spam( false, $sub );
         $this->assertFalse( $result );
-        $this->assertCount( 0, ASW_Spam_Log::get_entries() );
+        $this->assertCount( 0, ANTISPAMWIZARD_Spam_Log::get_entries() );
     }
 
     public function test_honeypot_filled_returns_true(): void {
@@ -143,9 +143,9 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'bob@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $token = ASW_Comment_Form::mint_token( time() - 30, 12 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = 'filled by bot';
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, 12 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = 'filled by bot';
         $_POST['comment_post_ID'] = 12;
 
         $integration = $this->make_integration();
@@ -161,9 +161,9 @@ class CF7IntegrationTest extends TestCase {
         );
         $sub = $this->make_submission( $form, $posted );
         // Fresh token (now)
-        $token = ASW_Comment_Form::mint_token( time(), 13 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time(), 13 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         $_POST['comment_post_ID'] = 13;
 
         $integration = $this->make_integration();
@@ -178,9 +178,9 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'dave@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         // Do not set token.
-        unset( $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] );
+        unset( $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] );
         $_POST['comment_post_ID'] = 14;
 
         $integration = $this->make_integration();
@@ -195,8 +195,8 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'eve@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = 'malformed.token.value';
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = 'malformed.token.value';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         $_POST['comment_post_ID'] = 15;
 
         $integration = $this->make_integration();
@@ -212,9 +212,9 @@ class CF7IntegrationTest extends TestCase {
         );
         $sub = $this->make_submission( $form, $posted );
         // Token minted for different form ID 999
-        $token = ASW_Comment_Form::mint_token( time(), 999 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time(), 999 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         $_POST['comment_post_ID'] = 16;
 
         $integration = $this->make_integration();
@@ -229,10 +229,10 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'grace@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $token = ASW_Comment_Form::mint_token( time() - 30, 17 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, 17 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
         // Honeypot key not set at all.
-        unset( $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] );
+        unset( $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] );
         $_POST['comment_post_ID'] = 17;
 
         $integration = $this->make_integration();
@@ -247,8 +247,8 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'spam@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = 'filled';
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = ASW_Comment_Form::mint_token( time(), 18 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = 'filled';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = ANTISPAMWIZARD_Comment_Form::mint_token( time(), 18 );
 
         $integration = $this->make_integration();
         $this->assertTrue( $integration->filter_spam( true, $sub ) );
@@ -260,7 +260,7 @@ class CF7IntegrationTest extends TestCase {
     }
 
     public function test_enabled_off_returns_false(): void {
-        ASW_Settings::update( array( 'enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => false ) );
         $form = $this->make_form( 19, $this->base_tags() );
         $posted = array(
             'your-message' => 'viagra spam',
@@ -268,15 +268,15 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'spam@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = 'filled';
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = ASW_Comment_Form::mint_token( time(), 19 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = 'filled';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = ANTISPAMWIZARD_Comment_Form::mint_token( time(), 19 );
 
         $integration = $this->make_integration();
         $this->assertFalse( $integration->filter_spam( false, $sub ) );
     }
 
     public function test_cf7_enabled_off_returns_false(): void {
-        ASW_Settings::update( array( 'cf7_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'cf7_enabled' => false ) );
         $form = $this->make_form( 20, $this->base_tags() );
         $posted = array(
             'your-message' => 'viagra spam',
@@ -284,8 +284,8 @@ class CF7IntegrationTest extends TestCase {
             'your-email'   => 'spam@example.com',
         );
         $sub = $this->make_submission( $form, $posted );
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = 'filled';
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = ASW_Comment_Form::mint_token( time(), 20 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = 'filled';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = ANTISPAMWIZARD_Comment_Form::mint_token( time(), 20 );
 
         $integration = $this->make_integration();
         $this->assertFalse( $integration->filter_spam( false, $sub ) );
@@ -375,29 +375,29 @@ class CF7IntegrationTest extends TestCase {
         $elements = '<p>form html</p>';
         $result = $integration->render_fields( $elements );
         $this->assertStringContainsString( $elements, $result );
-        $this->assertStringContainsString( ASW_Comment_Form::HONEYPOT_FIELD, $result );
-        $this->assertStringContainsString( ASW_Comment_Form::TIMESTAMP_FIELD, $result );
+        $this->assertStringContainsString( ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD, $result );
+        $this->assertStringContainsString( ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD, $result );
         preg_match( '/value="([0-9]+\.[a-f0-9]+)"/', $result, $m );
         $this->assertNotEmpty( $m );
         $token = $m[1];
-        $this->assertNotNull( ASW_Comment_Form::parse_token( $token, 24 ) );
-        $this->assertNull( ASW_Comment_Form::parse_token( $token, 999 ) );
+        $this->assertNotNull( ANTISPAMWIZARD_Comment_Form::parse_token( $token, 24 ) );
+        $this->assertNull( ANTISPAMWIZARD_Comment_Form::parse_token( $token, 999 ) );
     }
 
     public function test_render_returns_unchanged_when_protection_off(): void {
         // Global disabled.
-        ASW_Settings::update( array( 'enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => false ) );
         $form = $this->make_form( 25, $this->base_tags() );
         $integration = $this->make_integration();
         $elements = '<p>original</p>';
         $this->assertSame( $elements, $integration->render_fields( $elements ) );
 
         // Reset and test cf7_enabled off.
-        ASW_Settings::update( array( 'enabled' => true, 'cf7_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => true, 'cf7_enabled' => false ) );
         $this->assertSame( $elements, $integration->render_fields( $elements ) );
 
         // No current form.
-        ASW_Settings::update( array( 'cf7_enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'cf7_enabled' => true ) );
         $GLOBALS['wp_cf7_current_form'] = null;
         $GLOBALS['wp_cf7_form_id'] = 0;
         $this->assertSame( $elements, $integration->render_fields( $elements ) );
@@ -434,15 +434,15 @@ class CF7IntegrationTest extends TestCase {
     }
 
     public function test_is_available_true_when_stubs_present(): void {
-        $this->assertTrue( ASW_CF7_Integration::is_available() );
+        $this->assertTrue( ANTISPAMWIZARD_CF7_Integration::is_available() );
     }
 
     public function test_is_available_false_when_forced(): void {
         $GLOBALS['wp_cf7_is_available'] = false;
-        $this->assertFalse( ASW_CF7_Integration::is_available() );
+        $this->assertFalse( ANTISPAMWIZARD_CF7_Integration::is_available() );
         unset( $GLOBALS['wp_cf7_is_available'] );
         // Comments pipeline unaffected when CF7 absent: detector still works.
-        $detector = new ASW_Detector( array() );
+        $detector = new ANTISPAMWIZARD_Detector( array() );
         $result = $detector->filter_comment( 1, array( 'comment_content' => 'hello', 'comment_author_IP' => '1.2.3.4' ) );
         $this->assertSame( 1, $result );
     }
@@ -491,9 +491,9 @@ class CF7IntegrationTest extends TestCase {
         );
         $sub = $this->make_submission( $form, $posted );
         $GLOBALS['wp_cf7_submission'] = $sub;
-        $token = ASW_Comment_Form::mint_token( time() - 30, 28 );
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $token;
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, 28 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $token;
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
         $_POST['comment_post_ID'] = 28;
 
         $integration = $this->make_integration();
@@ -511,29 +511,29 @@ class CF7IntegrationTest extends TestCase {
         global $wp_enqueued_styles;
         $integration = $this->make_integration();
         $this->assertTrue( $integration->enqueue_styles( true ) );
-        $this->assertArrayHasKey( 'asw-comment-form', $wp_enqueued_styles );
+        $this->assertArrayHasKey( 'antispamwizard-comment-form', $wp_enqueued_styles );
         // Filter passthrough: false stays false but still enqueues when enabled.
         $wp_enqueued_styles = array();
         $this->assertFalse( $integration->enqueue_styles( false ) );
-        $this->assertArrayHasKey( 'asw-comment-form', $wp_enqueued_styles );
+        $this->assertArrayHasKey( 'antispamwizard-comment-form', $wp_enqueued_styles );
 
         // Both bot checks disabled → not enqueued.
-        ASW_Settings::update( array( 'honeypot_enabled' => false, 'submit_time_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'honeypot_enabled' => false, 'submit_time_enabled' => false ) );
         $wp_enqueued_styles = array();
         $this->assertTrue( $integration->enqueue_styles( true ) );
-        $this->assertArrayNotHasKey( 'asw-comment-form', $wp_enqueued_styles );
+        $this->assertArrayNotHasKey( 'antispamwizard-comment-form', $wp_enqueued_styles );
 
         // cf7_enabled off → not enqueued.
-        ASW_Settings::update( array( 'honeypot_enabled' => true, 'submit_time_enabled' => true, 'cf7_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'honeypot_enabled' => true, 'submit_time_enabled' => true, 'cf7_enabled' => false ) );
         $wp_enqueued_styles = array();
         $this->assertTrue( $integration->enqueue_styles( true ) );
-        $this->assertArrayNotHasKey( 'asw-comment-form', $wp_enqueued_styles );
+        $this->assertArrayNotHasKey( 'antispamwizard-comment-form', $wp_enqueued_styles );
 
         // Global enabled off → not enqueued.
-        ASW_Settings::update( array( 'enabled' => false, 'cf7_enabled' => true ) );
+        ANTISPAMWIZARD_Settings::update( array( 'enabled' => false, 'cf7_enabled' => true ) );
         $wp_enqueued_styles = array();
         $this->assertTrue( $integration->enqueue_styles( true ) );
-        $this->assertArrayNotHasKey( 'asw-comment-form', $wp_enqueued_styles );
+        $this->assertArrayNotHasKey( 'antispamwizard-comment-form', $wp_enqueued_styles );
     }
 
     public function test_register_hooks(): void {
@@ -545,7 +545,7 @@ class CF7IntegrationTest extends TestCase {
         $this->assertArrayHasKey( 'wpcf7_spam', $wp_filters );
         // The stylesheet is registered only through CF7's own enqueue filter —
         // the integration never hooks wp_enqueue_scripts site-wide. (That action
-        // may still carry ASW_Comment_Form's own callback, which is unrelated.)
+        // may still carry ANTISPAMWIZARD_Comment_Form's own callback, which is unrelated.)
         foreach ( ( $wp_actions['wp_enqueue_scripts'] ?? array() ) as $a ) {
             $this->assertNotSame( array( $integration, 'enqueue_styles' ), $a['callback'] );
         }
@@ -569,33 +569,33 @@ class CF7IntegrationTest extends TestCase {
         );
         $sub = $this->make_submission( $form, $posted, '9.9.9.9' );
         // Force spam via links? Use long content truncated but still ham? Let's force via honeypot.
-        $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = 'bot';
-        $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = ASW_Comment_Form::mint_token( time() - 30, 29 );
+        $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = 'bot';
+        $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30, 29 );
         $_POST['comment_post_ID'] = 29;
 
         $integration = $this->make_integration();
         $this->assertTrue( $integration->filter_spam( false, $sub ) );
-        $entries = ASW_Spam_Log::get_entries();
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertCount( 1, $entries );
         // Normalized content should be truncated to MAX_COMMENT_LENGTH (65536) then excerpt 100, but we store excerpt only.
         // Check that stored text_excerpt is 100 chars, not full 70k.
         $this->assertSame( 100, mb_strlen( $entries[0]['text_excerpt'] ) );
         // IP hash should be SHA-256 of salt+IP.
-        $this->assertSame( ASW_Detector::hash_ip( '9.9.9.9' ), $entries[0]['ip_hash'] );
+        $this->assertSame( ANTISPAMWIZARD_Detector::hash_ip( '9.9.9.9' ), $entries[0]['ip_hash'] );
         $this->assertSame( 'form', $entries[0]['source'] );
-        $this->assertSame( ASW_Detector::hash_email( 'test@example.com' ), $entries[0]['email_hash'] );
+        $this->assertSame( ANTISPAMWIZARD_Detector::hash_email( 'test@example.com' ), $entries[0]['email_hash'] );
         $this->assertSame( 0, $entries[0]['comment_id'] );
     }
 
     public function test_build_checks_request_param_injects_into_bot_checks(): void {
         $req = array(
-            ASW_Comment_Form::HONEYPOT_FIELD => 'some',
-            ASW_Comment_Form::TIMESTAMP_FIELD => ASW_Comment_Form::mint_token( time(), 99 ),
+            ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD => 'some',
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => ANTISPAMWIZARD_Comment_Form::mint_token( time(), 99 ),
             'comment_post_ID' => 99,
         );
-        $checks = ASW::get_instance()->build_checks( $req );
-        $this->assertInstanceOf( ASW_Honeypot_Check::class, $checks[0] );
-        $this->assertInstanceOf( ASW_Submit_Time_Check::class, $checks[1] );
+        $checks = ANTISPAMWIZARD::get_instance()->build_checks( $req );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Honeypot_Check::class, $checks[0] );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Submit_Time_Check::class, $checks[1] );
         // Verify that the injected request causes honeypot to flag.
         $result = $checks[0]->check( array( 'comment_content' => 'hi' ) );
         $this->assertTrue( $result->is_spam() );
@@ -606,15 +606,15 @@ class CF7IntegrationTest extends TestCase {
         $this->assertTrue( $result2->is_spam() );
 
         // Without request, both should be fail-open (empty request missing fields).
-        $checks2 = ASW::get_instance()->build_checks();
+        $checks2 = ANTISPAMWIZARD::get_instance()->build_checks();
         $result3 = $checks2[0]->check( array( 'comment_content' => 'hi' ) );
         // Honeypot absent → not spam
         $this->assertFalse( $result3->is_spam() );
     }
 
     public function test_filter_spam_diagnostic_omits_the_exception_message(): void {
-        // Same rule as ASW_Detector::run(): filter_spam()'s try wraps evaluate(),
-        // ASW_Spam_Log::add_entry() and ASW_Stats::record(), so an exception
+        // Same rule as ANTISPAMWIZARD_Detector::run(): filter_spam()'s try wraps evaluate(),
+        // ANTISPAMWIZARD_Spam_Log::add_entry() and ANTISPAMWIZARD_Stats::record(), so an exception
         // message there can carry a $wpdb query or a lock-file path, and
         // debug.log is web-readable on misconfigured hosts. Forcing a throw past
         // the inner fail-open catches is not reachable through the stubs, so the
@@ -623,7 +623,7 @@ class CF7IntegrationTest extends TestCase {
         $this->assertIsString( $source );
 
         $start = strpos( $source, 'public function filter_spam(' );
-        $this->assertNotFalse( $start, 'ASW_CF7_Integration::filter_spam() not found' );
+        $this->assertNotFalse( $start, 'ANTISPAMWIZARD_CF7_Integration::filter_spam() not found' );
         $end  = strpos( $source, "\n    public function", $start + 1 );
         $body = false === $end ? substr( $source, $start ) : substr( $source, $start, $end - $start );
 

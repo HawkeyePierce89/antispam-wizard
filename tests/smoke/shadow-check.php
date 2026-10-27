@@ -4,7 +4,7 @@
  *
  * Executed inside a real WordPress instance via `wp eval-file`. Builds a
  * throwaway post with five comments and renders its comment list through both
- * paths ASW_Shadow_Display hooks into, as the comments' author (commenter
+ * paths ANTISPAMWIZARD_Shadow_Display hooks into, as the comments' author (commenter
  * cookie set), as an anonymous visitor (cookie cleared) and as a cookie-less
  * author landing on the unapproved=<ID>&moderation-hash=<wp_hash(date)> pair
  * core's comment_post_redirect target carries:
@@ -19,7 +19,7 @@
  *     each render with core's "Your comment is awaiting moderation." note (one
  *     note per flagged comment, so the top-level one cannot stand in for the
  *     reply), while
- *     their moderator-marked spam (no _asw_reason) and another address's
+ *     their moderator-marked spam (no _antispamwizard_reason) and another address's
  *     auto-flagged spam do not;
  *   - for the anonymous visitor, no spam text renders at all;
  *   - the plugin's comment_post_redirect callback, run through the real
@@ -51,12 +51,12 @@ error_reporting( E_ALL );
 ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
-if ( ! class_exists( 'ASW_Shadow_Display' ) || false === has_filter( 'comments_clauses' ) ) {
-	fwrite( STDERR, "shadow-check: FAIL ASW_Shadow_Display missing or not hooked — is antispam-wizard active?\n" );
+if ( ! class_exists( 'ANTISPAMWIZARD_Shadow_Display' ) || false === has_filter( 'comments_clauses' ) ) {
+	fwrite( STDERR, "shadow-check: FAIL ANTISPAMWIZARD_Shadow_Display missing or not hooked — is antispam-wizard active?\n" );
 	exit( 1 );
 }
 
-ASW_Settings::update(
+ANTISPAMWIZARD_Settings::update(
 	array(
 		'enabled'                => true,
 		'shadow_display_enabled' => true,
@@ -70,7 +70,7 @@ add_filter( 'deprecated_file_trigger_error', '__return_false' );
 
 global $wpdb;
 
-$token        = 'aswshadow' . wp_generate_password( 10, false, false );
+$token        = 'antispamwizardshadow' . wp_generate_password( 10, false, false );
 $author_email = 'shadow-author-' . strtolower( $token ) . '@example.com';
 $other_email  = 'shadow-other-' . strtolower( $token ) . '@example.com';
 $texts        = array(
@@ -96,10 +96,10 @@ $cookie_name  = 'comment_author_' . COOKIEHASH;
  * @param int|string $approved 1 or 'spam'.
  * @param int        $parent   Parent comment ID.
  * @param int        $offset   Seconds after the first comment, for a stable order.
- * @param bool       $flagged  Whether to carry _asw_reason (auto-flagged).
+ * @param bool       $flagged  Whether to carry _antispamwizard_reason (auto-flagged).
  * @return int Comment ID, 0 on failure.
  */
-function asw_shadow_smoke_insert( int $post_id, string $text, string $email, $approved, int $parent, int $offset, bool $flagged ): int {
+function antispamwizard_shadow_smoke_insert( int $post_id, string $text, string $email, $approved, int $parent, int $offset, bool $flagged ): int {
 	$gmt = gmdate( 'Y-m-d H:i:s', time() - 3600 + $offset );
 	$id  = (int) wp_insert_comment(
 		array(
@@ -117,8 +117,8 @@ function asw_shadow_smoke_insert( int $post_id, string $text, string $email, $ap
 		)
 	);
 	if ( $id > 0 && $flagged ) {
-		add_comment_meta( $id, '_asw_reason', 'links' );
-		ASW_Shadow_Display::record_flag( $id ); // As the detector does on its first flag.
+		add_comment_meta( $id, '_antispamwizard_reason', 'links' );
+		ANTISPAMWIZARD_Shadow_Display::record_flag( $id ); // As the detector does on its first flag.
 	}
 	return $id;
 }
@@ -130,7 +130,7 @@ function asw_shadow_smoke_insert( int $post_id, string $text, string $email, $ap
  * @param string $gmt New comment_date_gmt.
  * @return void
  */
-function asw_shadow_smoke_set_date( int $id, string $gmt ): void {
+function antispamwizard_shadow_smoke_set_date( int $id, string $gmt ): void {
 	global $wpdb;
 	$wpdb->update(
 		$wpdb->comments,
@@ -148,7 +148,7 @@ function asw_shadow_smoke_set_date( int $id, string $gmt ): void {
  *
  * @return string
  */
-function asw_shadow_smoke_render_classic(): string {
+function antispamwizard_shadow_smoke_render_classic(): string {
 	ob_start();
 	comments_template();
 	return (string) ob_get_clean();
@@ -159,7 +159,7 @@ function asw_shadow_smoke_render_classic(): string {
  *
  * @return string
  */
-function asw_shadow_smoke_render_blocks(): string {
+function antispamwizard_shadow_smoke_render_blocks(): string {
 	return do_blocks( '<!-- wp:comments --><!-- wp:comment-template --><!-- wp:comment-content /--><!-- /wp:comment-template --><!-- /wp:comments -->' );
 }
 
@@ -175,7 +175,7 @@ function asw_shadow_smoke_render_blocks(): string {
  * @param int    $held_notes How many awaiting-moderation notes must render.
  * @return array Failure messages.
  */
-function asw_shadow_smoke_assert( string $label, string $html, array $texts, array $present, array $absent, int $held_notes ): array {
+function antispamwizard_shadow_smoke_assert( string $label, string $html, array $texts, array $present, array $absent, int $held_notes ): array {
 	if ( false === strpos( $html, $texts['approved'] ) ) {
 		return array( $label . ': the approved comment did not render — the comment list is empty, so nothing else here can be judged' );
 	}
@@ -215,11 +215,11 @@ try {
 		throw new RuntimeException( 'could not create the throwaway post' );
 	}
 
-	$ids['approved']    = asw_shadow_smoke_insert( $post_id, $texts['approved'], 'someone-' . strtolower( $token ) . '@example.com', 1, 0, 0, false );
-	$ids['flagged']     = asw_shadow_smoke_insert( $post_id, $texts['flagged'], $author_email, 'spam', 0, 60, true );
-	$ids['reply']       = asw_shadow_smoke_insert( $post_id, $texts['reply'], $author_email, 'spam', $ids['approved'], 120, true );
-	$ids['moderator']   = asw_shadow_smoke_insert( $post_id, $texts['moderator'], $author_email, 'spam', 0, 180, false );
-	$ids['other_email'] = asw_shadow_smoke_insert( $post_id, $texts['other_email'], $other_email, 'spam', 0, 240, true );
+	$ids['approved']    = antispamwizard_shadow_smoke_insert( $post_id, $texts['approved'], 'someone-' . strtolower( $token ) . '@example.com', 1, 0, 0, false );
+	$ids['flagged']     = antispamwizard_shadow_smoke_insert( $post_id, $texts['flagged'], $author_email, 'spam', 0, 60, true );
+	$ids['reply']       = antispamwizard_shadow_smoke_insert( $post_id, $texts['reply'], $author_email, 'spam', $ids['approved'], 120, true );
+	$ids['moderator']   = antispamwizard_shadow_smoke_insert( $post_id, $texts['moderator'], $author_email, 'spam', 0, 180, false );
+	$ids['other_email'] = antispamwizard_shadow_smoke_insert( $post_id, $texts['other_email'], $other_email, 'spam', 0, 240, true );
 	foreach ( $ids as $key => $id ) {
 		if ( $id <= 0 ) {
 			throw new RuntimeException( 'could not insert the ' . $key . ' comment' );
@@ -242,8 +242,8 @@ try {
 	$author_absent  = array( 'moderator', 'other_email' );
 	$failures       = array_merge(
 		$failures,
-		asw_shadow_smoke_assert( 'classic, author', asw_shadow_smoke_render_classic(), $texts, $author_present, $author_absent, count( $author_present ) ),
-		asw_shadow_smoke_assert( 'block, author', asw_shadow_smoke_render_blocks(), $texts, $author_present, $author_absent, count( $author_present ) )
+		antispamwizard_shadow_smoke_assert( 'classic, author', antispamwizard_shadow_smoke_render_classic(), $texts, $author_present, $author_absent, count( $author_present ) ),
+		antispamwizard_shadow_smoke_assert( 'block, author', antispamwizard_shadow_smoke_render_blocks(), $texts, $author_present, $author_absent, count( $author_present ) )
 	);
 
 	// --- As an anonymous visitor.
@@ -251,8 +251,8 @@ try {
 
 	$failures = array_merge(
 		$failures,
-		asw_shadow_smoke_assert( 'classic, anonymous', asw_shadow_smoke_render_classic(), $texts, array(), $spam_keys, 0 ),
-		asw_shadow_smoke_assert( 'block, anonymous', asw_shadow_smoke_render_blocks(), $texts, array(), $spam_keys, 0 )
+		antispamwizard_shadow_smoke_assert( 'classic, anonymous', antispamwizard_shadow_smoke_render_classic(), $texts, array(), $spam_keys, 0 ),
+		antispamwizard_shadow_smoke_assert( 'block, anonymous', antispamwizard_shadow_smoke_render_blocks(), $texts, array(), $spam_keys, 0 )
 	);
 
 	// --- As a cookie-less author: only the pair the redirect carries, within
@@ -264,7 +264,7 @@ try {
 	// registered the flagged ID, so get_comment() would present it as '0',
 	// whereas wp-comments-post.php hands the hook the real spam row.
 	$flagged_gmt = gmdate( 'Y-m-d H:i:s' );
-	asw_shadow_smoke_set_date( $ids['flagged'], $flagged_gmt );
+	antispamwizard_shadow_smoke_set_date( $ids['flagged'], $flagged_gmt );
 	unset( $_POST['wp-comment-cookies-consent'] );
 	$redirect = (string) apply_filters( 'comment_post_redirect', get_comment_link( $ids['flagged'] ), WP_Comment::get_instance( $ids['flagged'] ) );
 	wp_parse_str( (string) wp_parse_url( $redirect, PHP_URL_QUERY ), $redirect_args );
@@ -276,8 +276,8 @@ try {
 
 	$failures = array_merge(
 		$failures,
-		asw_shadow_smoke_assert( 'classic, cookie-less author', asw_shadow_smoke_render_classic(), $texts, $author_present, $author_absent, count( $author_present ) ),
-		asw_shadow_smoke_assert( 'block, cookie-less author', asw_shadow_smoke_render_blocks(), $texts, $author_present, $author_absent, count( $author_present ) )
+		antispamwizard_shadow_smoke_assert( 'classic, cookie-less author', antispamwizard_shadow_smoke_render_classic(), $texts, $author_present, $author_absent, count( $author_present ) ),
+		antispamwizard_shadow_smoke_assert( 'block, cookie-less author', antispamwizard_shadow_smoke_render_blocks(), $texts, $author_present, $author_absent, count( $author_present ) )
 	);
 
 	// --- An invalid hash resolves no email.
@@ -285,20 +285,20 @@ try {
 
 	$failures = array_merge(
 		$failures,
-		asw_shadow_smoke_assert( 'classic, invalid hash', asw_shadow_smoke_render_classic(), $texts, array(), $spam_keys, 0 ),
-		asw_shadow_smoke_assert( 'block, invalid hash', asw_shadow_smoke_render_blocks(), $texts, array(), $spam_keys, 0 )
+		antispamwizard_shadow_smoke_assert( 'classic, invalid hash', antispamwizard_shadow_smoke_render_classic(), $texts, array(), $spam_keys, 0 ),
+		antispamwizard_shadow_smoke_assert( 'block, invalid hash', antispamwizard_shadow_smoke_render_blocks(), $texts, array(), $spam_keys, 0 )
 	);
 
 	// --- An expired window: the hash is valid for the moved date, so only the
 	// ten-minute window can reject it.
 	$expired_gmt = gmdate( 'Y-m-d H:i:s', time() - 11 * MINUTE_IN_SECONDS );
-	asw_shadow_smoke_set_date( $ids['flagged'], $expired_gmt );
+	antispamwizard_shadow_smoke_set_date( $ids['flagged'], $expired_gmt );
 	$_GET['moderation-hash'] = wp_hash( $expired_gmt );
 
 	$failures = array_merge(
 		$failures,
-		asw_shadow_smoke_assert( 'classic, expired window', asw_shadow_smoke_render_classic(), $texts, array(), $spam_keys, 0 ),
-		asw_shadow_smoke_assert( 'block, expired window', asw_shadow_smoke_render_blocks(), $texts, array(), $spam_keys, 0 )
+		antispamwizard_shadow_smoke_assert( 'classic, expired window', antispamwizard_shadow_smoke_render_classic(), $texts, array(), $spam_keys, 0 ),
+		antispamwizard_shadow_smoke_assert( 'block, expired window', antispamwizard_shadow_smoke_render_blocks(), $texts, array(), $spam_keys, 0 )
 	);
 
 	unset( $_GET['unapproved'], $_GET['moderation-hash'] );

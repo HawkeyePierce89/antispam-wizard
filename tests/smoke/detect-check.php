@@ -11,7 +11,7 @@
  *   - fresh token with a high `submit_time_min_seconds` is classified as 'spam';
  *   - token minted well in the past is NOT classified as spam;
  *   - missing/tampered token is NOT classified as spam;
- *   - ASW_Comment_Form::render_fields() output contains both field names;
+ *   - ANTISPAMWIZARD_Comment_Form::render_fields() output contains both field names;
  *   - public/css/comment-form.css exists in the deployed plugin.
  *
  * Probabilistic checks (Bayesian, Similarity) are disabled and settings are
@@ -37,8 +37,8 @@ error_reporting( E_ALL );
 ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
-if ( ! class_exists( 'ASW_Settings' ) ) {
-	fwrite( STDERR, "detect-check: FAIL plugin not loaded (ASW_Settings missing) — is antispam-wizard active?\n" );
+if ( ! class_exists( 'ANTISPAMWIZARD_Settings' ) ) {
+	fwrite( STDERR, "detect-check: FAIL plugin not loaded (ANTISPAMWIZARD_Settings missing) — is antispam-wizard active?\n" );
 	exit( 1 );
 }
 
@@ -54,7 +54,7 @@ if ( false === has_filter( 'pre_comment_approved' ) ) {
  * cache state (Bayesian, Similarity) or default stop-word / threshold seeds
  * (Stop Words, Emoji, Spacing, Multi-Language, Duplicate).
  */
-ASW_Settings::update(
+ANTISPAMWIZARD_Settings::update(
 	array(
 		'enabled'                 => true,
 		'links_enabled'           => true,
@@ -80,7 +80,7 @@ $failures = array();
  * @param string $content Comment body.
  * @return mixed Approval status returned by the filter.
  */
-function asw_smoke_run_comment( string $content ) {
+function antispamwizard_smoke_run_comment( string $content ) {
 	$commentdata = array(
 		'comment_type'         => 'comment',
 		'comment_content'      => $content,
@@ -97,7 +97,7 @@ function asw_smoke_run_comment( string $content ) {
 
 // --- Spam case: 3 links exceeds links_max (2) → must be 'spam'. ------------
 $spam_content = 'Great deals here: http://example.com and https://example.net plus http://example.org today.';
-$spam_result  = asw_smoke_run_comment( $spam_content );
+$spam_result  = antispamwizard_smoke_run_comment( $spam_content );
 
 if ( 'spam' !== $spam_result ) {
 	$failures[] = sprintf(
@@ -108,7 +108,7 @@ if ( 'spam' !== $spam_result ) {
 
 // --- Ham case: neutral, link-free, stop-word-free → must NOT be 'spam'. -----
 $ham_content = 'Thank you for this helpful article. I really enjoyed reading it this morning.';
-$ham_result  = asw_smoke_run_comment( $ham_content );
+$ham_result  = antispamwizard_smoke_run_comment( $ham_content );
 
 if ( 'spam' === $ham_result ) {
 	$failures[] = sprintf(
@@ -121,48 +121,48 @@ if ( 'spam' === $ham_result ) {
 
 // Honeypot filled: must be 'spam'
 $_POST = array();
-$_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = 'http://spammer.com';
-$hp_filled_result = asw_smoke_run_comment( 'Neutral comment' );
+$_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = 'http://spammer.com';
+$hp_filled_result = antispamwizard_smoke_run_comment( 'Neutral comment' );
 if ( 'spam' !== $hp_filled_result ) {
 	$failures[] = sprintf( "Honeypot filled: expected 'spam', got %s", var_export( $hp_filled_result, true ) );
 }
 
 // Honeypot empty: must NOT be 'spam'
 $_POST = array();
-$_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] = '';
-$hp_empty_result = asw_smoke_run_comment( 'Neutral comment' );
+$_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = '';
+$hp_empty_result = antispamwizard_smoke_run_comment( 'Neutral comment' );
 if ( 'spam' === $hp_empty_result ) {
 	$failures[] = sprintf( "Honeypot empty: expected NOT 'spam', got %s", var_export( $hp_empty_result, true ) );
 }
 
 // Submit Time fast (fresh token with high limit): must be 'spam'
 $_POST = array();
-$_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = ASW_Comment_Form::mint_token();
-ASW_Settings::update( array_merge( ASW_Settings::get_all(), array( 'submit_time_min_seconds' => 300 ) ) );
-$st_fast_result = asw_smoke_run_comment( 'Neutral comment' );
+$_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = ANTISPAMWIZARD_Comment_Form::mint_token();
+ANTISPAMWIZARD_Settings::update( array_merge( ANTISPAMWIZARD_Settings::get_all(), array( 'submit_time_min_seconds' => 300 ) ) );
+$st_fast_result = antispamwizard_smoke_run_comment( 'Neutral comment' );
 if ( 'spam' !== $st_fast_result ) {
 	$failures[] = sprintf( "Submit Time fast: expected 'spam', got %s", var_export( $st_fast_result, true ) );
 }
-ASW_Settings::update( array_merge( ASW_Settings::get_all(), array( 'submit_time_min_seconds' => 5 ) ) ); // restore
+ANTISPAMWIZARD_Settings::update( array_merge( ANTISPAMWIZARD_Settings::get_all(), array( 'submit_time_min_seconds' => 5 ) ) ); // restore
 
 // Submit Time normal (token well in past): must NOT be 'spam'
 $_POST = array();
-$_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = ASW_Comment_Form::mint_token( time() - 30 );
-$st_normal_result = asw_smoke_run_comment( 'Neutral comment' );
+$_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 30 );
+$st_normal_result = antispamwizard_smoke_run_comment( 'Neutral comment' );
 if ( 'spam' === $st_normal_result ) {
 	$failures[] = sprintf( "Submit Time normal: expected NOT 'spam', got %s", var_export( $st_normal_result, true ) );
 }
 
 // Submit Time missing: must NOT be 'spam' (fail-open)
 $_POST = array();
-$st_missing_result = asw_smoke_run_comment( 'Neutral comment' );
+$st_missing_result = antispamwizard_smoke_run_comment( 'Neutral comment' );
 if ( 'spam' === $st_missing_result ) {
 	$failures[] = sprintf( "Submit Time missing: expected NOT 'spam', got %s", var_export( $st_missing_result, true ) );
 }
 
 // Submit Time tampered: must NOT be 'spam' (fail-open)
-$_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] = '1234567890.badhash';
-$st_tampered_result = asw_smoke_run_comment( 'Neutral comment' );
+$_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = '1234567890.badhash';
+$st_tampered_result = antispamwizard_smoke_run_comment( 'Neutral comment' );
 if ( 'spam' === $st_tampered_result ) {
 	$failures[] = sprintf( "Submit Time tampered: expected NOT 'spam', got %s", var_export( $st_tampered_result, true ) );
 }
@@ -170,18 +170,18 @@ if ( 'spam' === $st_tampered_result ) {
 // --- Front-end assets -------------------------------------------------------
 
 ob_start();
-$form = new ASW_Comment_Form();
+$form = new ANTISPAMWIZARD_Comment_Form();
 $form->render_fields();
 $render_output = ob_get_clean();
 
-if ( false === strpos( $render_output, ASW_Comment_Form::HONEYPOT_FIELD ) ) {
-	$failures[] = "ASW_Comment_Form::render_fields() missing honeypot field name";
+if ( false === strpos( $render_output, ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ) ) {
+	$failures[] = "ANTISPAMWIZARD_Comment_Form::render_fields() missing honeypot field name";
 }
-if ( false === strpos( $render_output, ASW_Comment_Form::TIMESTAMP_FIELD ) ) {
-	$failures[] = "ASW_Comment_Form::render_fields() missing timestamp field name";
+if ( false === strpos( $render_output, ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ) ) {
+	$failures[] = "ANTISPAMWIZARD_Comment_Form::render_fields() missing timestamp field name";
 }
 
-if ( ! file_exists( ASW_PATH . 'public/css/comment-form.css' ) ) {
+if ( ! file_exists( ANTISPAMWIZARD_PATH . 'public/css/comment-form.css' ) ) {
 	$failures[] = "public/css/comment-form.css is missing";
 }
 

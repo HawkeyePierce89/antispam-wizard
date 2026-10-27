@@ -9,7 +9,7 @@ class SubmitTimeCheckTest extends TestCase {
         global $wp_options;
         $wp_options = array();
         $_POST      = array();
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'submit_time_enabled' => true,
             'submit_time_min_seconds' => 10,
         ) );
@@ -25,14 +25,14 @@ class SubmitTimeCheckTest extends TestCase {
         parent::tearDown();
     }
 
-    private function get_check_with_request( array $request ): ASW_Submit_Time_Check {
-        return new ASW_Submit_Time_Check( $request );
+    private function get_check_with_request( array $request ): ANTISPAMWIZARD_Submit_Time_Check {
+        return new ANTISPAMWIZARD_Submit_Time_Check( $request );
     }
 
     public function test_freshly_minted_token_with_min_10_is_spam(): void {
-        $token = ASW_Comment_Form::mint_token();
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token();
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => $token
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => $token
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -42,9 +42,9 @@ class SubmitTimeCheckTest extends TestCase {
     }
 
     public function test_token_minted_120s_ago_passes(): void {
-        $token = ASW_Comment_Form::mint_token( time() - 120 );
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 120 );
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => $token
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => $token
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -64,7 +64,7 @@ class SubmitTimeCheckTest extends TestCase {
         // Fail-open: a malformed token can come from a plugin/theme mangling
         // hidden fields or a cached page from before activation — never spam.
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => 'not_a_token'
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => 'not_a_token'
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -75,10 +75,10 @@ class SubmitTimeCheckTest extends TestCase {
     public function test_tampered_hmac_passes(): void {
         // Fail-open: an HMAC mismatch also occurs for every legitimate visitor
         // after a WordPress salt rotation while pages are still cached.
-        $token = ASW_Comment_Form::mint_token( time() - 120 );
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() - 120 );
         $token .= 'tamper';
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => $token
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => $token
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -88,7 +88,7 @@ class SubmitTimeCheckTest extends TestCase {
 
     public function test_array_token_passes(): void {
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => array( 'tamper' => 'yes' )
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => array( 'tamper' => 'yes' )
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -97,9 +97,9 @@ class SubmitTimeCheckTest extends TestCase {
     }
 
     public function test_future_timestamp_passes(): void {
-        $token = ASW_Comment_Form::mint_token( time() + 120 );
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token( time() + 120 );
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => $token
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => $token
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -108,11 +108,11 @@ class SubmitTimeCheckTest extends TestCase {
     }
 
     public function test_disabled_passes(): void {
-        ASW_Settings::update( array( 'submit_time_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'submit_time_enabled' => false ) );
 
-        $token = ASW_Comment_Form::mint_token();
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token();
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => $token
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => $token
         ) );
 
         $result = $check->check( array( 'comment_type' => 'comment' ) );
@@ -121,9 +121,9 @@ class SubmitTimeCheckTest extends TestCase {
     }
 
     public function test_non_comment_type_with_fresh_token_passes(): void {
-        $token = ASW_Comment_Form::mint_token();
+        $token = ANTISPAMWIZARD_Comment_Form::mint_token();
         $check = $this->get_check_with_request( array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => $token
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => $token
         ) );
 
         $result = $check->check( array( 'comment_type' => 'trackback' ) );
@@ -140,10 +140,10 @@ class SubmitTimeCheckTest extends TestCase {
      */
     public function test_post_fallback_verifies_token(): void {
         $_POST = array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => ASW_Comment_Form::mint_token( time() - 120 ),
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => ANTISPAMWIZARD_Comment_Form::mint_token( time() - 120 ),
         );
 
-        $check  = new ASW_Submit_Time_Check();
+        $check  = new ANTISPAMWIZARD_Submit_Time_Check();
         $result = $check->check( array( 'comment_type' => 'comment' ) );
 
         $this->assertFalse( $result->is_spam() );
@@ -156,10 +156,10 @@ class SubmitTimeCheckTest extends TestCase {
      */
     public function test_post_fallback_flags_fresh_token(): void {
         $_POST = array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => ASW_Comment_Form::mint_token(),
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => ANTISPAMWIZARD_Comment_Form::mint_token(),
         );
 
-        $check  = new ASW_Submit_Time_Check();
+        $check  = new ANTISPAMWIZARD_Submit_Time_Check();
         $result = $check->check( array( 'comment_type' => 'comment' ) );
 
         $this->assertTrue( $result->is_spam() );
@@ -173,10 +173,10 @@ class SubmitTimeCheckTest extends TestCase {
      */
     public function test_post_fallback_rejects_slashed_tampered_token(): void {
         $_POST = array(
-            ASW_Comment_Form::TIMESTAMP_FIELD => addslashes( '123456789.\'deadbeef\'' ),
+            ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD => addslashes( '123456789.\'deadbeef\'' ),
         );
 
-        $check  = new ASW_Submit_Time_Check();
+        $check  = new ANTISPAMWIZARD_Submit_Time_Check();
         $result = $check->check( array( 'comment_type' => 'comment' ) );
 
         $this->assertFalse( $result->is_spam() );

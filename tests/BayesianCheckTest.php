@@ -5,9 +5,9 @@ use PHPUnit\Framework\TestCase;
 /**
  * Corpus loader with one well-trained script (Cyrillic), one under-trained
  * script (Latin) and nothing else, so a store built over it resolves each of
- * ASW_Bayesian_Check's branches from a different writing system.
+ * ANTISPAMWIZARD_Bayesian_Check's branches from a different writing system.
  */
-class ASW_Bayesian_Store_Corpus extends ASW_Training_Data {
+class ANTISPAMWIZARD_Bayesian_Store_Corpus extends ANTISPAMWIZARD_Training_Data {
 
     public function load_samples( string $file_path ): array {
         return array();
@@ -46,8 +46,8 @@ class ASW_Bayesian_Store_Corpus extends ASW_Training_Data {
 
 class BayesianCheckTest extends TestCase {
 
-    private ASW_Naive_Bayes $classifier;
-    private ASW_Bayesian_Check $check;
+    private ANTISPAMWIZARD_Naive_Bayes $classifier;
+    private ANTISPAMWIZARD_Bayesian_Check $check;
 
     protected function setUp(): void {
         parent::setUp();
@@ -56,12 +56,12 @@ class BayesianCheckTest extends TestCase {
         $wp_transients      = array();
         $wp_transient_reads = array();
 
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
         ) );
 
-        $this->classifier = new ASW_Naive_Bayes();
+        $this->classifier = new ANTISPAMWIZARD_Naive_Bayes();
 
         // Train with enough samples to meet MIN_TRAINING_SAMPLES (10).
         $spam_samples = array(
@@ -96,7 +96,7 @@ class BayesianCheckTest extends TestCase {
             $this->classifier->learn( $sample, 'ham' );
         }
 
-        $this->check = new ASW_Bayesian_Check( $this->classifier );
+        $this->check = new ANTISPAMWIZARD_Bayesian_Check( $this->classifier );
     }
 
     protected function tearDown(): void {
@@ -112,7 +112,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_implements_check_interface(): void {
-        $this->assertInstanceOf( ASW_Check::class, $this->check );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Check::class, $this->check );
     }
 
     public function test_spam_detected_above_threshold(): void {
@@ -134,7 +134,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_disabled_check_returns_not_spam(): void {
-        ASW_Settings::update( array( 'bayesian_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'bayesian_enabled' => false ) );
         $result = $this->check->check( $this->make_comment(
             'Buy cheap viagra pills online free discount'
         ) );
@@ -161,7 +161,7 @@ class BayesianCheckTest extends TestCase {
         $this->assertTrue( $result_default->is_spam(), 'Should be spam at default threshold 0.7' );
 
         // Same comment should NOT be flagged when threshold is set to 1.0 (nothing can exceed 1.0).
-        ASW_Settings::update( array( 'bayesian_threshold' => 1.0 ) );
+        ANTISPAMWIZARD_Settings::update( array( 'bayesian_threshold' => 1.0 ) );
         $result_high = $this->check->check( $this->make_comment( $spam_comment ) );
         $this->assertFalse( $result_high->is_spam(), 'Should not be spam at threshold 1.0' );
         $this->assertStringContainsString( '/1.00', $result_high->get_details() );
@@ -179,7 +179,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_short_comment_skips_bayesian_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -192,7 +192,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_comment_at_threshold_length_proceeds_normally(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -205,7 +205,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_comment_above_threshold_length_proceeds_normally(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -218,23 +218,23 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_untrained_classifier_returns_insufficient_data(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'min_message_length' => 1,
         ) );
-        $empty_classifier = new ASW_Naive_Bayes();
-        $check            = new ASW_Bayesian_Check( $empty_classifier );
+        $empty_classifier = new ANTISPAMWIZARD_Naive_Bayes();
+        $check            = new ANTISPAMWIZARD_Bayesian_Check( $empty_classifier );
         $result           = $check->check( $this->make_comment( 'Some random comment text here' ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'insufficient training data', $result->get_details() );
     }
 
     public function test_insufficient_spam_samples_skips_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'min_message_length' => 1,
         ) );
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         // Train with 5 spam (below 10) and 10 ham.
         for ( $i = 0; $i < 5; $i++ ) {
             $classifier->learn( "spam sample number $i buy cheap pills", 'spam' );
@@ -242,18 +242,18 @@ class BayesianCheckTest extends TestCase {
         for ( $i = 0; $i < 10; $i++ ) {
             $classifier->learn( "ham sample number $i about programming", 'ham' );
         }
-        $check  = new ASW_Bayesian_Check( $classifier );
+        $check  = new ANTISPAMWIZARD_Bayesian_Check( $classifier );
         $result = $check->check( $this->make_comment( 'Buy cheap pills online discount pharmacy' ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'insufficient training data', $result->get_details() );
     }
 
     public function test_insufficient_ham_samples_skips_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'min_message_length' => 1,
         ) );
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         // Train with 10 spam and 5 ham (below 10).
         for ( $i = 0; $i < 10; $i++ ) {
             $classifier->learn( "spam sample number $i buy cheap pills", 'spam' );
@@ -261,19 +261,19 @@ class BayesianCheckTest extends TestCase {
         for ( $i = 0; $i < 5; $i++ ) {
             $classifier->learn( "ham sample number $i about programming", 'ham' );
         }
-        $check  = new ASW_Bayesian_Check( $classifier );
+        $check  = new ANTISPAMWIZARD_Bayesian_Check( $classifier );
         $result = $check->check( $this->make_comment( 'Buy cheap pills online discount pharmacy' ) );
         $this->assertFalse( $result->is_spam() );
         $this->assertSame( 'insufficient training data', $result->get_details() );
     }
 
     public function test_exactly_min_samples_proceeds_to_classify(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
         ) );
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         // Train with exactly 10 of each (meets MIN_TRAINING_SAMPLES).
         for ( $i = 0; $i < 10; $i++ ) {
             $classifier->learn( "spam sample number $i buy cheap pills", 'spam' );
@@ -281,21 +281,21 @@ class BayesianCheckTest extends TestCase {
         for ( $i = 0; $i < 10; $i++ ) {
             $classifier->learn( "ham sample number $i about programming", 'ham' );
         }
-        $check  = new ASW_Bayesian_Check( $classifier );
+        $check  = new ANTISPAMWIZARD_Bayesian_Check( $classifier );
         $result = $check->check( $this->make_comment( 'Buy cheap pills online discount pharmacy' ) );
         // Should proceed to classification (not return insufficient data).
         $this->assertStringContainsString( 'spam probability', $result->get_details() );
     }
 
     public function test_default_threshold_is_0_7(): void {
-        $defaults = ASW_Settings::get_defaults();
+        $defaults = ANTISPAMWIZARD_Settings::get_defaults();
         $this->assertSame( 0.7, $defaults['bayesian_threshold'] );
     }
 
     // --- Script-aware routing tests ---
 
-    private function make_trained_classifier( array $spam_texts, array $ham_texts ): ASW_Naive_Bayes {
-        $classifier = new ASW_Naive_Bayes();
+    private function make_trained_classifier( array $spam_texts, array $ham_texts ): ANTISPAMWIZARD_Naive_Bayes {
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         foreach ( $spam_texts as $text ) {
             $classifier->learn( $text, 'spam' );
         }
@@ -306,7 +306,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_script_routing_uses_latin_classifier(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
@@ -317,9 +317,9 @@ class BayesianCheckTest extends TestCase {
         $latin_classifier = $this->make_trained_classifier( $latin_spam, $latin_ham );
 
         // Combined classifier with no real data — should return insufficient if used.
-        $combined = new ASW_Naive_Bayes();
+        $combined = new ANTISPAMWIZARD_Naive_Bayes();
 
-        $check  = new ASW_Bayesian_Check(
+        $check  = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'latin' => $latin_classifier ),
             $combined
         );
@@ -333,7 +333,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_script_routing_uses_cyrillic_classifier(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
@@ -343,9 +343,9 @@ class BayesianCheckTest extends TestCase {
         $cyrillic_ham  = array_fill( 0, 10, 'Отличная статья о программировании и архитектуре приложений' );
         $cyrillic_classifier = $this->make_trained_classifier( $cyrillic_spam, $cyrillic_ham );
 
-        $combined = new ASW_Naive_Bayes();
+        $combined = new ANTISPAMWIZARD_Naive_Bayes();
 
-        $check = new ASW_Bayesian_Check(
+        $check = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'cyrillic' => $cyrillic_classifier ),
             $combined
         );
@@ -357,7 +357,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_script_routing_falls_back_to_combined_for_unknown(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
@@ -371,7 +371,7 @@ class BayesianCheckTest extends TestCase {
         $combined_ham  = array_fill( 0, 10, '12345 67890 99999 great article' );
         $combined = $this->make_trained_classifier( $combined_spam, $combined_ham );
 
-        $check = new ASW_Bayesian_Check(
+        $check = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'latin' => $latin_classifier ),
             $combined
         );
@@ -386,7 +386,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_script_routing_falls_back_when_no_script_classifier(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
@@ -401,7 +401,7 @@ class BayesianCheckTest extends TestCase {
         $combined_ham  = array_fill( 0, 10, 'Отличная статья о программировании и архитектуре приложений' );
         $combined = $this->make_trained_classifier( $combined_spam, $combined_ham );
 
-        $check = new ASW_Bayesian_Check(
+        $check = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'latin' => $latin_classifier ),
             $combined
         );
@@ -415,7 +415,7 @@ class BayesianCheckTest extends TestCase {
 
     public function test_legacy_constructor_still_works(): void {
         // Single classifier passed directly — original API.
-        $check = new ASW_Bayesian_Check( $this->classifier );
+        $check = new ANTISPAMWIZARD_Bayesian_Check( $this->classifier );
         $result = $check->check( $this->make_comment(
             'Buy cheap viagra pills online free discount pharmacy'
         ) );
@@ -425,7 +425,7 @@ class BayesianCheckTest extends TestCase {
     // --- CJK/Thai short comment min-length tests ---
 
     public function test_short_cjk_comment_passes_min_length_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -443,7 +443,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_short_thai_comment_passes_min_length_check(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -459,7 +459,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_short_latin_comment_still_skipped(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -474,21 +474,21 @@ class BayesianCheckTest extends TestCase {
     // --- Fallback behavior tests ---
 
     public function test_empty_script_data_falls_back_to_combined(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
         ) );
 
         // Greek classifier exists but has no training data.
-        $greek_classifier = new ASW_Naive_Bayes();
+        $greek_classifier = new ANTISPAMWIZARD_Naive_Bayes();
 
         // Combined classifier is trained and should be used as fallback.
         $combined_spam = array_fill( 0, 10, 'Αγοράστε φθηνά χάπια δωρεάν έκπτωση φαρμακείο' );
         $combined_ham  = array_fill( 0, 10, 'Εξαιρετικό άρθρο για τον προγραμματισμό και τη σχεδίαση' );
         $combined = $this->make_trained_classifier( $combined_spam, $combined_ham );
 
-        $check = new ASW_Bayesian_Check(
+        $check = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'greek' => $greek_classifier ),
             $combined
         );
@@ -502,14 +502,14 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_combined_below_min_samples_returns_insufficient(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
         ) );
 
         // No script classifiers; combined has fewer than MIN_TRAINING_SAMPLES.
-        $combined = new ASW_Naive_Bayes();
+        $combined = new ANTISPAMWIZARD_Naive_Bayes();
         for ( $i = 0; $i < 5; $i++ ) {
             $combined->learn( "spam sample $i buy cheap pills", 'spam' );
         }
@@ -517,7 +517,7 @@ class BayesianCheckTest extends TestCase {
             $combined->learn( "ham sample $i great article", 'ham' );
         }
 
-        $check = new ASW_Bayesian_Check( array(), $combined );
+        $check = new ANTISPAMWIZARD_Bayesian_Check( array(), $combined );
 
         $result = $check->check( $this->make_comment( 'Buy cheap pills online discount pharmacy' ) );
         $this->assertFalse( $result->is_spam() );
@@ -525,13 +525,13 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_imbalanced_data_biases_toward_majority_class(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
         ) );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         // 10 spam samples (minimum).
         for ( $i = 0; $i < 10; $i++ ) {
             $classifier->learn( "spam sample $i buy cheap pills discount offer", 'spam' );
@@ -541,7 +541,7 @@ class BayesianCheckTest extends TestCase {
             $classifier->learn( "ham sample $i great article about programming design patterns", 'ham' );
         }
 
-        $check = new ASW_Bayesian_Check( $classifier );
+        $check = new ANTISPAMWIZARD_Bayesian_Check( $classifier );
 
         // An ambiguous comment should lean toward ham due to class imbalance.
         $result = $check->check( $this->make_comment(
@@ -551,7 +551,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_per_script_exactly_min_samples_activates(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
@@ -563,9 +563,9 @@ class BayesianCheckTest extends TestCase {
         $cyrillic_classifier = $this->make_trained_classifier( $cyrillic_spam, $cyrillic_ham );
 
         // Combined classifier is untrained — if fallback is used, it would return insufficient.
-        $combined = new ASW_Naive_Bayes();
+        $combined = new ANTISPAMWIZARD_Naive_Bayes();
 
-        $check = new ASW_Bayesian_Check(
+        $check = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'cyrillic' => $cyrillic_classifier ),
             $combined
         );
@@ -579,14 +579,14 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_script_below_min_samples_falls_back_to_combined(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 1,
         ) );
 
         // Cyrillic classifier exists but has only 5 samples per category (below MIN).
-        $cyrillic_classifier = new ASW_Naive_Bayes();
+        $cyrillic_classifier = new ANTISPAMWIZARD_Naive_Bayes();
         for ( $i = 0; $i < 5; $i++ ) {
             $cyrillic_classifier->learn( "Купить дешевые таблетки $i", 'spam' );
         }
@@ -599,7 +599,7 @@ class BayesianCheckTest extends TestCase {
         $combined_ham  = array_fill( 0, 10, 'Отличная статья о программировании и архитектуре приложений' );
         $combined = $this->make_trained_classifier( $combined_spam, $combined_ham );
 
-        $check = new ASW_Bayesian_Check(
+        $check = new ANTISPAMWIZARD_Bayesian_Check(
             array( 'cyrillic' => $cyrillic_classifier ),
             $combined
         );
@@ -613,7 +613,7 @@ class BayesianCheckTest extends TestCase {
     }
 
     public function test_very_short_cjk_comment_still_skipped(): void {
-        ASW_Settings::update( array(
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 50,
@@ -625,26 +625,26 @@ class BayesianCheckTest extends TestCase {
         $this->assertSame( 'comment too short for bayesian', $result->get_details() );
     }
 
-    // --- ASW_Model_Store construction form ---
+    // --- ANTISPAMWIZARD_Model_Store construction form ---
 
     /**
      * Build a store-backed check over the two-script fixture corpus.
      */
-    private function make_store_check(): ASW_Bayesian_Check {
-        ASW_Settings::update( array(
+    private function make_store_check(): ANTISPAMWIZARD_Bayesian_Check {
+        ANTISPAMWIZARD_Settings::update( array(
             'bayesian_enabled'   => true,
             'bayesian_threshold' => 0.7,
             'min_message_length' => 20,
         ) );
 
-        $store = new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $store = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_Bayesian_Store_Corpus(),
+            new ANTISPAMWIZARD_Bayesian_Store_Corpus(),
             null
         );
 
-        return new ASW_Bayesian_Check( $store );
+        return new ANTISPAMWIZARD_Bayesian_Check( $store );
     }
 
     /**
@@ -668,7 +668,7 @@ class BayesianCheckTest extends TestCase {
 
         $reads = $this->transient_reads();
         $this->assertCount( 1, $reads, 'A Cyrillic body must load the Cyrillic unit and nothing else' );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
     }
 
     public function test_store_backed_check_falls_back_to_the_combined_unit_for_an_under_trained_script(): void {
@@ -684,14 +684,14 @@ class BayesianCheckTest extends TestCase {
 
         $reads = $this->transient_reads();
         $this->assertCount( 2, $reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'latin', $reads[0] );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'latin', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
     }
 
     public function test_store_backed_check_goes_straight_to_the_combined_unit_for_an_unknown_script(): void {
         $check = $this->make_store_check();
 
-        // No letter characters at all: ASW_Script_Detector answers 'unknown',
+        // No letter characters at all: ANTISPAMWIZARD_Script_Detector answers 'unknown',
         // which has no per-script unit to load.
         $result = $check->check( $this->make_comment(
             '1234, 5678, 9012, 3456, 7890, 2345, 6789, 0123, 4567'
@@ -701,7 +701,7 @@ class BayesianCheckTest extends TestCase {
 
         $reads = $this->transient_reads();
         $this->assertCount( 1, $reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[0] );
     }
 
     public function test_store_backed_check_loads_nothing_for_a_body_below_the_minimum_length(): void {
@@ -715,7 +715,7 @@ class BayesianCheckTest extends TestCase {
 
     public function test_a_disabled_store_backed_check_loads_nothing(): void {
         $check = $this->make_store_check();
-        ASW_Settings::update( array( 'bayesian_enabled' => false ) );
+        ANTISPAMWIZARD_Settings::update( array( 'bayesian_enabled' => false ) );
 
         $result = $check->check( $this->make_comment(
             'Купить дешевые таблетки онлайн скидка аптека доставка бесплатно'

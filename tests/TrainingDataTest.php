@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 class TrainingDataTest extends TestCase {
 
-    private ASW_Training_Data $training_data;
+    private ANTISPAMWIZARD_Training_Data $training_data;
     private string $temp_dir;
 
     /** @var array<string, string> Backup of bundled files modified during tests. */
@@ -12,8 +12,8 @@ class TrainingDataTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->training_data = new ASW_Training_Data();
-        $this->temp_dir      = sys_get_temp_dir() . '/asw_test_' . uniqid();
+        $this->training_data = new ANTISPAMWIZARD_Training_Data();
+        $this->temp_dir      = sys_get_temp_dir() . '/antispamwizard_test_' . uniqid();
         mkdir( $this->temp_dir, 0755, true );
 
         // Reset wpdb tables and options for DB-backed tests.
@@ -92,7 +92,7 @@ class TrainingDataTest extends TestCase {
     public function test_load_samples_skips_oversized_file(): void {
         $file = $this->temp_dir . '/oversized.txt';
         // Create a file just over the 2 MB cap.
-        $size = ASW_Training_Data::MAX_TRAINING_FILE_SIZE + 1;
+        $size = ANTISPAMWIZARD_Training_Data::MAX_TRAINING_FILE_SIZE + 1;
         $fh   = fopen( $file, 'w' );
         // Write a line repeated to exceed the cap.
         $line = str_repeat( 'spam sample text here ', 50 ) . "\n";
@@ -125,7 +125,7 @@ class TrainingDataTest extends TestCase {
             'Thanks for the helpful code tutorial',
         );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_classifier_with_samples( $classifier, $spam_samples, $ham_samples );
 
         $state = $classifier->get_state();
@@ -145,7 +145,7 @@ class TrainingDataTest extends TestCase {
             'Interesting thoughts on software development',
         );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_classifier_with_samples( $classifier, $spam_samples, $ham_samples );
 
         $result = $classifier->classify( 'Buy cheap free pills discount' );
@@ -159,7 +159,7 @@ class TrainingDataTest extends TestCase {
         $spam_samples = array( 'Buy cheap pills online free discount' );
         $ham_samples  = array( 'Great article about programming' );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
 
         // Train twice — counts should be identical to a single training, not doubled.
         $this->training_data->train_classifier_with_samples( $classifier, $spam_samples, $ham_samples );
@@ -173,7 +173,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_train_classifier_with_samples_handles_empty_arrays(): void {
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_classifier_with_samples( $classifier, array(), array() );
 
         $state = $classifier->get_state();
@@ -242,7 +242,7 @@ class TrainingDataTest extends TestCase {
         file_put_contents( $spam_file, "Купите дешевые таблетки онлайн\nБесплатные деньги казино бонус\n" );
         file_put_contents( $ham_file, "Отличная статья о программировании\nСпасибо за полезный урок\n" );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_script_classifier( $classifier, 'cyrillic' );
 
         $state = $classifier->get_state();
@@ -262,7 +262,7 @@ class TrainingDataTest extends TestCase {
         file_put_contents( $spam_file, '' );
         file_put_contents( $ham_file, '' );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_script_classifier( $classifier, 'greek' );
 
         $state = $classifier->get_state();
@@ -270,7 +270,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_train_combined_classifier_includes_legacy_and_script_data(): void {
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_combined_classifier( $classifier );
 
         $state = $classifier->get_state();
@@ -280,7 +280,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_combined_classifier_doc_counts_match_all_files(): void {
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $this->training_data->train_combined_classifier( $classifier );
 
         $state = $classifier->get_state();
@@ -326,7 +326,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_train_classifier_with_bundled_data(): void {
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $data_dir   = dirname( __DIR__ ) . '/antispam-wizard/data/';
 
         $spam_samples = $this->training_data->load_samples( $data_dir . 'spam-samples.txt' );
@@ -345,7 +345,7 @@ class TrainingDataTest extends TestCase {
     // --- Constructor / repository integration tests ---
 
     public function test_constructor_defaults_to_null_repository(): void {
-        $td = new ASW_Training_Data();
+        $td = new ANTISPAMWIZARD_Training_Data();
         // No repository — load_script_samples returns file-only data.
         $samples = $td->load_script_samples( 'latin', 'spam' );
         $this->assertIsArray( $samples );
@@ -354,8 +354,8 @@ class TrainingDataTest extends TestCase {
 
     public function test_constructor_accepts_repository(): void {
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
-        $td   = new ASW_Training_Data( $repo );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
+        $td   = new ANTISPAMWIZARD_Training_Data( $repo );
 
         // Should work without errors.
         $samples = $td->load_script_samples( 'latin', 'spam' );
@@ -366,8 +366,8 @@ class TrainingDataTest extends TestCase {
 
     public function test_load_script_samples_merges_db_samples_after_file(): void {
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
-        $td   = new ASW_Training_Data( $repo );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
+        $td   = new ANTISPAMWIZARD_Training_Data( $repo );
 
         // Insert a DB sample for latin/spam.
         $repo->insert( 'latin', 'spam', 'DB spam sample for merge test', 137 );
@@ -382,11 +382,11 @@ class TrainingDataTest extends TestCase {
         $this->assertGreaterThan( 100, count( $samples ) );
 
         // The order is not cosmetic, so it is asserted positionally rather than
-        // by membership. ASW_Naive_Bayes::learn() admits tokens
+        // by membership. ANTISPAMWIZARD_Naive_Bayes::learn() admits tokens
         // first-come-first-served until MAX_DICTIONARY_SIZE, so swapping the two
         // halves would let a site's learned vocabulary claim dictionary slots
         // ahead of the shipped corpus on any script at the cap -- and
-        // ASW_Model_Store::build_script_unit() relies on this exact order for
+        // ANTISPAMWIZARD_Model_Store::build_script_unit() relies on this exact order for
         // its "byte-identical to the unsplit build" guarantee.
         $this->assertSame( array( 'DB spam sample for merge test' ), $learned );
         $this->assertSame( $file, array_slice( $samples, 0, count( $file ) ) );
@@ -394,7 +394,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_load_learned_script_samples_without_repository_is_empty(): void {
-        $td = new ASW_Training_Data();
+        $td = new ANTISPAMWIZARD_Training_Data();
 
         $this->assertSame( array(), $td->load_learned_script_samples( 'latin', 'spam' ) );
         $this->assertNotEmpty(
@@ -404,14 +404,14 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_load_script_samples_without_repository_returns_file_only(): void {
-        $td_no_repo  = new ASW_Training_Data();
+        $td_no_repo  = new ANTISPAMWIZARD_Training_Data();
         $file_count  = count( $td_no_repo->load_script_samples( 'latin', 'spam' ) );
 
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'latin', 'spam', 'Extra DB sample', 138 );
 
-        $td_with_repo = new ASW_Training_Data( $repo );
+        $td_with_repo = new ANTISPAMWIZARD_Training_Data( $repo );
         $merged_count = count( $td_with_repo->load_script_samples( 'latin', 'spam' ) );
 
         // With repo should have 1 more than without.
@@ -420,11 +420,11 @@ class TrainingDataTest extends TestCase {
 
     public function test_get_script_sample_counts_includes_db_counts(): void {
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
-        $td   = new ASW_Training_Data( $repo );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
+        $td   = new ANTISPAMWIZARD_Training_Data( $repo );
 
         // Get baseline counts (file-only).
-        $td_no_repo    = new ASW_Training_Data();
+        $td_no_repo    = new ANTISPAMWIZARD_Training_Data();
         $baseline      = $td_no_repo->get_script_sample_counts();
         $baseline_spam = $baseline['latin']['spam'];
         $baseline_ham  = $baseline['latin']['ham'];
@@ -441,7 +441,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_get_script_sample_counts_without_repository_unchanged(): void {
-        $td     = new ASW_Training_Data();
+        $td     = new ANTISPAMWIZARD_Training_Data();
         $counts = $td->get_script_sample_counts();
 
         // Without a repository, counts should only reflect files.
@@ -451,8 +451,8 @@ class TrainingDataTest extends TestCase {
 
     public function test_train_script_classifier_includes_db_samples(): void {
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
-        $td   = new ASW_Training_Data( $repo );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
+        $td   = new ANTISPAMWIZARD_Training_Data( $repo );
 
         // Back up originals.
         $spam_file = $td->get_script_file_path( 'cyrillic', 'spam' );
@@ -468,7 +468,7 @@ class TrainingDataTest extends TestCase {
         $repo->insert( 'cyrillic', 'spam', 'БД спам образец', 142 );
         $repo->insert( 'cyrillic', 'ham', 'БД хам образец', 143 );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $td->train_script_classifier( $classifier, 'cyrillic' );
 
         $state = $classifier->get_state();
@@ -479,12 +479,12 @@ class TrainingDataTest extends TestCase {
 
     public function test_train_combined_classifier_includes_db_samples(): void {
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
-        $td   = new ASW_Training_Data( $repo );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
+        $td   = new ANTISPAMWIZARD_Training_Data( $repo );
 
         // Get baseline doc count without DB samples.
-        $td_no_repo = new ASW_Training_Data();
-        $classifier_baseline = new ASW_Naive_Bayes();
+        $td_no_repo = new ANTISPAMWIZARD_Training_Data();
+        $classifier_baseline = new ANTISPAMWIZARD_Naive_Bayes();
         $td_no_repo->train_combined_classifier( $classifier_baseline );
         $baseline_state = $classifier_baseline->get_state();
 
@@ -492,7 +492,7 @@ class TrainingDataTest extends TestCase {
         $repo->insert( 'latin', 'spam', 'Combined DB spam latin', 144 );
         $repo->insert( 'cyrillic', 'ham', 'Combined DB ham cyrillic', 145 );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $td->train_combined_classifier( $classifier );
 
         $state = $classifier->get_state();
@@ -502,8 +502,8 @@ class TrainingDataTest extends TestCase {
 
     public function test_classifier_trained_with_db_only_samples(): void {
         global $wpdb;
-        $repo = new ASW_Sample_Repository( $wpdb );
-        $td   = new ASW_Training_Data( $repo );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
+        $td   = new ANTISPAMWIZARD_Training_Data( $repo );
 
         // Back up and empty file data for a script.
         $spam_file = $td->get_script_file_path( 'greek', 'spam' );
@@ -520,7 +520,7 @@ class TrainingDataTest extends TestCase {
         $repo->insert( 'greek', 'ham', 'Εξαιρετικό άρθρο προγραμματισμού', 148 );
         $repo->insert( 'greek', 'ham', 'Ευχαριστώ για το μάθημα', 149 );
 
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $td->train_script_classifier( $classifier, 'greek' );
 
         $state = $classifier->get_state();

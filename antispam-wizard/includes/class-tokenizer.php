@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Standalone text tokenizer that normalizes and splits text into tokens.
  */
-class ASW_Tokenizer {
+class ANTISPAMWIZARD_Tokenizer {
 
     /**
      * Maximum number of tokens returned by any tokenization method.
@@ -33,7 +33,7 @@ class ASW_Tokenizer {
      * 8913…", "call 555-0134 for quick loans"). Letters only, so the split in
      * tokenize() keeps it whole, and nothing a person would write.
      */
-    const PHONE_TOKEN = 'aswphonenumber';
+    const PHONE_TOKEN = 'antispamwizardphonenumber';
 
     /**
      * A phone-number-like sequence: 9 to 15 decimal digits, each pair of
@@ -57,7 +57,7 @@ class ASW_Tokenizer {
      */
     public function __construct( ?array $excluded_tokens = null ) {
         if ( null === $excluded_tokens ) {
-            $excluded_tokens = ASW_Settings::get( 'excluded_tokens_list', array() );
+            $excluded_tokens = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         }
         $excluded_tokens       = array_map( function ( string $t ): string {
             return mb_strtolower( $t, 'UTF-8' );
@@ -158,7 +158,7 @@ class ASW_Tokenizer {
      * whole token for word-based scripts and a run of Latin bigrams for the
      * CJK/Thai n-gram path — distinctive either way. On malformed UTF-8
      * preg_replace() returns null; the text is then used unchanged rather than
-     * blanked, since ASW_Detector::evaluate() has already sanitised the body
+     * blanked, since ANTISPAMWIZARD_Detector::evaluate() has already sanitised the body
      * upstream and a bare tokenizer caller must never lose its input.
      *
      * @param string $text Raw text.

@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for ASW_Model_Store, the lazy per-writing-system model loader.
+ * Tests for ANTISPAMWIZARD_Model_Store, the lazy per-writing-system model loader.
  */
 
 use PHPUnit\Framework\TestCase;
@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
  * Records which corpus files were asked for and returns nothing, so a key or
  * laziness assertion costs no corpus training.
  */
-class ASW_Recording_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_Recording_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
     /** @var string[] */
     public array $load_samples_calls = array();
@@ -32,7 +32,7 @@ class ASW_Recording_Training_Data extends ASW_Training_Data {
  * Returns a fixed two-line corpus for every script, so a unit has a real
  * classifier and real sample tokens without reading the shipped corpus.
  */
-class ASW_Fixed_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_Fixed_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
     /** @var int Number of corpus loads performed. */
     public int $loads = 0;
@@ -56,11 +56,11 @@ class ASW_Fixed_Training_Data extends ASW_Training_Data {
  * lowered item limit and pruned back under it in several rounds.
  *
  * Every line is novel vocabulary, so the dictionary is the bulk of the unit --
- * which is the shape the real overflow has: ASW_Naive_Bayes caps the token
+ * which is the shape the real overflow has: ANTISPAMWIZARD_Naive_Bayes caps the token
  * count, not the token length, so a site's learned history decides the
  * classifier's bytes.
  */
-class ASW_Bulk_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_Bulk_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
     public function load_samples( string $file_path ): array {
         return array();
@@ -105,11 +105,11 @@ class ASW_Bulk_Training_Data extends ASW_Training_Data {
 
 /**
  * Corpus whose tokens stress the two shapes the packed representation reasons
- * about but ASW_Fixed_Training_Data never produces: a **bare numeric token**,
+ * about but ANTISPAMWIZARD_Fixed_Training_Data never produces: a **bare numeric token**,
  * whose `token_counts` key PHP canonicalises to an int, and **CJK bigrams**,
  * which come off the n-gram path rather than the word path.
  */
-class ASW_Token_Shape_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_Token_Shape_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
     public function load_samples( string $file_path ): array {
         return array();
@@ -126,7 +126,7 @@ class ASW_Token_Shape_Training_Data extends ASW_Training_Data {
             return array();
         }
 
-        // 2024 is four digits, so ASW_Tokenizer's PHONE_PATTERN (9-15) leaves
+        // 2024 is four digits, so ANTISPAMWIZARD_Tokenizer's PHONE_PATTERN (9-15) leaves
         // it alone and it reaches token_counts as a numeric array key.
         return 'spam' === $category
             ? array( 'скидка 2024 акция купить', 'акция 2024 дешево купить' )
@@ -138,10 +138,10 @@ class ASW_Token_Shape_Training_Data extends ASW_Training_Data {
  * Writes a training sample while the store is loading, which is the mid-load
  * key race the never-cache rule exists for.
  */
-class ASW_Racing_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_Racing_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
-    /** @var ASW_Sample_Repository|null */
-    public ?ASW_Sample_Repository $racing_repository = null;
+    /** @var ANTISPAMWIZARD_Sample_Repository|null */
+    public ?ANTISPAMWIZARD_Sample_Repository $racing_repository = null;
 
     /** @var bool */
     private bool $raced = false;
@@ -165,7 +165,7 @@ class ASW_Racing_Training_Data extends ASW_Training_Data {
  * built from the sample table alone -- which is what makes a failed sample read
  * observable in the unit that comes out.
  */
-class ASW_File_Free_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_File_Free_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
     public function load_samples( string $file_path ): array {
         return array();
@@ -177,7 +177,7 @@ class ASW_File_Free_Training_Data extends ASW_Training_Data {
  * combined unit's narrowed similarity corpus is distinguishable from the
  * per-script lists it no longer carries.
  */
-class ASW_Legacy_And_Script_Training_Data extends ASW_Training_Data {
+class ANTISPAMWIZARD_Legacy_And_Script_Training_Data extends ANTISPAMWIZARD_Training_Data {
 
     const LEGACY_SPAM = 'legacy spam corpus line';
     const LEGACY_HAM  = 'legacy ham corpus line';
@@ -205,7 +205,7 @@ class ASW_Legacy_And_Script_Training_Data extends ASW_Training_Data {
 /**
  * Counts script detections so the per-request memoisation is observable.
  */
-class ASW_Counting_Model_Store extends ASW_Model_Store {
+class ANTISPAMWIZARD_Counting_Model_Store extends ANTISPAMWIZARD_Model_Store {
 
     /** @var int */
     public int $detections = 0;
@@ -224,9 +224,9 @@ class ModelStoreTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         global $wpdb, $wp_options, $wp_transients, $wp_transient_reads, $wp_transient_delete_fails,
-            $wp_on_set_transient, $wp_transient_expired, $wp_update_option_fails, $asw_zlib_unavailable,
-            $asw_gzcompress_fails, $wp_using_ext_object_cache, $asw_max_cached_unit_bytes,
-            $asw_max_inflated_unit_bytes;
+            $wp_on_set_transient, $wp_transient_expired, $wp_update_option_fails, $antispamwizard_zlib_unavailable,
+            $antispamwizard_gzcompress_fails, $wp_using_ext_object_cache, $antispamwizard_max_cached_unit_bytes,
+            $antispamwizard_max_inflated_unit_bytes;
         $wpdb->reset_tables();
         $wp_options                = array();
         $wp_transients             = array();
@@ -235,18 +235,18 @@ class ModelStoreTest extends TestCase {
         $wp_on_set_transient       = null;
         $wp_transient_expired      = false;
         $wp_update_option_fails    = false;
-        $asw_zlib_unavailable      = false;
-        $asw_gzcompress_fails      = false;
+        $antispamwizard_zlib_unavailable      = false;
+        $antispamwizard_gzcompress_fails      = false;
         $wp_using_ext_object_cache = false;
-        $asw_max_cached_unit_bytes   = null;
-        $asw_max_inflated_unit_bytes = null;
+        $antispamwizard_max_cached_unit_bytes   = null;
+        $antispamwizard_max_inflated_unit_bytes = null;
     }
 
     protected function tearDown(): void {
         global $wpdb, $wp_options, $wp_transients, $wp_transient_reads, $wp_transient_delete_fails,
-            $wp_on_set_transient, $wp_transient_expired, $wp_update_option_fails, $asw_zlib_unavailable,
-            $asw_gzcompress_fails, $wp_using_ext_object_cache, $asw_max_cached_unit_bytes,
-            $asw_max_inflated_unit_bytes;
+            $wp_on_set_transient, $wp_transient_expired, $wp_update_option_fails, $antispamwizard_zlib_unavailable,
+            $antispamwizard_gzcompress_fails, $wp_using_ext_object_cache, $antispamwizard_max_cached_unit_bytes,
+            $antispamwizard_max_inflated_unit_bytes;
 
         foreach ( $this->restore_mtimes as $path => $mtime ) {
             touch( $path, $mtime );
@@ -262,33 +262,33 @@ class ModelStoreTest extends TestCase {
         $wp_on_set_transient       = null;
         $wp_transient_expired      = false;
         $wp_update_option_fails    = false;
-        $asw_zlib_unavailable      = false;
-        $asw_gzcompress_fails      = false;
+        $antispamwizard_zlib_unavailable      = false;
+        $antispamwizard_gzcompress_fails      = false;
         $wp_using_ext_object_cache = false;
-        $asw_max_cached_unit_bytes   = null;
-        $asw_max_inflated_unit_bytes = null;
+        $antispamwizard_max_cached_unit_bytes   = null;
+        $antispamwizard_max_inflated_unit_bytes = null;
         parent::tearDown();
     }
 
     /**
      * Build a store over the given corpus loader.
      *
-     * @param ASW_Training_Data|null $training_data   Corpus loader, default a recording one.
+     * @param ANTISPAMWIZARD_Training_Data|null $training_data   Corpus loader, default a recording one.
      * @param array<int, string>     $excluded_tokens Excluded tokens.
      * @param bool                   $with_repository Whether to hand it a repository.
      */
     private function make_store(
-        ?ASW_Training_Data $training_data = null,
+        ?ANTISPAMWIZARD_Training_Data $training_data = null,
         array $excluded_tokens = array(),
         bool $with_repository = true
-    ): ASW_Model_Store {
+    ): ANTISPAMWIZARD_Model_Store {
         global $wpdb;
 
-        return new ASW_Model_Store(
-            new ASW_Tokenizer( $excluded_tokens ),
+        return new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( $excluded_tokens ),
             $excluded_tokens,
-            $training_data ?? new ASW_Recording_Training_Data(),
-            $with_repository ? new ASW_Sample_Repository( $wpdb ) : null
+            $training_data ?? new ANTISPAMWIZARD_Recording_Training_Data(),
+            $with_repository ? new ANTISPAMWIZARD_Sample_Repository( $wpdb ) : null
         );
     }
 
@@ -314,7 +314,7 @@ class ModelStoreTest extends TestCase {
             array_filter(
                 array_keys( $wp_transients ),
                 static function ( $key ) {
-                    return str_starts_with( $key, ASW_Model_Store::TRANSIENT_PREFIX );
+                    return str_starts_with( $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX );
                 }
             )
         );
@@ -339,7 +339,7 @@ class ModelStoreTest extends TestCase {
         // Stored in whichever form this host writes, so the serving path's
         // strict read rule does not reject the payload before the thing under
         // test has had a chance to.
-        $wrapped                            = asw_test_wrap_unit( $payload );
+        $wrapped                            = antispamwizard_test_wrap_unit( $payload );
         $wp_transients[ $key ]              = $wrapped;
         $wp_options[ '_transient_' . $key ] = $wrapped;
     }
@@ -381,7 +381,7 @@ class ModelStoreTest extends TestCase {
 
         $this->assertArrayHasKey( $key, $wp_transients, "unit $key was never cached" );
 
-        $unit = asw_test_unwrap_unit( $wp_transients[ $key ] );
+        $unit = antispamwizard_test_unwrap_unit( $wp_transients[ $key ] );
         $this->assertIsArray( $unit, "the value stored under $key is not readable as a unit" );
 
         return $unit;
@@ -404,11 +404,11 @@ class ModelStoreTest extends TestCase {
     public function test_script_for_detects_once_and_memoises(): void {
         global $wpdb;
 
-        $store = new ASW_Counting_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $store = new ANTISPAMWIZARD_Counting_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_Recording_Training_Data(),
-            new ASW_Sample_Repository( $wpdb )
+            new ANTISPAMWIZARD_Recording_Training_Data(),
+            new ANTISPAMWIZARD_Sample_Repository( $wpdb )
         );
 
         $text = 'Продам гараж, пишите на почту';
@@ -431,7 +431,7 @@ class ModelStoreTest extends TestCase {
 
         $reads = $this->reads();
         $this->assertCount( 1, $reads, 'A per-script unit must cost exactly one transient read' );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic', $reads[0] );
     }
 
     public function test_a_second_ask_for_the_same_script_reads_no_further_transient(): void {
@@ -450,7 +450,7 @@ class ModelStoreTest extends TestCase {
         $store->script_classifier( 'cyrillic' );
         $this->assertCount( 1, $this->reads() );
         $this->assertNotSame(
-            ASW_Model_Store::TRANSIENT_PREFIX . 'combined',
+            ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined',
             $this->reads()[0]
         );
 
@@ -458,7 +458,7 @@ class ModelStoreTest extends TestCase {
 
         $reads = $this->reads();
         $this->assertCount( 2, $reads );
-        $this->assertSame( ASW_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
+        $this->assertSame( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined', $reads[1] );
 
         // And it, too, is memoised.
         $store->combined_sample_tokens();
@@ -475,22 +475,22 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_warm_unit_is_served_without_reading_a_corpus_file(): void {
-        $cold = new ASW_Fixed_Training_Data();
+        $cold = new ANTISPAMWIZARD_Fixed_Training_Data();
         $this->make_store( $cold )->script_classifier( 'cyrillic' );
         $this->assertGreaterThan( 0, $cold->loads, 'The cold path must read the corpus' );
 
-        $warm = new ASW_Fixed_Training_Data();
+        $warm = new ANTISPAMWIZARD_Fixed_Training_Data();
         $classifier = $this->make_store( $warm )->script_classifier( 'cyrillic' );
 
         $this->assertSame( 0, $warm->loads, 'A warm unit must be served from the transient alone' );
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $state = $classifier->get_state();
         $this->assertSame( 2, $state['doc_counts']['spam'] );
         $this->assertSame( 2, $state['doc_counts']['ham'] );
     }
 
     public function test_building_a_script_unit_reads_only_that_scripts_corpus_files(): void {
-        $recorder = new ASW_Recording_Training_Data();
+        $recorder = new ANTISPAMWIZARD_Recording_Training_Data();
 
         $this->make_store( $recorder )->script_classifier( 'cyrillic' );
 
@@ -499,9 +499,9 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_warm_unit_still_carries_its_pre_tokenised_samples(): void {
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
-        $warm   = new ASW_Fixed_Training_Data();
+        $warm   = new ANTISPAMWIZARD_Fixed_Training_Data();
         $tokens = $this->make_store( $warm )->script_sample_tokens( 'cyrillic' );
 
         $this->assertSame( 0, $warm->loads );
@@ -547,7 +547,7 @@ class ModelStoreTest extends TestCase {
     private function assert_corrupted_script_unit_is_rebuilt( array $corrupted ): void {
         global $wp_transients, $wp_options, $wp_transient_reads;
 
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $keys = $this->cached_unit_keys();
         $this->assertCount( 1, $keys );
         $key = $keys[0];
@@ -555,11 +555,11 @@ class ModelStoreTest extends TestCase {
         $this->store_payload_with_fingerprint( $key, $corrupted );
         $wp_transient_reads = array();
 
-        $rebuilt = new ASW_Fixed_Training_Data();
+        $rebuilt = new ANTISPAMWIZARD_Fixed_Training_Data();
         $classifier = $this->make_store( $rebuilt )->script_classifier( 'cyrillic' );
 
         $this->assertGreaterThan( 0, $rebuilt->loads, 'An unusable unit must be rebuilt from the corpus' );
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $this->assertSame( 2, $classifier->get_state()['doc_counts']['spam'] );
 
         // The rebuild is re-cached under the same key, so the next request is warm.
@@ -571,7 +571,7 @@ class ModelStoreTest extends TestCase {
     public function test_a_one_sided_script_unit_is_served_rather_than_rebuilt(): void {
         global $wp_transients, $wp_options;
 
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         // A script whose corpus is spam-only is legitimate; requiring both doc
@@ -586,7 +586,7 @@ class ModelStoreTest extends TestCase {
         );
         $this->store_payload_with_fingerprint( $key, $one_sided );
 
-        $warm       = new ASW_Fixed_Training_Data();
+        $warm       = new ANTISPAMWIZARD_Fixed_Training_Data();
         $classifier = $this->make_store( $warm )->script_classifier( 'cyrillic' );
 
         $this->assertSame( 0, $warm->loads, 'A one-sided script unit is valid and must be served' );
@@ -609,7 +609,7 @@ class ModelStoreTest extends TestCase {
             'A script with no samples at all caches a null classifier, which the packer leaves alone'
         );
 
-        $warm     = new ASW_Recording_Training_Data();
+        $warm     = new ANTISPAMWIZARD_Recording_Training_Data();
         $reloaded = $this->make_store( $warm );
         $this->assertNull( $reloaded->script_classifier( 'thai' ) );
         $this->assertSame( array(), $warm->load_script_calls, 'A cached empty unit must not be rebuilt' );
@@ -618,13 +618,13 @@ class ModelStoreTest extends TestCase {
     public function test_a_combined_unit_missing_a_doc_count_is_deleted_and_rebuilt(): void {
         global $wp_transients, $wp_options;
 
-        $this->make_store( new ASW_Fixed_Training_Data() )->combined_classifier();
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->combined_classifier();
 
         $keys = array_values(
             array_filter(
                 $this->cached_unit_keys(),
                 static function ( $key ) {
-                    return ASW_Model_Store::TRANSIENT_PREFIX . 'combined' === $key;
+                    return ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined' === $key;
                 }
             )
         );
@@ -645,7 +645,7 @@ class ModelStoreTest extends TestCase {
         );
         $this->store_payload_with_fingerprint( $key, $half );
 
-        $rebuilt    = new ASW_Fixed_Training_Data();
+        $rebuilt    = new ANTISPAMWIZARD_Fixed_Training_Data();
         $classifier = $this->make_store( $rebuilt )->combined_classifier();
 
         $this->assertGreaterThan( 0, $rebuilt->loads );
@@ -655,7 +655,7 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_the_combined_unit_records_whether_any_script_had_samples(): void {
-        $with_samples = $this->make_store( new ASW_Fixed_Training_Data() );
+        $with_samples = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() );
         $this->assertTrue( $with_samples->combined_has_script_samples() );
 
         global $wp_transients, $wp_options, $wp_transient_reads;
@@ -663,7 +663,7 @@ class ModelStoreTest extends TestCase {
         $wp_options         = array();
         $wp_transient_reads = array();
 
-        $without = $this->make_store( new ASW_Recording_Training_Data() );
+        $without = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
         $this->assertFalse(
             $without->combined_has_script_samples(),
             'With no script producing tokens the Similarity check must fall back to legacy tokenize()'
@@ -672,10 +672,10 @@ class ModelStoreTest extends TestCase {
 
     public function test_a_cached_combined_unit_is_restored_rather_than_rebuilt(): void {
         // The per-script twin of this is
-        // ASWTest::test_a_second_evaluation_restores_the_unit_from_cache. The
+        // AntiSpamWizardTest::test_a_second_evaluation_restores_the_unit_from_cache. The
         // combined unit needs its own, because has_script_samples is round-tripped
         // through the cache and is the ONLY input to
-        // ASW_Similarity_Check::resolve_from_store()'s legacy-vs-script
+        // ANTISPAMWIZARD_Similarity_Check::resolve_from_store()'s legacy-vs-script
         // tokenisation branch: a restore that lost it would silently put every
         // warm CJK/Thai request on word-based tokenize() instead of bigrams.
         // The legacy-and-script loader, because the combined similarity corpus
@@ -686,7 +686,7 @@ class ModelStoreTest extends TestCase {
 
         // The rebuild loader would answer false, so a true here can only have
         // come out of the transient.
-        $warm  = new ASW_Recording_Training_Data();
+        $warm  = new ANTISPAMWIZARD_Recording_Training_Data();
         $store = $this->make_store( $warm );
 
         $this->assertTrue( $store->combined_has_script_samples(), 'has_script_samples must survive the cache round trip' );
@@ -701,7 +701,7 @@ class ModelStoreTest extends TestCase {
     public function test_a_corrupted_sample_list_is_rebuilt_rather_than_filtered(): void {
         // A cached unit whose sample list picked up non-lists -- what a
         // third-party pre_transient_* filter or a truncated option can leave
-        // behind. They must never reach ASW_Cosine_Similarity::compare(), and
+        // behind. They must never reach ANTISPAMWIZARD_Cosine_Similarity::compare(), and
         // filtering them out instead would serve a corpus silently short of the
         // samples the unit was built from, out of the same corrupted row, for a
         // full day.
@@ -720,9 +720,9 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_sample_list_holding_a_non_string_token_rebuilds_the_unit(): void {
-        // One level of validation is not enough: ASW_Cosine_Similarity uses
+        // One level of validation is not enough: ANTISPAMWIZARD_Cosine_Similarity uses
         // each token as an array key, so an array among them is an illegal
-        // offset -- a TypeError ASW_Detector::run() swallows, leaving the
+        // offset -- a TypeError ANTISPAMWIZARD_Detector::run() swallows, leaving the
         // Similarity check silently off for the unit's whole 24-hour life.
         $this->assert_corrupted_script_unit_is_rebuilt(
             array(
@@ -741,7 +741,7 @@ class ModelStoreTest extends TestCase {
     public function test_a_cached_empty_token_list_rebuilds_the_unit(): void {
         // build_script_unit() only ever appends a non-empty token list, so an
         // empty one is not something this class wrote -- and one of them is
-        // enough to make ASW_Similarity_Check's `! empty( $script_tokens )`
+        // enough to make ANTISPAMWIZARD_Similarity_Check's `! empty( $script_tokens )`
         // test pass, which suppresses the fall back to the combined corpus a
         // script with no samples of its own is supposed to take.
         $this->assert_corrupted_script_unit_is_rebuilt(
@@ -763,13 +763,13 @@ class ModelStoreTest extends TestCase {
         // own, so serving it with a filtered-down corpus disables Similarity for
         // exactly the comments that have nothing else to fall back on.
         $this->make_combined_store()->combined_classifier();
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . 'combined';
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined';
 
         $cached            = $this->stored_unit( $key );
         $cached['samples'] = array( array( 'pills' ), array( 'cheap', array( 'nested' ) ) );
         $this->store_payload_with_fingerprint( $key, $cached );
 
-        $rebuilt = new ASW_Legacy_And_Script_Training_Data();
+        $rebuilt = new ANTISPAMWIZARD_Legacy_And_Script_Training_Data();
         $samples = $this->make_combined_store( null, $rebuilt )->combined_sample_tokens();
 
         $this->assertGreaterThan( 0, $rebuilt->loads, 'A malformed combined corpus must be rebuilt' );
@@ -786,8 +786,8 @@ class ModelStoreTest extends TestCase {
      * term-frequency input.
      */
     private function assert_rebuilt_samples_are_usable_token_lists(): void {
-        $samples    = $this->make_store( new ASW_Fixed_Training_Data() )->script_sample_tokens( 'cyrillic' );
-        $similarity = new ASW_Cosine_Similarity();
+        $samples    = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_sample_tokens( 'cyrillic' );
+        $similarity = new ANTISPAMWIZARD_Cosine_Similarity();
 
         $this->assertNotSame( array(), $samples );
         foreach ( $samples as $tokens ) {
@@ -806,10 +806,10 @@ class ModelStoreTest extends TestCase {
         // The cached unit is what the 1 MB object-cache item limit applies to,
         // and a nested array of one-token-per-entry is the most expensive way
         // PHP can serialise a word list. No token can contain a space --
-        // ASW_Tokenizer splits on /[^\p{L}\p{N}\p{M}]+/u and strips the same
+        // ANTISPAMWIZARD_Tokenizer splits on /[^\p{L}\p{N}\p{M}]+/u and strips the same
         // class before emitting bigrams -- so a space-joined string is an exact,
         // reversible encoding of the list.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
         $samples = $this->stored_unit( $this->cached_unit_keys()[0] )['samples'];
 
@@ -824,11 +824,11 @@ class ModelStoreTest extends TestCase {
     public function test_a_packed_sample_list_round_trips_to_the_freshly_built_tokens(): void {
         global $wp_transients, $wp_options;
 
-        $cold = $this->make_store( new ASW_Fixed_Training_Data() );
+        $cold = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() );
         $this->assertNotSame( array(), $cold->script_sample_tokens( 'cyrillic' ) );
         $fresh_script = $cold->script_sample_tokens( 'cyrillic' );
 
-        $warm = $this->make_store( new ASW_Recording_Training_Data() );
+        $warm = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
         $this->assertSame( $fresh_script, $warm->script_sample_tokens( 'cyrillic' ), 'Packing must be lossless' );
 
         $wp_transients = array();
@@ -838,14 +838,14 @@ class ModelStoreTest extends TestCase {
         $fresh_combined = $cold_combined->combined_sample_tokens();
         $this->assertNotSame( array(), $fresh_combined );
 
-        $warm_combined = $this->make_store( new ASW_Recording_Training_Data() );
+        $warm_combined = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
         $this->assertSame( $fresh_combined, $warm_combined->combined_sample_tokens(), 'Packing must be lossless' );
     }
 
     public function test_a_unit_cached_in_the_old_nested_shape_is_rebuilt(): void {
         // A unit written by the previous release is simply a value in a shape
         // this version does not recognise: serving it would hand
-        // ASW_Cosine_Similarity an array where a token string is expected --
+        // ANTISPAMWIZARD_Cosine_Similarity an array where a token string is expected --
         // an illegal array offset, i.e. the TypeError the whole-unit rejection
         // rule exists for.
         $this->assert_corrupted_script_unit_is_rebuilt(
@@ -870,7 +870,7 @@ class ModelStoreTest extends TestCase {
     public function test_an_empty_packed_sample_rebuilds_the_unit(): void {
         // build_script_unit() only ever appends a non-empty token list, so an
         // empty string is not something this class wrote -- and one of them is
-        // enough to make ASW_Similarity_Check's `! empty( $script_tokens )`
+        // enough to make ANTISPAMWIZARD_Similarity_Check's `! empty( $script_tokens )`
         // test pass, suppressing the fall back to the combined corpus a script
         // with no samples of its own is supposed to take.
         $this->assert_corrupted_script_unit_is_rebuilt( $this->unit_with_packed_samples( array( 'buy cheap pills', '' ) ) );
@@ -889,14 +889,14 @@ class ModelStoreTest extends TestCase {
         global $wp_transients;
 
         // What a script with no spam samples legitimately caches.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $cached            = $this->stored_unit( $key );
         $cached['samples'] = array();
         $this->store_payload_with_fingerprint( $key, $cached );
 
-        $warm  = new ASW_Fixed_Training_Data();
+        $warm  = new ANTISPAMWIZARD_Fixed_Training_Data();
         $store = $this->make_store( $warm );
 
         $this->assertSame( array(), $store->script_sample_tokens( 'cyrillic' ) );
@@ -907,13 +907,13 @@ class ModelStoreTest extends TestCase {
         global $wp_transients;
 
         $this->make_combined_store()->combined_classifier();
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . 'combined';
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined';
 
         $cached            = $this->stored_unit( $key );
         $cached['samples'] = array( 'buy cheap pills', '' );
         $this->store_payload_with_fingerprint( $key, $cached );
 
-        $rebuilt = new ASW_Legacy_And_Script_Training_Data();
+        $rebuilt = new ANTISPAMWIZARD_Legacy_And_Script_Training_Data();
         $samples = $this->make_combined_store( null, $rebuilt )->combined_sample_tokens();
 
         $this->assertGreaterThan( 0, $rebuilt->loads, 'A malformed combined corpus must be rebuilt' );
@@ -956,7 +956,7 @@ class ModelStoreTest extends TestCase {
         // into one string is what brings the two units that were over the 1 MB
         // object-cache item limit under it. token_totals and doc_counts are one
         // entry per category and stay native.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
         $state = $this->stored_unit( $this->cached_unit_keys()[0] )['classifier'];
 
@@ -985,11 +985,11 @@ class ModelStoreTest extends TestCase {
 
         $body = 'cheap pills online now';
 
-        $fresh       = $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $fresh       = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $fresh_state = $fresh->get_state();
         $fresh_probs = $fresh->classify( $body );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm        = $this->make_store( $warm_loader )->script_classifier( 'cyrillic' );
 
         $this->assertSame( array(), $warm_loader->load_script_calls, 'Premise: the unit is served from the cache' );
@@ -999,11 +999,11 @@ class ModelStoreTest extends TestCase {
         $wp_transients = array();
         $wp_options    = array();
 
-        $fresh_combined = $this->make_store( new ASW_Fixed_Training_Data() )->combined_classifier();
+        $fresh_combined = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->combined_classifier();
         $combined_state = $fresh_combined->get_state();
         $combined_probs = $fresh_combined->classify( $body );
 
-        $warm_combined_loader = new ASW_Recording_Training_Data();
+        $warm_combined_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm_combined        = $this->make_store( $warm_combined_loader )->combined_classifier();
 
         $this->assertSame( array(), $warm_combined_loader->load_script_calls, 'Premise: served from the cache' );
@@ -1017,10 +1017,10 @@ class ModelStoreTest extends TestCase {
         // back to a string and after explode() hands it back. Nothing else in
         // the corpus fixtures produces one, so without this the identity claim
         // the packing rests on is argued in a comment and asserted nowhere.
-        $fresh = $this->make_store( new ASW_Token_Shape_Training_Data() )->script_classifier( 'cyrillic' );
+        $fresh = $this->make_store( new ANTISPAMWIZARD_Token_Shape_Training_Data() )->script_classifier( 'cyrillic' );
         $this->assertArrayHasKey( 2024, $fresh->get_state()['token_counts']['spam'], 'Premise: a numeric token' );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm        = $this->make_store( $warm_loader )->script_classifier( 'cyrillic' );
 
         $this->assertSame( array(), $warm_loader->load_script_calls, 'Premise: the unit is served from the cache' );
@@ -1032,14 +1032,14 @@ class ModelStoreTest extends TestCase {
         // the same character class before emitting them, so no bigram can carry
         // a space either -- but that is a separate code path from the word
         // split, and it is the one every CJK and Thai unit is packed from.
-        $cold         = $this->make_store( new ASW_Token_Shape_Training_Data() );
+        $cold         = $this->make_store( new ANTISPAMWIZARD_Token_Shape_Training_Data() );
         $fresh_state  = $cold->script_classifier( 'cjk' )->get_state();
         $fresh_tokens = $cold->script_sample_tokens( 'cjk' );
 
         $this->assertNotSame( array(), $fresh_tokens, 'Premise: the CJK unit has sample tokens' );
         $this->assertGreaterThan( 1, mb_strlen( $fresh_tokens[0][0] ), 'Premise: bigrams, not single characters' );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm        = $this->make_store( $warm_loader );
 
         $this->assertSame( $fresh_tokens, $warm->script_sample_tokens( 'cjk' ) );
@@ -1106,7 +1106,7 @@ class ModelStoreTest extends TestCase {
         // be handled before the pair walk rather than falling into it. A
         // category that learned a document of nothing but excluded tokens is
         // exactly this value.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $payload                                 = $this->unit_with_packed_classifier(
@@ -1118,7 +1118,7 @@ class ModelStoreTest extends TestCase {
         $payload['classifier']['token_totals']   = array( 'spam' => 0, 'ham' => 1 );
         $this->store_payload_with_fingerprint( $key, $payload );
 
-        $warm       = new ASW_Fixed_Training_Data();
+        $warm       = new ANTISPAMWIZARD_Fixed_Training_Data();
         $classifier = $this->make_store( $warm )->script_classifier( 'cyrillic' );
 
         $this->assertSame( 0, $warm->loads, 'An empty counts string is valid and must be served' );
@@ -1172,7 +1172,7 @@ class ModelStoreTest extends TestCase {
         // the value goes in deflated behind an explicit member rather than as
         // the bare array. The member is what makes the two stored forms tellable
         // apart without guessing at the payload.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $stored = $wp_transients[ $key ];
@@ -1205,7 +1205,7 @@ class ModelStoreTest extends TestCase {
         // without a persistent object cache -- the default -- and put every
         // submission on the cold path for good. There is no per-item limit on
         // that row to respect either, so the plain array costs it nothing.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $this->assertArrayNotHasKey(
@@ -1225,7 +1225,7 @@ class ModelStoreTest extends TestCase {
             'A stored unit must serialize to valid UTF-8 or wpdb refuses the option write'
         );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $this->assertNotSame(
             array(),
             $this->make_store( $warm_loader )->script_sample_tokens( 'cyrillic' )
@@ -1241,7 +1241,7 @@ class ModelStoreTest extends TestCase {
         // one there, so it is not a value this version wrote under this key and
         // the row is dropped and rebuilt in the form the option path can hold.
         $this->with_object_cache();
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key      = $this->cached_unit_keys()[0];
         $stranded = $wp_transients[ $key ];
         unset( $stranded['__ttl'] );
@@ -1266,31 +1266,31 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_compressed_unit_round_trips_to_the_uncompressed_build(): void {
-        global $wp_transients, $wp_options, $asw_zlib_unavailable;
+        global $wp_transients, $wp_options, $antispamwizard_zlib_unavailable;
 
         $this->with_object_cache();
         $body = 'cheap pills online now';
 
         // The plain form first, on a host the store believes has no zlib: that
         // is the build every assertion below is measured against.
-        $asw_zlib_unavailable = true;
+        $antispamwizard_zlib_unavailable = true;
 
-        $plain            = $this->make_store( new ASW_Fixed_Training_Data() );
+        $plain            = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() );
         $plain_state      = $plain->script_classifier( 'cyrillic' )->get_state();
         $plain_probs      = $plain->script_classifier( 'cyrillic' )->classify( $body );
         $plain_samples    = $plain->script_sample_tokens( 'cyrillic' );
-        $plain_combined   = $this->make_store( new ASW_Fixed_Training_Data() )->combined_sample_tokens();
+        $plain_combined   = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->combined_sample_tokens();
 
         $wp_transients        = array();
         $wp_options           = array();
-        $asw_zlib_unavailable = false;
+        $antispamwizard_zlib_unavailable = false;
 
-        $cold = $this->make_store( new ASW_Fixed_Training_Data() );
+        $cold = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() );
         $this->assertSame( $plain_state, $cold->script_classifier( 'cyrillic' )->get_state() );
 
         // The warm read is the one that matters: it is the only path that goes
         // through gzuncompress()/unserialize().
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm        = $this->make_store( $warm_loader );
 
         $this->assertSame( $plain_state, $warm->script_classifier( 'cyrillic' )->get_state() );
@@ -1305,21 +1305,21 @@ class ModelStoreTest extends TestCase {
         $wp_transients = array();
         $wp_options    = array();
 
-        $this->make_store( new ASW_Fixed_Training_Data() )->combined_sample_tokens();
-        $warm_combined = $this->make_store( new ASW_Recording_Training_Data() );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->combined_sample_tokens();
+        $warm_combined = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
         $this->assertSame( $plain_combined, $warm_combined->combined_sample_tokens() );
     }
 
     public function test_a_host_without_zlib_writes_and_reads_the_plain_form(): void {
-        global $wp_transients, $asw_zlib_unavailable;
+        global $wp_transients, $antispamwizard_zlib_unavailable;
 
         $this->with_object_cache();
         // Every PHP build WordPress supports ships zlib, but a host that had it
         // compiled out must keep caching rather than rebuild on every
         // submission -- which is what an unconditional envelope would cost it.
-        $asw_zlib_unavailable = true;
+        $antispamwizard_zlib_unavailable = true;
 
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $stored = $wp_transients[ $key ];
@@ -1327,7 +1327,7 @@ class ModelStoreTest extends TestCase {
         $this->assertIsArray( $stored['classifier'] );
         $this->assertIsArray( $stored['samples'] );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm        = $this->make_store( $warm_loader );
 
         $this->assertNotSame( array(), $warm->script_sample_tokens( 'cyrillic' ) );
@@ -1335,41 +1335,41 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_compressed_unit_is_rebuilt_on_a_host_without_zlib(): void {
-        global $asw_zlib_unavailable;
+        global $antispamwizard_zlib_unavailable;
 
         $this->with_object_cache();
         // The store is strict on read: the stored form has to match what this
         // host can produce. A unit written while zlib was present cannot be
         // inflated once it is gone, and serving the envelope's raw members to
-        // ASW_Cosine_Similarity is exactly the illegal-offset TypeError the
+        // ANTISPAMWIZARD_Cosine_Similarity is exactly the illegal-offset TypeError the
         // whole-unit rejection rule exists for.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
-        $asw_zlib_unavailable = true;
+        $antispamwizard_zlib_unavailable = true;
 
         $this->assert_unusable_stored_value_is_rebuilt( $key );
     }
 
     public function test_a_plain_unit_is_rebuilt_on_a_host_with_zlib(): void {
-        global $wp_transients, $wp_options, $asw_zlib_unavailable;
+        global $wp_transients, $wp_options, $antispamwizard_zlib_unavailable;
 
         $this->with_object_cache();
         // The mirror image, and the reason the rule is stated as a match rather
         // than as "inflate what you can": a plain array under this key on a host
         // that compresses is not a value this version wrote there.
-        $asw_zlib_unavailable = true;
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $antispamwizard_zlib_unavailable = true;
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
         $this->assertArrayNotHasKey( 'zlib', $wp_transients[ $key ], 'Premise: the plain form is what is stored' );
 
-        $asw_zlib_unavailable = false;
+        $antispamwizard_zlib_unavailable = false;
 
         $this->assert_unusable_stored_value_is_rebuilt( $key );
     }
 
     public function test_a_refused_gzcompress_caches_nothing_rather_than_an_unservable_value(): void {
-        global $asw_gzcompress_fails;
+        global $antispamwizard_gzcompress_fails;
 
         $this->with_object_cache();
         // A zlib that is present but will not take this payload. Falling back to
@@ -1379,12 +1379,12 @@ class ModelStoreTest extends TestCase {
         // write the same unservable value again. That is a cold rebuild on every
         // submission *plus* a wasted write and delete each time, where writing
         // nothing costs the rebuild alone.
-        $asw_gzcompress_fails = true;
+        $antispamwizard_gzcompress_fails = true;
 
-        $loader = new ASW_Fixed_Training_Data();
+        $loader = new ANTISPAMWIZARD_Fixed_Training_Data();
         $store  = $this->make_store( $loader );
 
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $store->script_classifier( 'cyrillic' ) );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $store->script_classifier( 'cyrillic' ) );
         $this->assertSame(
             array(),
             $this->cached_unit_keys(),
@@ -1394,22 +1394,22 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_unit_is_cached_again_once_gzcompress_takes_the_payload(): void {
-        global $asw_gzcompress_fails;
+        global $antispamwizard_gzcompress_fails;
 
         $this->with_object_cache();
         // The refusal is per request, not a latch: the next request retries, in
         // the same shape as the mid-load-race and failed-sample-read rules.
-        $asw_gzcompress_fails = true;
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $antispamwizard_gzcompress_fails = true;
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $this->assertSame( array(), $this->cached_unit_keys(), 'Premise: nothing was cached' );
 
-        $asw_gzcompress_fails = false;
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $antispamwizard_gzcompress_fails = false;
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
         $key = $this->cached_unit_keys()[0];
         $this->assertArrayHasKey( 'zlib', $GLOBALS['wp_transients'][ $key ], 'The retry stores the compressed form' );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $this->assertNotSame(
             array(),
             $this->make_store( $warm_loader )->script_sample_tokens( 'cyrillic' )
@@ -1421,8 +1421,8 @@ class ModelStoreTest extends TestCase {
      * The vocabulary a unit carries is the one axis LEARNED_SIMILARITY_BUDGET
      * and the envelope cannot bound.
      *
-     * ASW_Tokenizer caps a sample at 10 000 tokens and puts no cap on a token's
-     * *length*, and ASW_Naive_Bayes::learn() admits new tokens
+     * ANTISPAMWIZARD_Tokenizer caps a sample at 10 000 tokens and puts no cap on a token's
+     * *length*, and ANTISPAMWIZARD_Naive_Bayes::learn() admits new tokens
      * first-come-first-served until its *count* cap, so a site's learned
      * history decides the dictionary's bytes -- a full two-category dictionary
      * of 10-character CJK tokens compresses to 2 210 916 bytes, 211 % of the
@@ -1438,11 +1438,11 @@ class ModelStoreTest extends TestCase {
      * a mechanism that stops being run.
      */
     public function test_a_unit_over_the_item_limit_is_pruned_until_the_cache_can_hold_it(): void {
-        global $wp_transients, $asw_max_cached_unit_bytes;
+        global $wp_transients, $antispamwizard_max_cached_unit_bytes;
 
         $this->with_object_cache();
 
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
         $key   = $this->cached_unit_keys()[0];
         $full  = strlen( serialize( $this->stored_value( $key ) ) );
 
@@ -1462,9 +1462,9 @@ class ModelStoreTest extends TestCase {
 
         $wp_transients             = array();
         $GLOBALS['wp_options']     = array();
-        $asw_max_cached_unit_bytes = $limit;
+        $antispamwizard_max_cached_unit_bytes = $limit;
 
-        $store  = $this->make_store( new ASW_Bulk_Training_Data() );
+        $store  = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() );
         $pruned = $store->script_classifier( 'cyrillic' )->get_state();
 
         $this->assertSame( array( $key ), $this->cached_unit_keys(), 'The pruned unit must still be cached' );
@@ -1505,7 +1505,7 @@ class ModelStoreTest extends TestCase {
         }
 
         // And what was written is servable, not merely small.
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $warm        = $this->make_store( $warm_loader );
 
         $this->assertSame( $pruned, $warm->script_classifier( 'cyrillic' )->get_state() );
@@ -1513,26 +1513,26 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_the_request_that_prunes_a_unit_classifies_with_the_pruned_model(): void {
-        global $asw_max_cached_unit_bytes;
+        global $antispamwizard_max_cached_unit_bytes;
 
         $this->with_object_cache();
         // A cache holding a model the request that built it did not use would
         // make a verdict depend on whether the unit happened to be warm. The
         // prune is therefore handed back to the live classifier before the
         // write, so the cold request and every warm one after it score alike.
-        $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' );
         $key  = $this->cached_unit_keys()[0];
         $full = strlen( serialize( $this->stored_value( $key ) ) );
 
         $GLOBALS['wp_transients'] = array();
         $GLOBALS['wp_options']    = array();
-        $asw_max_cached_unit_bytes = intdiv( $full, 2 );
+        $antispamwizard_max_cached_unit_bytes = intdiv( $full, 2 );
 
         $body  = 'zt0 cheap pills online now';
-        $cold  = $this->make_store( new ASW_Bulk_Training_Data() );
+        $cold  = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() );
         $probs = $cold->script_classifier( 'cyrillic' )->classify( $body );
 
-        $warm = $this->make_store( new ASW_Recording_Training_Data() );
+        $warm = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
 
         $this->assertSame(
             $probs,
@@ -1542,43 +1542,43 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_unit_over_the_limit_is_left_whole_without_an_external_object_cache(): void {
-        global $asw_max_cached_unit_bytes;
+        global $antispamwizard_max_cached_unit_bytes;
 
         // The per-item limit is the object cache's and only its. Without one a
         // transient is a `_transient_<name>` option row -- a longtext that holds
         // 4 GB -- so pruning a model there would spend detection quality on a
         // bound that does not exist.
         $this->with_object_cache();
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
         $key   = $this->cached_unit_keys()[0];
         $full  = strlen( serialize( $this->stored_value( $key ) ) );
 
         $GLOBALS['wp_transients']             = array();
         $GLOBALS['wp_options']                = array();
         $GLOBALS['wp_using_ext_object_cache'] = false;
-        $asw_max_cached_unit_bytes            = intdiv( $full, 2 );
+        $antispamwizard_max_cached_unit_bytes            = intdiv( $full, 2 );
 
-        $store = $this->make_store( new ASW_Bulk_Training_Data() );
+        $store = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() );
 
         $this->assertSame( $whole, $store->script_classifier( 'cyrillic' )->get_state() );
         $this->assertSame( array( $key ), $this->cached_unit_keys(), 'The whole unit must still be cached' );
     }
 
     public function test_a_unit_that_cannot_fit_at_all_caches_nothing_and_keeps_its_model(): void {
-        global $asw_max_cached_unit_bytes;
+        global $antispamwizard_max_cached_unit_bytes;
 
         $this->with_object_cache();
         // The floor of the walk: a limit no unit can meet even with an empty
         // dictionary. Nothing is written -- the same answer a refused
         // gzcompress() gets -- and the live model is left alone, because
         // spending its vocabulary would buy nothing at all here.
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
 
         $GLOBALS['wp_transients']  = array();
         $GLOBALS['wp_options']     = array();
-        $asw_max_cached_unit_bytes = 64;
+        $antispamwizard_max_cached_unit_bytes = 64;
 
-        $store = $this->make_store( new ASW_Bulk_Training_Data() );
+        $store = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() );
 
         $this->assertSame( $whole, $store->script_classifier( 'cyrillic' )->get_state() );
         $this->assertSame( array(), $this->cached_unit_keys(), 'A unit that cannot fit must leave no row behind' );
@@ -1586,16 +1586,16 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_unit_with_no_classifier_that_cannot_fit_caches_nothing(): void {
-        global $asw_max_cached_unit_bytes;
+        global $antispamwizard_max_cached_unit_bytes;
 
         // A script with no samples at all still caches a real unit --
         // `classifier => null`, `samples => []`. There is no vocabulary to
         // spend on one, so a limit it cannot meet has to leave it uncached
         // rather than reach for get_state() on null.
         $this->with_object_cache();
-        $asw_max_cached_unit_bytes = 4;
+        $antispamwizard_max_cached_unit_bytes = 4;
 
-        $store = $this->make_store( new ASW_Recording_Training_Data() );
+        $store = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
 
         $this->assertNull( $store->script_classifier( 'cyrillic' ), 'Premise: this unit has no classifier to prune' );
         $this->assertSame(
@@ -1611,18 +1611,18 @@ class ModelStoreTest extends TestCase {
         // holdback there is a sliver in which a unit passes here and the
         // backend still refuses it silently, which is the permanent
         // cold-rebuild failure the mechanism exists to prevent. Every other
-        // prune test lowers the limit through $asw_max_cached_unit_bytes, which
+        // prune test lowers the limit through $antispamwizard_max_cached_unit_bytes, which
         // size_limit() returns verbatim, so this is the only place the
         // allowance is observable at all.
-        unset( $GLOBALS['asw_max_cached_unit_bytes'] );
+        unset( $GLOBALS['antispamwizard_max_cached_unit_bytes'] );
 
-        $max      = ( new ReflectionClassConstant( ASW_Model_Store::class, 'MAX_CACHED_UNIT_BYTES' ) )->getValue();
-        $overhead = ( new ReflectionClassConstant( ASW_Model_Store::class, 'CACHE_ITEM_OVERHEAD_BYTES' ) )->getValue();
+        $max      = ( new ReflectionClassConstant( ANTISPAMWIZARD_Model_Store::class, 'MAX_CACHED_UNIT_BYTES' ) )->getValue();
+        $overhead = ( new ReflectionClassConstant( ANTISPAMWIZARD_Model_Store::class, 'CACHE_ITEM_OVERHEAD_BYTES' ) )->getValue();
 
         $this->assertGreaterThan( 0, $overhead, 'An allowance of zero is no allowance' );
         $this->assertSame(
             $max - $overhead,
-            ( new ReflectionMethod( ASW_Model_Store::class, 'size_limit' ) )->invoke( null )
+            ( new ReflectionMethod( ANTISPAMWIZARD_Model_Store::class, 'size_limit' ) )->invoke( null )
         );
     }
 
@@ -1630,24 +1630,24 @@ class ModelStoreTest extends TestCase {
         global $wpdb;
 
         // build_script_unit() takes the spam half split, so it re-merges the
-        // two itself -- and ASW_Naive_Bayes::learn() admits tokens
+        // two itself -- and ANTISPAMWIZARD_Naive_Bayes::learn() admits tokens
         // first-come-first-served until MAX_DICTIONARY_SIZE, so on a script at
         // the cap that order decides whose vocabulary the site keeps. The state
         // it caches must be the one load_script_samples()'s own order produces:
         // the shipped corpus first, this site's learned samples after it.
-        $repo    = new ASW_Sample_Repository( $wpdb );
+        $repo    = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $learned = array( 'zlearned discount pills online', 'zlearned second body for training' );
         foreach ( $learned as $index => $content ) {
             $this->assertNotSame( false, $repo->insert( 'cyrillic', 'spam', $content, 7100 + $index ) );
         }
 
-        $expected = new ASW_Naive_Bayes( new ASW_Tokenizer( array() ), 'cyrillic' );
-        ( new ASW_Fixed_Training_Data( $repo ) )->train_script_classifier( $expected, 'cyrillic' );
+        $expected = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer( array() ), 'cyrillic' );
+        ( new ANTISPAMWIZARD_Fixed_Training_Data( $repo ) )->train_script_classifier( $expected, 'cyrillic' );
 
-        $store = new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $store = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_Fixed_Training_Data( $repo ),
+            new ANTISPAMWIZARD_Fixed_Training_Data( $repo ),
             $repo
         );
 
@@ -1662,7 +1662,7 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_the_halving_walk_bottoms_out_at_an_empty_vocabulary(): void {
-        $halve = new ReflectionMethod( ASW_Model_Store::class, 'halve_dictionary' );
+        $halve = new ReflectionMethod( ANTISPAMWIZARD_Model_Store::class, 'halve_dictionary' );
 
         // The terminal state storable_unit() is written against is an *empty*
         // dictionary -- a unit that will not fit even without one caches
@@ -1695,24 +1695,24 @@ class ModelStoreTest extends TestCase {
         // reads as "cache nothing at all".
         $this->assertNull( $halve->invokeArgs( null, array( $empty ) ) );
 
-        // The emptied model is still one ASW_Naive_Bayes can classify with:
+        // The emptied model is still one ANTISPAMWIZARD_Naive_Bayes can classify with:
         // its Laplace denominator is floored at 1, which is the change that
         // makes this floor a valid terminal state rather than a
-        // DivisionByZeroError swallowed by ASW_Detector::run()'s fail-open
+        // DivisionByZeroError swallowed by ANTISPAMWIZARD_Detector::run()'s fail-open
         // catch while a plugin-attributable line goes into the debug.log
         // dev/smoke.sh scans.
-        $classifier = new ASW_Naive_Bayes();
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes();
         $classifier->set_state( $empty );
         $probabilities = $classifier->classify( 'zzz unseen words only' );
         $this->assertEqualsWithDelta( 1.0, array_sum( $probabilities ), 0.000001 );
     }
 
     public function test_a_unit_that_would_inflate_past_the_readers_ceiling_is_pruned(): void {
-        global $asw_max_inflated_unit_bytes, $wp_transients;
+        global $antispamwizard_max_inflated_unit_bytes, $wp_transients;
 
         // The two bounds are independent axes. inflate_unit() hands
         // gzuncompress() a maximum length, and a dictionary of long, distinct,
-        // highly repetitive tokens -- ASW_Tokenizer caps a sample's token
+        // highly repetitive tokens -- ANTISPAMWIZARD_Tokenizer caps a sample's token
         // *count*, never a token's length -- compresses to far under the item
         // limit while serializing to far over that ceiling. Weighing the
         // compressed value alone would accept such a unit, whereupon every
@@ -1723,22 +1723,22 @@ class ModelStoreTest extends TestCase {
             $this->markTestSkipped( 'zlib is absent, so nothing is ever inflated on this host' );
         }
 
-        $key   = ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic';
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $key   = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic';
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
 
         // The bytes the whole unit inflates back to, read off the value the
         // store itself wrote, so the ceiling below is stated against the form
         // this host stores rather than against a reconstruction of it.
-        $unpruned = strlen( serialize( asw_test_unwrap_unit( $wp_transients[ $key ] ) ) );
+        $unpruned = strlen( serialize( antispamwizard_test_unwrap_unit( $wp_transients[ $key ] ) ) );
 
         $GLOBALS['wp_transients'] = array();
         $GLOBALS['wp_options']    = array();
 
         // A ceiling the *uncompressed* unit is over while its compressed form
         // sits comfortably inside the item limit, which is untouched here.
-        $asw_max_inflated_unit_bytes = intdiv( $unpruned, 2 );
+        $antispamwizard_max_inflated_unit_bytes = intdiv( $unpruned, 2 );
 
-        $store = $this->make_store( new ASW_Bulk_Training_Data() );
+        $store = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() );
         $state = $store->script_classifier( 'cyrillic' )->get_state();
 
         $this->assertSame( array( $key ), $this->cached_unit_keys(), 'The unit must be cached, not refused' );
@@ -1750,17 +1750,17 @@ class ModelStoreTest extends TestCase {
 
         // What was written is what a reader can decode: the ceiling the writer
         // measured against is the one inflate_unit() enforces.
-        $decoded = asw_test_unwrap_unit( $wp_transients[ $key ] );
+        $decoded = antispamwizard_test_unwrap_unit( $wp_transients[ $key ] );
         $this->assertIsArray( $decoded, 'A value written under the ceiling must inflate back' );
         $this->assertLessThan(
-            $asw_max_inflated_unit_bytes,
+            $antispamwizard_max_inflated_unit_bytes,
             strlen( serialize( $decoded ) ),
             'The stored unit must inflate to less than the ceiling its reader allows'
         );
     }
 
     public function test_a_unit_the_reader_could_never_decode_is_not_written_at_all(): void {
-        global $asw_max_inflated_unit_bytes;
+        global $antispamwizard_max_inflated_unit_bytes;
 
         // The floor of the same walk: a ceiling no unit can meet even with an
         // empty dictionary caches nothing, exactly as an unmeetable item limit
@@ -1770,13 +1770,13 @@ class ModelStoreTest extends TestCase {
             $this->markTestSkipped( 'zlib is absent, so nothing is ever inflated on this host' );
         }
 
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
 
         $GLOBALS['wp_transients']    = array();
         $GLOBALS['wp_options']       = array();
-        $asw_max_inflated_unit_bytes = 64;
+        $antispamwizard_max_inflated_unit_bytes = 64;
 
-        $store = $this->make_store( new ASW_Bulk_Training_Data() );
+        $store = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() );
 
         $this->assertSame( $whole, $store->script_classifier( 'cyrillic' )->get_state(), 'The live model is left alone' );
         $this->assertSame( array(), $this->cached_unit_keys(), 'A unit no read could decode must leave no row behind' );
@@ -1798,16 +1798,16 @@ class ModelStoreTest extends TestCase {
         // Premise: counted in token bytes alone every one of them fits, so a
         // walk that admits fewer did so for the overhead and nothing else.
         $this->assertLessThan(
-            ASW_Model_Store::LEARNED_SIMILARITY_BUDGET,
+            ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET,
             strlen( implode( '', $learned ) ),
             'Premise: the fixture is under the budget by the token-bytes reckoning'
         );
 
-        $admitted = ( new ReflectionMethod( ASW_Model_Store::class, 'admit_within_budget' ) )
+        $admitted = ( new ReflectionMethod( ANTISPAMWIZARD_Model_Store::class, 'admit_within_budget' ) )
             ->invokeArgs( $this->make_store(), array( $learned, 'latin' ) );
 
         $this->assertLessThanOrEqual(
-            intdiv( ASW_Model_Store::LEARNED_SIMILARITY_BUDGET, ASW_Model_Store::LEARNED_SAMPLE_OVERHEAD_BYTES ),
+            intdiv( ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET, ANTISPAMWIZARD_Model_Store::LEARNED_SAMPLE_OVERHEAD_BYTES ),
             count( $admitted ),
             'The overhead is what bounds the number of lists a corpus can hold'
         );
@@ -1817,14 +1817,14 @@ class ModelStoreTest extends TestCase {
         }
 
         $this->assertLessThan(
-            2 * ASW_Model_Store::LEARNED_SIMILARITY_BUDGET,
+            2 * ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET,
             strlen( serialize( $packed ) ),
             'The admitted corpus must be bounded in the bytes it serializes to, not only in its tokens'
         );
     }
 
     public function test_a_unit_is_pruned_on_a_cache_backed_host_without_zlib(): void {
-        global $asw_max_cached_unit_bytes, $asw_zlib_unavailable;
+        global $antispamwizard_max_cached_unit_bytes, $antispamwizard_zlib_unavailable;
 
         // size_limit_applies() is compression_applies() minus its zlib half,
         // and that difference is load-bearing: a host with a persistent object
@@ -1833,22 +1833,22 @@ class ModelStoreTest extends TestCase {
         // exactly that host writing the unbounded worst case and cold-rebuilding
         // for ever, which is the failure the mechanism exists to prevent.
         $this->with_object_cache();
-        $asw_zlib_unavailable = true;
+        $antispamwizard_zlib_unavailable = true;
 
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
         $key   = $this->cached_unit_keys()[0];
         $full  = strlen( serialize( $this->stored_value( $key ) ) );
 
         $GLOBALS['wp_transients']  = array();
         $GLOBALS['wp_options']     = array();
-        $asw_max_cached_unit_bytes = intdiv( $full, 2 );
+        $antispamwizard_max_cached_unit_bytes = intdiv( $full, 2 );
 
-        $pruned = $this->make_store( new ASW_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
+        $pruned = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->script_classifier( 'cyrillic' )->get_state();
         $stored = $this->stored_value( $key );
 
         $this->assertArrayNotHasKey( 'zlib', $stored, 'A host without zlib stores the plain packed array' );
         $this->assertLessThan(
-            $asw_max_cached_unit_bytes,
+            $antispamwizard_max_cached_unit_bytes,
             strlen( serialize( $stored ) ),
             'The limit applies to a cache-backed host whether or not it can compress'
         );
@@ -1860,23 +1860,23 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_the_combined_unit_is_pruned_to_fit_as_well(): void {
-        global $asw_max_cached_unit_bytes;
+        global $antispamwizard_max_cached_unit_bytes;
 
         $this->with_object_cache();
         // The combined unit trains on every script's samples, so it is the one
         // with the most vocabulary to spend and the one a corpus edit grows.
-        $whole = $this->make_store( new ASW_Bulk_Training_Data() )->combined_classifier()->get_state();
-        $key   = ASW_Model_Store::TRANSIENT_PREFIX . 'combined';
+        $whole = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->combined_classifier()->get_state();
+        $key   = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined';
         $full  = strlen( serialize( $this->stored_value( $key ) ) );
 
         $GLOBALS['wp_transients']  = array();
         $GLOBALS['wp_options']     = array();
-        $asw_max_cached_unit_bytes = intdiv( $full, 2 );
+        $antispamwizard_max_cached_unit_bytes = intdiv( $full, 2 );
 
-        $pruned = $this->make_store( new ASW_Bulk_Training_Data() )->combined_classifier()->get_state();
+        $pruned = $this->make_store( new ANTISPAMWIZARD_Bulk_Training_Data() )->combined_classifier()->get_state();
 
         $this->assertLessThan(
-            $asw_max_cached_unit_bytes,
+            $antispamwizard_max_cached_unit_bytes,
             strlen( serialize( $this->stored_value( $key ) ) ),
             'A cached combined unit must be under what the cache will hold'
         );
@@ -1898,7 +1898,7 @@ class ModelStoreTest extends TestCase {
         // and, by holds_training_text()'s deliberately lenient rule, report the
         // now-empty unit as still holding the erased comment's text, turning a
         // clean erasure into a permanent items_retained / "please retry" loop.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
         $this->assertArrayHasKey( 'zlib', $GLOBALS['wp_transients'][ $key ], 'Premise: this host compresses' );
 
@@ -1906,7 +1906,7 @@ class ModelStoreTest extends TestCase {
 
         try {
             $this->assertTrue(
-                ASW_Model_Store::delete_units( array( $key ) ),
+                ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ),
                 'The blanking write landed, so nothing is retained'
             );
 
@@ -1922,14 +1922,14 @@ class ModelStoreTest extends TestCase {
 
             // And it reads as text-free to a host that has since lost zlib,
             // which is the whole reason it skips the envelope.
-            $GLOBALS['asw_zlib_unavailable'] = true;
+            $GLOBALS['antispamwizard_zlib_unavailable'] = true;
             $this->assertTrue(
-                ASW_Model_Store::delete_units( array( $key ) ),
+                ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ),
                 'A blanked unit is not retention, with or without zlib'
             );
         } finally {
             $wp_transient_delete_fails       = false;
-            $GLOBALS['asw_zlib_unavailable'] = false;
+            $GLOBALS['antispamwizard_zlib_unavailable'] = false;
         }
     }
 
@@ -1940,10 +1940,10 @@ class ModelStoreTest extends TestCase {
         // A half-written cache item or a pre_transient_* filter can leave the
         // member carrying something that is not a deflate stream at all. Without
         // the guard that value reaches gzuncompress(), which is a TypeError
-        // under PHP 8 -- swallowed by ASW_Detector::run()'s fail-open catch
+        // under PHP 8 -- swallowed by ANTISPAMWIZARD_Detector::run()'s fail-open catch
         // while appending a plugin-attributable line to the debug.log
         // dev/smoke.sh scans on every submission that reads it.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $bogus                              = array( 'zlib' => 123 );
@@ -1959,7 +1959,7 @@ class ModelStoreTest extends TestCase {
         $this->with_object_cache();
         // gzuncompress( '' ) warns and returns false; the empty member is
         // rejected ahead of it for the same reason the truncated payload is.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $bogus                              = array( 'zlib' => '' );
@@ -1976,7 +1976,7 @@ class ModelStoreTest extends TestCase {
         // is a truncated or foreign value. It must be dropped rather than left
         // standing: handed on, it would reach fingerprint_matches() and
         // restore_script_unit() as a string.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $wp_transients[ $key ]              = 'a:2:{s:7:"samples";a:1:{i:0;';
@@ -1995,7 +1995,7 @@ class ModelStoreTest extends TestCase {
         // line to the debug.log dev/smoke.sh scans on every submission that
         // reads it -- phpunit.xml sets failOnWarning, so a missed suppression
         // fails here.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $truncated                          = array(
@@ -2014,7 +2014,7 @@ class ModelStoreTest extends TestCase {
         // A payload that inflates but is not a serialized array is a foreign
         // value under this key, and is rebuilt like any other one. The
         // unserialize() forbids classes, so it cannot be an object either.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $foreign                            = array( 'zlib' => gzcompress( serialize( 'buy cheap pills' ), 6 ) );
@@ -2034,12 +2034,12 @@ class ModelStoreTest extends TestCase {
         global $wp_transient_reads;
         $wp_transient_reads = array();
 
-        $rebuilt_loader = new ASW_Fixed_Training_Data();
+        $rebuilt_loader = new ANTISPAMWIZARD_Fixed_Training_Data();
         $store          = $this->make_store( $rebuilt_loader );
         $classifier     = $store->script_classifier( 'cyrillic' );
 
         $this->assertGreaterThan( 0, $rebuilt_loader->loads, 'An unusable stored value must be rebuilt' );
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $this->assertSame( 2, $classifier->get_state()['doc_counts']['spam'] );
 
         // Re-cached in the form this host reads, so the next request is warm.
@@ -2047,7 +2047,7 @@ class ModelStoreTest extends TestCase {
         $this->assertIsArray( $recached['classifier'] );
         $this->assertNotSame( array(), $recached['samples'] );
 
-        $warm_loader = new ASW_Recording_Training_Data();
+        $warm_loader = new ANTISPAMWIZARD_Recording_Training_Data();
         $this->assertNotSame(
             array(),
             $this->make_store( $warm_loader )->script_sample_tokens( 'cyrillic' )
@@ -2069,7 +2069,7 @@ class ModelStoreTest extends TestCase {
         // when that cache was removed again -- and the only shape in which a
         // compressed unit can meet the option-API levers this test refuses.
         $this->with_object_cache();
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key      = $this->cached_unit_keys()[0];
         $stranded = $wp_transients[ $key ];
         unset( $stranded['__ttl'] );
@@ -2085,12 +2085,12 @@ class ModelStoreTest extends TestCase {
 
         // A unit nothing could drop is logged, so the diagnostic goes to a file
         // of this test's own rather than to the suite's output.
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         try {
             $this->assertFalse(
-                ASW_Model_Store::delete_units( array( $key ) ),
+                ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ),
                 'A compressed unit no lever could drop still holds the erased comment as tokens'
             );
         } finally {
@@ -2111,22 +2111,22 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_compressed_envelope_that_will_not_inflate_is_reported_as_holding_text(): void {
-        global $wp_transients, $wp_options, $wp_transient_delete_fails, $asw_zlib_unavailable;
+        global $wp_transients, $wp_options, $wp_transient_delete_fails, $antispamwizard_zlib_unavailable;
 
         $this->with_object_cache();
         // The conservative reading an erasure has to take: a payload this host
         // cannot inflate -- zlib gone since the unit was written, or a row cut
         // short -- is still the erased comment's token lists, so it is blanked
         // rather than passed over as text-free.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
-        $asw_zlib_unavailable      = true;
+        $antispamwizard_zlib_unavailable      = true;
         $wp_transient_delete_fails = array( $key );
 
         try {
             $this->assertTrue(
-                ASW_Model_Store::delete_units( array( $key ) ),
+                ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ),
                 'The blanking write landed, so nothing is retained'
             );
 
@@ -2152,15 +2152,15 @@ class ModelStoreTest extends TestCase {
         // unrecognised shape -- an erasure that answered with a database-error
         // message over a value carrying nothing would ask for a retry for
         // nothing.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $wp_transient_delete_fails = array( $key );
 
         try {
-            $this->assertTrue( ASW_Model_Store::delete_units( array( $key ) ) );
+            $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ) );
             $this->assertTrue(
-                ASW_Model_Store::delete_units( array( $key ) ),
+                ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ),
                 'A unit already blanked holds no text and is not retention'
             );
         } finally {
@@ -2179,7 +2179,7 @@ class ModelStoreTest extends TestCase {
         // database-error message and a retry request over a unit holding
         // nothing.
         $this->with_object_cache();
-        $this->make_store( new ASW_Recording_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $stored = $wp_transients[ $key ];
@@ -2189,7 +2189,7 @@ class ModelStoreTest extends TestCase {
 
         try {
             $this->assertTrue(
-                ASW_Model_Store::delete_units( array( $key ) ),
+                ANTISPAMWIZARD_Model_Store::delete_units( array( $key ) ),
                 'A compressed unit carrying no text is not retention, however refused the delete was'
             );
         } finally {
@@ -2209,20 +2209,20 @@ class ModelStoreTest extends TestCase {
      * sample table -- a store built without one would not match a unit written
      * by a store that had one.
      *
-     * @param ASW_Sample_Repository|null $repository    Repository, default a fresh one.
-     * @param ASW_Training_Data|null     $training_data Loader, default the legacy-and-script one.
+     * @param ANTISPAMWIZARD_Sample_Repository|null $repository    Repository, default a fresh one.
+     * @param ANTISPAMWIZARD_Training_Data|null     $training_data Loader, default the legacy-and-script one.
      */
     private function make_combined_store(
-        ?ASW_Sample_Repository $repository = null,
-        ?ASW_Training_Data $training_data = null
-    ): ASW_Model_Store {
+        ?ANTISPAMWIZARD_Sample_Repository $repository = null,
+        ?ANTISPAMWIZARD_Training_Data $training_data = null
+    ): ANTISPAMWIZARD_Model_Store {
         global $wpdb;
 
-        return new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        return new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            $training_data ?? new ASW_Legacy_And_Script_Training_Data(),
-            $repository ?? new ASW_Sample_Repository( $wpdb )
+            $training_data ?? new ANTISPAMWIZARD_Legacy_And_Script_Training_Data(),
+            $repository ?? new ANTISPAMWIZARD_Sample_Repository( $wpdb )
         );
     }
 
@@ -2233,8 +2233,8 @@ class ModelStoreTest extends TestCase {
      * @return array<int, string>
      */
     private function combined_tokens_for( string $sample ): array {
-        return ( new ASW_Tokenizer( array() ) )
-            ->tokenize_for_script( $sample, ASW_Script_Detector::detect( $sample ) );
+        return ( new ANTISPAMWIZARD_Tokenizer( array() ) )
+            ->tokenize_for_script( $sample, ANTISPAMWIZARD_Script_Detector::detect( $sample ) );
     }
 
     public function test_the_combined_similarity_corpus_holds_only_the_legacy_and_unknown_script_lists(): void {
@@ -2245,20 +2245,20 @@ class ModelStoreTest extends TestCase {
         // similarity lists. It is consulted for a body whose own script has
         // no list, which is four routes and not one: on the shipped corpus
         // every named script has a list, so what it serves is every body
-        // ASW_Script_Detector::detect() sends to unknown -- one with no
+        // ANTISPAMWIZARD_Script_Detector::detect() sends to unknown -- one with no
         // letters at all, one written in a script outside SCRIPT_GROUPS, and
         // one whose detection hit a PCRE limit -- plus a named script whose
         // own (spam-only) list came out empty. The score moves little for the
         // first and the last, and can be lost outright for the middle two;
         // the deviation is accepted and recorded in the docblock.
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'unknown', 'spam', '89139991205, 89001234567, 89005553535', 9101 );
 
         $samples = $this->make_combined_store( $repo )->combined_sample_tokens();
 
         $this->assertSame(
             array(
-                $this->combined_tokens_for( ASW_Legacy_And_Script_Training_Data::LEGACY_SPAM ),
+                $this->combined_tokens_for( ANTISPAMWIZARD_Legacy_And_Script_Training_Data::LEGACY_SPAM ),
                 $this->combined_tokens_for( '89139991205, 89001234567, 89005553535' ),
             ),
             $samples,
@@ -2273,7 +2273,7 @@ class ModelStoreTest extends TestCase {
 
     public function test_the_combined_unit_still_reports_script_samples_it_no_longer_stores(): void {
         // has_script_samples is the ONLY input to
-        // ASW_Similarity_Check::resolve_from_store()'s legacy-vs-script
+        // ANTISPAMWIZARD_Similarity_Check::resolve_from_store()'s legacy-vs-script
         // tokenisation branch, so it must stay a fact about the loaded
         // per-script samples rather than about what the unit carries -- a flip
         // to false would put every fallback body on word tokenisation.
@@ -2289,7 +2289,7 @@ class ModelStoreTest extends TestCase {
         $wp_options         = array();
         $wp_transient_reads = array();
 
-        $without = $this->make_combined_store( null, new ASW_Recording_Training_Data() );
+        $without = $this->make_combined_store( null, new ANTISPAMWIZARD_Recording_Training_Data() );
         $this->assertFalse(
             $without->combined_has_script_samples(),
             'With no script producing tokens the Similarity check must fall back to legacy tokenize()'
@@ -2306,24 +2306,24 @@ class ModelStoreTest extends TestCase {
         $unknown_spam = '89139991205, 89001234567, 89005553535';
         $unknown_ham  = '2019, 2020, 2021, 2022';
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'unknown', 'spam', $unknown_spam, 9102 );
         $repo->insert( 'unknown', 'ham', $unknown_ham, 9103 );
 
-        $loader = new ASW_Legacy_And_Script_Training_Data();
+        $loader = new ANTISPAMWIZARD_Legacy_And_Script_Training_Data();
         $state  = $this->make_combined_store( $repo, $loader )->combined_classifier()->get_state();
 
-        $spam = array( ASW_Legacy_And_Script_Training_Data::LEGACY_SPAM );
-        $ham  = array( ASW_Legacy_And_Script_Training_Data::LEGACY_HAM );
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        $spam = array( ANTISPAMWIZARD_Legacy_And_Script_Training_Data::LEGACY_SPAM );
+        $ham  = array( ANTISPAMWIZARD_Legacy_And_Script_Training_Data::LEGACY_HAM );
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $spam = array_merge( $spam, $loader->load_script_samples( $script, 'spam' ) );
             $ham  = array_merge( $ham, $loader->load_script_samples( $script, 'ham' ) );
         }
         $spam[] = $unknown_spam;
         $ham[]  = $unknown_ham;
 
-        $expected = new ASW_Naive_Bayes( new ASW_Tokenizer( array() ) );
-        ( new ASW_Training_Data() )->train_classifier_with_samples( $expected, $spam, $ham );
+        $expected = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer( array() ) );
+        ( new ANTISPAMWIZARD_Training_Data() )->train_classifier_with_samples( $expected, $spam, $ham );
 
         $this->assertSame( $expected->get_state(), $state );
         $this->assertSame( 22, $state['doc_counts']['spam'], 'Every script still trains the combined classifier' );
@@ -2336,7 +2336,7 @@ class ModelStoreTest extends TestCase {
         $store   = $this->make_combined_store();
         $samples = $store->script_sample_tokens( 'cyrillic' );
 
-        $tokenizer = new ASW_Tokenizer( array() );
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer( array() );
         $expected  = array(
             $tokenizer->tokenize_for_script( 'buy cheap pills online now', 'cyrillic' ),
             $tokenizer->tokenize_for_script( 'cheap pills discount pharmacy', 'cyrillic' ),
@@ -2344,12 +2344,12 @@ class ModelStoreTest extends TestCase {
 
         $this->assertSame( $expected, $samples );
         $this->assertSame(
-            array( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ),
+            array( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ),
             $this->reads(),
             'A script with its own samples must not load the combined unit'
         );
 
-        $similarity = new ASW_Cosine_Similarity();
+        $similarity = new ANTISPAMWIZARD_Cosine_Similarity();
         $body       = $tokenizer->tokenize_for_script( 'cheap pills discount pharmacy', 'cyrillic' );
         $this->assertSame(
             $similarity->compare( $expected[1], $body ),
@@ -2360,46 +2360,46 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_unit_keys_names_every_unit_and_delete_units_removes_them(): void {
-        // ASW_Privacy purges these after erasing samples. The list has to be
+        // ANTISPAMWIZARD_Privacy purges these after erasing samples. The list has to be
         // exhaustive, which is why a unit's key names the unit and carries no
         // fingerprint: a rebuild overwrites the unit it replaces, so there is
         // never a generation the eraser cannot name.
-        $store = $this->make_store( new ASW_Fixed_Training_Data() );
-        $keys  = ASW_Model_Store::unit_keys();
+        $store = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() );
+        $keys  = ANTISPAMWIZARD_Model_Store::unit_keys();
 
-        $this->assertCount( count( ASW_Script_Detector::SCRIPT_GROUPS ) + 1, $keys );
+        $this->assertCount( count( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) + 1, $keys );
         $this->assertSame( $keys, array_unique( $keys ) );
         foreach ( $keys as $key ) {
-            $this->assertStringStartsWith( ASW_Model_Store::TRANSIENT_PREFIX, $key );
+            $this->assertStringStartsWith( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX, $key );
         }
 
         $store->script_classifier( 'cyrillic' );
         $store->combined_classifier();
         $this->assertNotEmpty( $this->cached_unit_keys() );
 
-        ASW_Model_Store::delete_units( $keys );
+        ANTISPAMWIZARD_Model_Store::delete_units( $keys );
 
         $this->assertSame( array(), $this->cached_unit_keys() );
     }
 
     public function test_delete_units_ignores_keys_it_does_not_own(): void {
-        set_transient( 'asw_spam_log_unrelated', 'keep me', DAY_IN_SECONDS );
+        set_transient( 'antispamwizard_spam_log_unrelated', 'keep me', DAY_IN_SECONDS );
 
-        ASW_Model_Store::delete_units( array( 'asw_spam_log_unrelated', 42, null ) );
+        ANTISPAMWIZARD_Model_Store::delete_units( array( 'antispamwizard_spam_log_unrelated', 42, null ) );
 
-        $this->assertSame( 'keep me', get_transient( 'asw_spam_log_unrelated' ) );
+        $this->assertSame( 'keep me', get_transient( 'antispamwizard_spam_log_unrelated' ) );
     }
 
     public function test_a_refused_delete_whose_text_was_stripped_is_not_reported_as_retained(): void {
         global $wp_transient_delete_fails;
 
-        // What ASW_Privacy::erase() must hear about is training text that is
+        // What ANTISPAMWIZARD_Privacy::erase() must hear about is training text that is
         // still stored, not a key that is still there. A unit the backend would
         // not delete but whose value was blanked holds neither samples nor
         // classifier state, so no personal data survived it -- answering the
         // erasure request with a database-error message and a "please retry"
         // over that would report a retention that did not happen.
-        $store = $this->make_store( new ASW_Fixed_Training_Data() );
+        $store = $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() );
         $store->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
@@ -2407,14 +2407,14 @@ class ModelStoreTest extends TestCase {
         // string per list. holds_training_text() reads `samples` for emptiness
         // alone, so the packed representation is still recognised as text --
         // which is what the blanking write below can only have followed from.
-        $packed = asw_test_unwrap_unit( get_transient( $key ) )['samples'];
+        $packed = antispamwizard_test_unwrap_unit( get_transient( $key ) )['samples'];
         $this->assertNotSame( array(), $packed );
         $this->assertIsString( $packed[0] );
 
         $wp_transient_delete_fails = array( $key );
 
         try {
-            $this->assertTrue( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+            $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
 
             $stored = get_transient( $key );
             $this->assertIsArray( $stored, 'Premise: the key itself outlived the refused delete' );
@@ -2429,9 +2429,9 @@ class ModelStoreTest extends TestCase {
         // Ten of the eleven keys are normally absent, and delete_transient()
         // returns false for every one of them. Reading that as a failed purge
         // would make every erasure report data retained.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
-        $this->assertTrue( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+        $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
         $this->assertSame( array(), $this->cached_unit_keys() );
     }
 
@@ -2444,7 +2444,7 @@ class ModelStoreTest extends TestCase {
         // expired before the erasure request arrived would read back as purged
         // while the row -- and the erased comment's text in it -- stays in
         // wp_options.
-        $key = ASW_Model_Store::unit_keys()[0];
+        $key = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         set_transient(
             $key,
             array(
@@ -2466,7 +2466,7 @@ class ModelStoreTest extends TestCase {
                 'Premise: the refused cleanup left the row behind'
             );
 
-            $this->assertTrue( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+            $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
 
             // Only a purge that consulted the row could have emptied it: had it
             // trusted get_transient()'s miss, the samples would still be there.
@@ -2484,12 +2484,12 @@ class ModelStoreTest extends TestCase {
         global $wp_options;
 
         // Earlier versions cached one monolithic model under
-        // `asw_classifiers_<md5>`, and the md5 folded in corpus mtimes and the
+        // `antispamwizard_classifiers_<md5>`, and the md5 folded in corpus mtimes and the
         // sample revision -- so after an upgrade that row is in wp_options
         // holding the trained comments' text as a token list, under a key this
         // version cannot compute. An erasure that only named its own eleven
         // keys would report success over it.
-        $legacy = ASW_Model_Store::TRANSIENT_PREFIX . md5( 'a previous version of this plugin' );
+        $legacy = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . md5( 'a previous version of this plugin' );
         set_transient(
             $legacy,
             array(
@@ -2500,7 +2500,7 @@ class ModelStoreTest extends TestCase {
         );
         $wp_options[ '_transient_timeout_' . $legacy ] = time() + DAY_IN_SECONDS;
 
-        $this->assertTrue( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+        $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
 
         $this->assertSame( array(), $this->cached_unit_keys() );
         $this->assertArrayNotHasKey( '_transient_' . $legacy, $wp_options );
@@ -2515,7 +2515,7 @@ class ModelStoreTest extends TestCase {
         // reads and writes transients in the cache, and core's expired-transient
         // cleanup returns early under an external cache, so nothing ever
         // collects them. The prefix sweep is what reaches them.
-        $key = ASW_Model_Store::unit_keys()[0];
+        $key = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         set_transient(
             $key,
             array(
@@ -2529,7 +2529,7 @@ class ModelStoreTest extends TestCase {
         $wp_using_ext_object_cache = true;
 
         try {
-            $this->assertTrue( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+            $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
             $this->assertArrayNotHasKey( '_transient_' . $key, $wp_options );
         } finally {
             $wp_using_ext_object_cache = false;
@@ -2544,11 +2544,11 @@ class ModelStoreTest extends TestCase {
         // erased text are still there and the erasure must say so.
         $wpdb->query_result = false;
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         try {
-            $this->assertFalse( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+            $this->assertFalse( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
         } finally {
             ini_set( 'error_log', $old_log );
             $wpdb->query_result = null;
@@ -2570,7 +2570,7 @@ class ModelStoreTest extends TestCase {
         // rows. Without an external object cache a transient *is* those rows,
         // so deleting them stops the erased text being stored even though the
         // transient API refused.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $wp_transient_delete_fails = true;
@@ -2578,7 +2578,7 @@ class ModelStoreTest extends TestCase {
 
         try {
             $this->assertTrue(
-                ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ),
+                ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ),
                 'The rows are gone, so no training text was retained'
             );
         } finally {
@@ -2599,18 +2599,18 @@ class ModelStoreTest extends TestCase {
         // logged: no other signal on the site would show it. The next erasure
         // request purges every key again -- it does not have to be told to --
         // but nothing guarantees one ever arrives.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         $key = $this->cached_unit_keys()[0];
 
         $wp_transient_delete_fails = true;
         $wp_update_option_fails    = true;
         $wpdb->query_result        = false;
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         try {
-            $this->assertFalse( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+            $this->assertFalse( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
         } finally {
             ini_set( 'error_log', $old_log );
             $wp_transient_delete_fails = false;
@@ -2621,7 +2621,7 @@ class ModelStoreTest extends TestCase {
         $logged = file_get_contents( $tmp );
         unlink( $tmp );
 
-        $stored = asw_test_unwrap_unit( $wp_options[ '_transient_' . $key ] ?? false );
+        $stored = antispamwizard_test_unwrap_unit( $wp_options[ '_transient_' . $key ] ?? false );
         $this->assertIsArray( $stored, 'Premise: the row survived every lever' );
         $this->assertNotEmpty( $stored['samples'], 'Premise: the erased text is still stored' );
         $this->assertStringContainsString( 'model cache purge retained a unit', $logged );
@@ -2633,15 +2633,15 @@ class ModelStoreTest extends TestCase {
         // The counterpart: the delete was refused but the blanking write took
         // the text out, so there is nothing left to remove and nothing to
         // report.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
         $wp_transient_delete_fails = true;
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         try {
-            $this->assertTrue( ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ) );
+            $this->assertTrue( ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ) );
         } finally {
             ini_set( 'error_log', $old_log );
             $wp_transient_delete_fails = false;
@@ -2662,7 +2662,7 @@ class ModelStoreTest extends TestCase {
         // it is. That string *is* the unit's token lists, so reading "not an
         // array" as "holds no personal data" would close the erasure over the
         // erased comment's text and leave it readable for the rest of the day.
-        $key     = ASW_Model_Store::unit_keys()[0];
+        $key     = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         $corrupt = 'a:2:{s:7:"samples";a:1:{i:0;a:3:{i:0;s:3:"buy";i:1;s:5:"cheap";i:2;s:5:"pills';
 
         $wp_transients[ $key ]              = $corrupt;
@@ -2674,7 +2674,7 @@ class ModelStoreTest extends TestCase {
             $this->assertSame( $corrupt, get_transient( $key ), 'Premise: the damaged value is what is stored' );
 
             $this->assertTrue(
-                ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ),
+                ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ),
                 'The blanking write landed, so nothing is retained'
             );
 
@@ -2702,7 +2702,7 @@ class ModelStoreTest extends TestCase {
         // under some other member would pass that test while holding exactly the
         // text the erasure is meant to remove, so an unrecognised non-empty
         // member is read the same way a non-array value is.
-        $key     = ASW_Model_Store::unit_keys()[0];
+        $key     = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         $corrupt = array( 'payload' => array( array( 'buy', 'cheap', 'pills' ) ) );
 
         $wp_transients[ $key ]              = $corrupt;
@@ -2714,7 +2714,7 @@ class ModelStoreTest extends TestCase {
             $this->assertSame( $corrupt, get_transient( $key ), 'Premise: the unrecognised value is what is stored' );
 
             $this->assertTrue(
-                ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ),
+                ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ),
                 'The blanking write landed, so nothing is retained'
             );
 
@@ -2738,7 +2738,7 @@ class ModelStoreTest extends TestCase {
         // in -- read as a text-free unit it would be neither blanked nor row
         // deleted, and excluded from the stray-row sweep as an owned key, while
         // the erasure reported success over the tokens still in it.
-        $key     = ASW_Model_Store::unit_keys()[0];
+        $key     = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         $corrupt = array(
             'fingerprint' => 'abc123',
             'payload'     => array( array( 'buy', 'cheap', 'pills' ) ),
@@ -2753,7 +2753,7 @@ class ModelStoreTest extends TestCase {
             $this->assertSame( $corrupt, get_transient( $key ), 'Premise: the unrecognised value is what is stored' );
 
             $this->assertTrue(
-                ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ),
+                ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ),
                 'The blanking write landed, so nothing is retained'
             );
 
@@ -2775,7 +2775,7 @@ class ModelStoreTest extends TestCase {
         // refused delete over it must not be reported as retention, or an
         // erasure request answers with a database-error message about a unit
         // that carries nothing.
-        $key   = ASW_Model_Store::unit_keys()[0];
+        $key   = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         $empty = array(
             'fingerprint'        => 'abc123',
             'classifier'         => null,
@@ -2790,7 +2790,7 @@ class ModelStoreTest extends TestCase {
 
         try {
             $this->assertTrue(
-                ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ),
+                ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ),
                 'A unit holding no text is not retention'
             );
 
@@ -2813,7 +2813,7 @@ class ModelStoreTest extends TestCase {
         // member another plugin added would otherwise make every erasure blank a
         // unit that holds nothing -- and then report retention, since the
         // blanking write carries that member straight back.
-        $key      = ASW_Model_Store::unit_keys()[0];
+        $key      = ANTISPAMWIZARD_Model_Store::unit_keys()[0];
         $filtered = array(
             'fingerprint'        => 'abc123',
             'classifier'         => null,
@@ -2829,7 +2829,7 @@ class ModelStoreTest extends TestCase {
 
         try {
             $this->assertTrue(
-                ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() ),
+                ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() ),
                 'A unit holding no text is not retention, whatever else it carries'
             );
 
@@ -2854,12 +2854,12 @@ class ModelStoreTest extends TestCase {
         // overwritten with a value carrying neither samples nor classifier
         // state, which this request can do because its own write has just
         // landed.
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repository->insert( 'cyrillic', 'spam', 'продам гараж, пишите', 4242 );
 
         $erased              = false;
         $wp_on_set_transient = static function ( $key ) use ( $repository, &$erased ): void {
-            if ( $erased || ! str_starts_with( (string) $key, ASW_Model_Store::TRANSIENT_PREFIX ) ) {
+            if ( $erased || ! str_starts_with( (string) $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX ) ) {
                 return;
             }
             $erased = true;
@@ -2868,7 +2868,7 @@ class ModelStoreTest extends TestCase {
         $wp_transient_delete_fails = true;
 
         try {
-            $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+            $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         } finally {
             $wp_on_set_transient       = null;
             $wp_transient_delete_fails = false;
@@ -2876,7 +2876,7 @@ class ModelStoreTest extends TestCase {
 
         $this->assertTrue( $erased, 'Premise: the erasure must land inside the write window' );
 
-        $stored = $wp_options[ '_transient_' . ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ] ?? false;
+        $stored = $wp_options[ '_transient_' . ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ] ?? false;
         $this->assertIsArray( $stored, 'Premise: the refused delete leaves the row behind' );
         $this->assertEmpty( $stored['samples'] ?? array(), 'The tokens this request wrote are gone' );
         $this->assertEmpty( $stored['classifier'] ?? array(), 'And so are the word counts built from them' );
@@ -2891,12 +2891,12 @@ class ModelStoreTest extends TestCase {
         // wp_options rows, deleted by statement. Without an external object
         // cache a transient *is* those rows, so taking them stops the erased
         // text being stored.
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repository->insert( 'cyrillic', 'spam', 'продам гараж, пишите', 4242 );
 
         $writes              = 0;
         $wp_on_set_transient = static function ( $key ) use ( $repository, &$writes ): void {
-            if ( ! str_starts_with( (string) $key, ASW_Model_Store::TRANSIENT_PREFIX ) ) {
+            if ( ! str_starts_with( (string) $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX ) ) {
                 return;
             }
             ++$writes;
@@ -2912,7 +2912,7 @@ class ModelStoreTest extends TestCase {
         $wp_transient_delete_fails = true;
 
         try {
-            $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+            $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         } finally {
             $wp_on_set_transient       = null;
             $wp_transient_delete_fails = false;
@@ -2921,7 +2921,7 @@ class ModelStoreTest extends TestCase {
 
         $this->assertSame( 2, $writes, 'Premise: the guard must attempt the blanking write' );
 
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic';
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic';
         $this->assertArrayNotHasKey( '_transient_' . $key, $wp_options );
         $this->assertArrayNotHasKey( '_transient_timeout_' . $key, $wp_options );
     }
@@ -2934,12 +2934,12 @@ class ModelStoreTest extends TestCase {
         // and there is no lever left, so the loss is logged. Nothing on the site
         // would otherwise show it -- and the erasure this superseded is already
         // over, so there is no response left to report it in.
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repository->insert( 'cyrillic', 'spam', 'продам гараж, пишите', 4242 );
 
         $writes              = 0;
         $wp_on_set_transient = static function ( $key ) use ( $repository, &$writes ): void {
-            if ( ! str_starts_with( (string) $key, ASW_Model_Store::TRANSIENT_PREFIX ) ) {
+            if ( ! str_starts_with( (string) $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX ) ) {
                 return;
             }
             ++$writes;
@@ -2953,11 +2953,11 @@ class ModelStoreTest extends TestCase {
         };
         $wp_transient_delete_fails = true;
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         try {
-            $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+            $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         } finally {
             ini_set( 'error_log', $old_log );
             $wp_on_set_transient       = null;
@@ -2971,8 +2971,8 @@ class ModelStoreTest extends TestCase {
 
         $this->assertSame( 2, $writes, 'Premise: the guard must attempt the blanking write' );
 
-        $stored = asw_test_unwrap_unit(
-            $wp_options[ '_transient_' . ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ] ?? false
+        $stored = antispamwizard_test_unwrap_unit(
+            $wp_options[ '_transient_' . ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ] ?? false
         );
         $this->assertIsArray( $stored );
         $this->assertNotEmpty( $stored['samples'], 'Premise: the erased text is still stored' );
@@ -2982,28 +2982,28 @@ class ModelStoreTest extends TestCase {
     public function test_a_unit_superseded_between_the_check_and_the_write_is_dropped(): void {
         global $wpdb, $wp_on_set_transient;
 
-        // ASW_Privacy::erase() deletes the subject's sample rows and then purges
+        // ANTISPAMWIZARD_Privacy::erase() deletes the subject's sample rows and then purges
         // every unit key. When that whole erasure lands in the window between
         // this store's pre-write check and its set_transient(), the write that
         // follows puts the pre-erasure tokens straight back into the row the
         // eraser had just emptied -- erased personal data restored, readable for
         // the rest of the unit's day, with nothing left to purge it. The seam
         // fires before the write, which is exactly that ordering.
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repository->insert( 'cyrillic', 'spam', 'продам гараж, пишите', 4242 );
 
         $erased = false;
         $wp_on_set_transient = static function ( $key ) use ( $repository, &$erased ): void {
-            if ( $erased || ! str_starts_with( (string) $key, ASW_Model_Store::TRANSIENT_PREFIX ) ) {
+            if ( $erased || ! str_starts_with( (string) $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX ) ) {
                 return;
             }
             $erased = true;
             $repository->delete_by_comment_ids( array( 4242 ) );
-            ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() );
+            ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() );
         };
 
         try {
-            $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+            $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
         } finally {
             $wp_on_set_transient = null;
         }
@@ -3021,21 +3021,21 @@ class ModelStoreTest extends TestCase {
 
         // Same race, duplicated in combined_unit() -- and worse there, since the
         // combined unit carries every script's samples.
-        $repository = new ASW_Sample_Repository( $wpdb );
+        $repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repository->insert( 'unknown', 'spam', '89139991205, 89001234567', 4243 );
 
         $erased = false;
         $wp_on_set_transient = static function ( $key ) use ( $repository, &$erased ): void {
-            if ( $erased || ! str_starts_with( (string) $key, ASW_Model_Store::TRANSIENT_PREFIX ) ) {
+            if ( $erased || ! str_starts_with( (string) $key, ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX ) ) {
                 return;
             }
             $erased = true;
             $repository->delete_by_comment_ids( array( 4243 ) );
-            ASW_Model_Store::delete_units( ASW_Model_Store::unit_keys() );
+            ANTISPAMWIZARD_Model_Store::delete_units( ANTISPAMWIZARD_Model_Store::unit_keys() );
         };
 
         try {
-            $this->make_store( new ASW_Fixed_Training_Data() )->combined_classifier();
+            $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->combined_classifier();
         } finally {
             $wp_on_set_transient = null;
         }
@@ -3046,12 +3046,12 @@ class ModelStoreTest extends TestCase {
 
     public function test_an_undisturbed_write_keeps_its_unit(): void {
         // The guard above must not cost the ordinary case its cache.
-        $this->make_store( new ASW_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
+        $this->make_store( new ANTISPAMWIZARD_Fixed_Training_Data() )->script_classifier( 'cyrillic' );
 
         $keys = $this->cached_unit_keys();
         $this->assertCount( 1, $keys );
 
-        $warm = new ASW_Fixed_Training_Data();
+        $warm = new ANTISPAMWIZARD_Fixed_Training_Data();
         $this->make_store( $warm )->script_classifier( 'cyrillic' );
         $this->assertSame( 0, $warm->loads, 'The unit written by an undisturbed request must still be warm' );
     }
@@ -3062,11 +3062,11 @@ class ModelStoreTest extends TestCase {
         // The combined unit is the only place a sample trained from a comment
         // whose script could not be identified is ever used -- 'unknown' has no
         // unit of its own.
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'unknown', 'spam', '89139991205, 89001234567, 89005553535', 7001 );
         $repo->insert( 'unknown', 'ham', '2019, 2020, 2021, 2022', 7002 );
 
-        $store      = $this->make_store( new ASW_Recording_Training_Data() );
+        $store      = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data() );
         $doc_counts = $store->combined_classifier()->get_state()['doc_counts'];
 
         $this->assertSame( 1, $doc_counts['spam'] );
@@ -3081,12 +3081,12 @@ class ModelStoreTest extends TestCase {
         // combined_unit(), so it needs its own test: caching a combined unit
         // under the post-race key would hide the just-written sample from the
         // fallback model for a full DAY_IN_SECONDS.
-        $racer                    = new ASW_Racing_Training_Data();
-        $racer->racing_repository = new ASW_Sample_Repository( $wpdb );
+        $racer                    = new ANTISPAMWIZARD_Racing_Training_Data();
+        $racer->racing_repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $classifier = $this->make_store( $racer )->combined_classifier();
 
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $this->assertSame(
             array(),
             $this->cached_unit_keys(),
@@ -3114,19 +3114,19 @@ class ModelStoreTest extends TestCase {
     public function test_a_script_unit_built_while_the_sample_read_failed_is_not_cached(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'cyrillic', 'spam', 'продам гараж, пишите', 8101 );
 
         // Control: the same load with a healthy table caches the unit.
-        $warm = new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $warm = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_File_Free_Training_Data( $repo ),
+            new ANTISPAMWIZARD_File_Free_Training_Data( $repo ),
             $repo
         );
         $this->assertNotEmpty( $warm->script_sample_tokens( 'cyrillic' ), 'The control load must see the stored sample' );
         $this->assertSame(
-            array( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ),
+            array( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ),
             $this->cached_unit_keys(),
             'A healthy load must cache the unit'
         );
@@ -3137,10 +3137,10 @@ class ModelStoreTest extends TestCase {
 
         $this->fail_only_the_sample_read();
 
-        $cold = new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $cold = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_File_Free_Training_Data( $repo ),
+            new ANTISPAMWIZARD_File_Free_Training_Data( $repo ),
             $repo
         );
 
@@ -3156,20 +3156,20 @@ class ModelStoreTest extends TestCase {
     public function test_a_combined_unit_built_while_the_sample_read_failed_is_not_cached(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'unknown', 'spam', '+7 913 999 12 05', 8102 );
         $repo->insert( 'unknown', 'ham', 'thanks for the detailed post', 8103 );
 
         $this->fail_only_the_sample_read();
 
-        $store = new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+        $store = new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_File_Free_Training_Data( $repo ),
+            new ANTISPAMWIZARD_File_Free_Training_Data( $repo ),
             $repo
         );
 
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $store->combined_classifier() );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $store->combined_classifier() );
         $this->assertSame(
             array(),
             $this->cached_unit_keys(),
@@ -3183,7 +3183,7 @@ class ModelStoreTest extends TestCase {
         $before_cyrillic = $this->fingerprint_for_script( 'cyrillic' );
         $before_latin    = $this->fingerprint_for_script( 'latin' );
 
-        $this->move_mtime( ASW_PATH . 'data/spam-samples-cyrillic.txt' );
+        $this->move_mtime( ANTISPAMWIZARD_PATH . 'data/spam-samples-cyrillic.txt' );
 
         $after_cyrillic = $this->fingerprint_for_script( 'cyrillic' );
         $after_latin    = $this->fingerprint_for_script( 'latin' );
@@ -3192,7 +3192,7 @@ class ModelStoreTest extends TestCase {
         $this->assertSame( $before_latin, $after_latin, 'Another script\'s unit must not be invalidated' );
 
         // Both categories are stamped, so a ham-only edit must move the key too.
-        $this->move_mtime( ASW_PATH . 'data/ham-samples-cyrillic.txt' );
+        $this->move_mtime( ANTISPAMWIZARD_PATH . 'data/ham-samples-cyrillic.txt' );
 
         $this->assertNotSame( $after_cyrillic, $this->fingerprint_for_script( 'cyrillic' ), 'A ham corpus edit must move the key as well' );
         $this->assertSame( $before_latin, $this->fingerprint_for_script( 'latin' ), 'Another script\'s unit must still not be invalidated' );
@@ -3203,7 +3203,7 @@ class ModelStoreTest extends TestCase {
         // only input no other test moves.
         $before = $this->fingerprint_for_combined();
 
-        $this->move_mtime( ASW_PATH . 'data/ham-samples.txt' );
+        $this->move_mtime( ANTISPAMWIZARD_PATH . 'data/ham-samples.txt' );
 
         $this->assertNotSame( $before, $this->fingerprint_for_combined(), 'A legacy corpus edit must move the combined key' );
     }
@@ -3212,7 +3212,7 @@ class ModelStoreTest extends TestCase {
         $before_cyrillic = $this->fingerprint_for_script( 'cyrillic' );
         $before_combined = $this->fingerprint_for_combined();
 
-        update_option( ASW_Sample_Repository::REVISION_OPTION, 7 );
+        update_option( ANTISPAMWIZARD_Sample_Repository::REVISION_OPTION, 7 );
 
         $this->assertSame(
             $before_cyrillic,
@@ -3232,21 +3232,21 @@ class ModelStoreTest extends TestCase {
         // the revision stands still -- and the post-write supersession check in
         // combined_unit() is what stops a request that loaded its samples before
         // that erasure from writing them back afterwards.
-        ( new ASW_Sample_Repository( $wpdb ) )->insert( 'unknown', 'spam', 'продам гараж пишите', 4242 );
+        ( new ANTISPAMWIZARD_Sample_Repository( $wpdb ) )->insert( 'unknown', 'spam', 'продам гараж пишите', 4242 );
 
         $before   = $this->fingerprint_for_combined();
-        $revision = get_option( ASW_Sample_Repository::REVISION_OPTION, 0 );
+        $revision = get_option( ANTISPAMWIZARD_Sample_Repository::REVISION_OPTION, 0 );
 
         // The erasure's DELETE landed; its revision bump did not.
         $this->assertSame(
             1,
-            $wpdb->query( 'DELETE FROM `' . $wpdb->prefix . 'asw_samples` WHERE comment_id = 4242' ),
+            $wpdb->query( 'DELETE FROM `' . $wpdb->prefix . 'antispamwizard_samples` WHERE comment_id = 4242' ),
             'Premise: the row is gone'
         );
 
         $this->assertSame(
             $revision,
-            get_option( ASW_Sample_Repository::REVISION_OPTION, 0 ),
+            get_option( ANTISPAMWIZARD_Sample_Repository::REVISION_OPTION, 0 ),
             'Premise: the revision has not moved, so only the table can report the erasure'
         );
         $this->assertNotSame( $before, $this->fingerprint_for_combined() );
@@ -3258,7 +3258,7 @@ class ModelStoreTest extends TestCase {
         $before_cyrillic = $this->fingerprint_for_script( 'cyrillic' );
         $before_latin    = $this->fingerprint_for_script( 'latin' );
 
-        ( new ASW_Sample_Repository( $wpdb ) )->insert( 'cyrillic', 'spam', 'продам гараж пишите', 4242 );
+        ( new ANTISPAMWIZARD_Sample_Repository( $wpdb ) )->insert( 'cyrillic', 'spam', 'продам гараж пишите', 4242 );
 
         $this->assertNotSame( $before_cyrillic, $this->fingerprint_for_script( 'cyrillic' ) );
         $this->assertSame( $before_latin, $this->fingerprint_for_script( 'latin' ) );
@@ -3290,9 +3290,9 @@ class ModelStoreTest extends TestCase {
         global $wp_transients, $wp_transient_reads;
         $wp_transient_reads = array();
 
-        $this->make_store( new ASW_Recording_Training_Data(), $excluded_tokens )->script_classifier( $script );
+        $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data(), $excluded_tokens )->script_classifier( $script );
 
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . $script;
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . $script;
         $this->assertSame( array( $key ), $this->reads(), 'The unit key must name the unit and nothing else' );
 
         return $this->stored_unit( $key )['fingerprint'];
@@ -3307,9 +3307,9 @@ class ModelStoreTest extends TestCase {
         global $wp_transients, $wp_transient_reads;
         $wp_transient_reads = array();
 
-        $this->make_store( new ASW_Recording_Training_Data(), $excluded_tokens )->combined_classifier();
+        $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data(), $excluded_tokens )->combined_classifier();
 
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . 'combined';
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined';
         $this->assertSame( array( $key ), $this->reads() );
 
         return $this->stored_unit( $key )['fingerprint'];
@@ -3320,13 +3320,13 @@ class ModelStoreTest extends TestCase {
     public function test_a_fingerprint_that_moves_during_loading_writes_no_transient(): void {
         global $wpdb;
 
-        $racer                    = new ASW_Racing_Training_Data();
-        $racer->racing_repository = new ASW_Sample_Repository( $wpdb );
+        $racer                    = new ANTISPAMWIZARD_Racing_Training_Data();
+        $racer->racing_repository = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $classifier = $this->make_store( $racer )->script_classifier( 'cyrillic' );
 
         // The samples just loaded are used...
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $this->assertSame( 1, $classifier->get_state()['doc_counts']['spam'] );
 
         // ...but nothing is cached, because the key moved under us and the
@@ -3346,7 +3346,7 @@ class ModelStoreTest extends TestCase {
         $wpdb->get_results_result = false;
 
         $this->assertNull(
-            ( new ASW_Sample_Repository( $wpdb ) )->script_fingerprint( 'cyrillic' ),
+            ( new ANTISPAMWIZARD_Sample_Repository( $wpdb ) )->script_fingerprint( 'cyrillic' ),
             'Premise: the fingerprint query must be failing for this test to mean anything'
         );
 
@@ -3355,7 +3355,7 @@ class ModelStoreTest extends TestCase {
         // A host whose samples table was never created fails that query on every
         // request, so refusing to cache would strand it on the cold path for good.
         $this->assertSame(
-            array( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ),
+            array( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ),
             $this->cached_unit_keys(),
             'A failed fingerprint read must not stop the unit being cached'
         );
@@ -3364,15 +3364,15 @@ class ModelStoreTest extends TestCase {
     /**
      * A store whose corpus files are stubbed out but whose sample merge goes
      * through the real repository, which is what a missing samples table has to
-     * be driven through: ASW_Recording_Training_Data never calls find_all(), so
+     * be driven through: ANTISPAMWIZARD_Recording_Training_Data never calls find_all(), so
      * the sample-read failure flag is never set and the cache gate is never
      * exercised.
      */
-    private function make_repository_reading_store( ASW_Sample_Repository $repo ): ASW_Model_Store {
-        return new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+    private function make_repository_reading_store( ANTISPAMWIZARD_Sample_Repository $repo ): ANTISPAMWIZARD_Model_Store {
+        return new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_File_Free_Training_Data( $repo ),
+            new ANTISPAMWIZARD_File_Free_Training_Data( $repo ),
             $repo
         );
     }
@@ -3388,7 +3388,7 @@ class ModelStoreTest extends TestCase {
         // cold rebuild on every submission for good.
         $wpdb->get_results_result = false;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
 
         $this->assertNull(
             $repo->script_fingerprint( 'cyrillic' ),
@@ -3406,8 +3406,8 @@ class ModelStoreTest extends TestCase {
 
         $this->assertSame(
             array(
-                ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic',
-                ASW_Model_Store::TRANSIENT_PREFIX . 'combined',
+                ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic',
+                ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'combined',
             ),
             $this->cached_unit_keys(),
             'With the fingerprint read failing as well, the fingerprint asserts nothing about the rows, so withholding the write would only strand the site on the cold path'
@@ -3419,10 +3419,10 @@ class ModelStoreTest extends TestCase {
 
         $wpdb->get_results_result = false;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $this->make_repository_reading_store( $repo )->script_classifier( 'cyrillic' );
 
-        $key = ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic';
+        $key = ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic';
         $this->assertSame( array( $key ), $this->cached_unit_keys(), 'Premise: the unit was cached on the fallback fingerprint' );
 
         // What makes caching on the fallback safe: the component it carries
@@ -3431,7 +3431,7 @@ class ModelStoreTest extends TestCase {
         $wpdb->get_results_result = null;
         $repo->insert( 'cyrillic', 'spam', 'продам гараж, пишите', 8301 );
 
-        $healthy = $this->make_repository_reading_store( new ASW_Sample_Repository( $wpdb ) );
+        $healthy = $this->make_repository_reading_store( new ANTISPAMWIZARD_Sample_Repository( $wpdb ) );
 
         $this->assertNotEmpty(
             $healthy->script_sample_tokens( 'cyrillic' ),
@@ -3446,7 +3446,7 @@ class ModelStoreTest extends TestCase {
 
         $before = $this->fingerprint_for_script( 'cyrillic' );
 
-        update_option( ASW_Sample_Repository::REVISION_OPTION, 11 );
+        update_option( ANTISPAMWIZARD_Sample_Repository::REVISION_OPTION, 11 );
 
         $this->assertNotSame(
             $before,
@@ -3456,12 +3456,12 @@ class ModelStoreTest extends TestCase {
     }
 
     public function test_a_store_without_a_repository_still_fingerprints_and_caches_units(): void {
-        $store = $this->make_store( new ASW_Recording_Training_Data(), array(), false );
+        $store = $this->make_store( new ANTISPAMWIZARD_Recording_Training_Data(), array(), false );
 
         $store->script_classifier( 'cyrillic' );
 
         $reads = $this->reads();
-        $this->assertSame( array( ASW_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ), $reads );
+        $this->assertSame( array( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'cyrillic' ), $reads );
         $this->assertSame( array( $reads[0] ), $this->cached_unit_keys() );
     }
 
@@ -3472,10 +3472,10 @@ class ModelStoreTest extends TestCase {
         $store->script_classifier( 'cyrillic' );
         $store->combined_classifier();
 
-        $this->assertSame( 'asw_classifiers_', ASW_Model_Store::TRANSIENT_PREFIX );
+        $this->assertSame( 'antispamwizard_classifiers_', ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX );
         foreach ( $this->reads() as $key ) {
             $this->assertStringStartsWith(
-                'asw_classifiers_',
+                'antispamwizard_classifiers_',
                 $key,
                 'uninstall.php removes the cache by LIKE on this prefix'
             );
@@ -3536,20 +3536,20 @@ class ModelStoreTest extends TestCase {
      */
     private function budget_spent( array $samples ): int {
         return $this->packed_bytes( $samples )
-            + count( $samples ) * ASW_Model_Store::LEARNED_SAMPLE_OVERHEAD_BYTES;
+            + count( $samples ) * ANTISPAMWIZARD_Model_Store::LEARNED_SAMPLE_OVERHEAD_BYTES;
     }
 
     /**
      * Store over a repository alone -- no corpus file, so every similarity list
      * in the unit that comes out is a learned one.
      *
-     * @param ASW_Sample_Repository $repo Repository.
+     * @param ANTISPAMWIZARD_Sample_Repository $repo Repository.
      */
-    private function learned_only_store( ASW_Sample_Repository $repo ): ASW_Model_Store {
-        return new ASW_Model_Store(
-            new ASW_Tokenizer( array() ),
+    private function learned_only_store( ANTISPAMWIZARD_Sample_Repository $repo ): ANTISPAMWIZARD_Model_Store {
+        return new ANTISPAMWIZARD_Model_Store(
+            new ANTISPAMWIZARD_Tokenizer( array() ),
             array(),
-            new ASW_File_Free_Training_Data( $repo ),
+            new ANTISPAMWIZARD_File_Free_Training_Data( $repo ),
             $repo
         );
     }
@@ -3557,7 +3557,7 @@ class ModelStoreTest extends TestCase {
     public function test_the_learned_similarity_corpus_never_exceeds_the_budget(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         for ( $i = 0; $i < 150; $i++ ) {
             $this->assertNotSame( false, $repo->insert( 'latin', 'spam', $this->learned_sample( $i ), 9200 + $i ) );
         }
@@ -3569,7 +3569,7 @@ class ModelStoreTest extends TestCase {
         $this->assertNotEmpty( $samples, 'Premise: the learned samples reached the unit' );
         $this->assertLessThan( 150, count( $samples ), 'Premise: the budget actually bound this corpus' );
         $this->assertLessThanOrEqual(
-            ASW_Model_Store::LEARNED_SIMILARITY_BUDGET,
+            ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET,
             $this->packed_bytes( $samples ),
             'The learned half of a similarity corpus is what nothing else bounds'
         );
@@ -3578,7 +3578,7 @@ class ModelStoreTest extends TestCase {
     public function test_the_budget_keeps_the_newest_learned_spam_and_drops_the_oldest(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         for ( $i = 0; $i < 150; $i++ ) {
             $repo->insert( 'latin', 'spam', $this->learned_sample( $i ), 9400 + $i );
         }
@@ -3602,7 +3602,7 @@ class ModelStoreTest extends TestCase {
         // The other half of the deliberate verdict change: only the Similarity
         // check's corpus is capped. The classifier still learned every sample.
         $classifier = $store->script_classifier( 'latin' );
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $this->assertArrayHasKey(
             $oldest,
             $classifier->get_state()['token_counts']['spam'],
@@ -3617,7 +3617,7 @@ class ModelStoreTest extends TestCase {
         // bytes and costs LEARNED_SAMPLE_OVERHEAD_BYTES more, so a corpus can be
         // composed to spend the budget exactly:
         // 117 * ( 1099 + 16 ) + ( 601 + 16 ) === LEARNED_SIMILARITY_BUDGET.
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'latin', 'spam', $this->learned_sample( 700, 14, 42 ), 9700 );
         for ( $i = 0; $i < 117; $i++ ) {
             $repo->insert( 'latin', 'spam', $this->learned_sample( 701 + $i, 100, 10 ), 9701 + $i );
@@ -3630,7 +3630,7 @@ class ModelStoreTest extends TestCase {
         // and the arithmetic the object-cache worst case is computed from
         // assumes the budget is spendable in full.
         $this->assertSame(
-            ASW_Model_Store::LEARNED_SIMILARITY_BUDGET,
+            ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET,
             $this->budget_spent( $samples ),
             'Premise: the fixture composes a corpus that spends exactly the budget'
         );
@@ -3642,7 +3642,7 @@ class ModelStoreTest extends TestCase {
 
         // The same corpus as above with one more byte in the *oldest* sample,
         // which is where the newest-first walk stops.
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'latin', 'spam', $this->learned_sample( 700, 14, 42 ) . 'z', 9700 );
         for ( $i = 0; $i < 117; $i++ ) {
             $repo->insert( 'latin', 'spam', $this->learned_sample( 701 + $i, 100, 10 ), 9701 + $i );
@@ -3651,31 +3651,31 @@ class ModelStoreTest extends TestCase {
         $samples = $this->learned_only_store( $repo )->script_sample_tokens( 'latin' );
 
         $this->assertCount( 117, $samples, 'One byte past the budget stops the walk at the sample that overflows it' );
-        $this->assertLessThan( ASW_Model_Store::LEARNED_SIMILARITY_BUDGET, $this->budget_spent( $samples ) );
+        $this->assertLessThan( ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET, $this->budget_spent( $samples ) );
     }
 
     public function test_a_max_token_sample_is_admitted_whole_and_older_samples_still_fit(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         for ( $i = 0; $i < 40; $i++ ) {
             $repo->insert( 'latin', 'spam', $this->learned_sample( $i ), 9600 + $i );
         }
-        // ASW_Tokenizer::MAX_TOKENS worth of ten-character tokens: 109 999
+        // ANTISPAMWIZARD_Tokenizer::MAX_TOKENS worth of ten-character tokens: 109 999
         // packed bytes, the largest list realistic text can produce.
-        $repo->insert( 'latin', 'spam', $this->learned_sample( 900, ASW_Tokenizer::MAX_TOKENS ), 9700 );
+        $repo->insert( 'latin', 'spam', $this->learned_sample( 900, ANTISPAMWIZARD_Tokenizer::MAX_TOKENS ), 9700 );
 
         $samples = $this->learned_only_store( $repo )->script_sample_tokens( 'latin' );
         $bytes   = $this->packed_bytes( $samples );
 
         $this->assertSame(
-            ASW_Tokenizer::MAX_TOKENS,
+            ANTISPAMWIZARD_Tokenizer::MAX_TOKENS,
             count( end( $samples ) ),
             'A sample inside the budget is admitted whole, never trimmed to fit'
         );
-        $this->assertLessThanOrEqual( ASW_Model_Store::LEARNED_SIMILARITY_BUDGET, $bytes );
+        $this->assertLessThanOrEqual( ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET, $bytes );
         $this->assertGreaterThan(
-            ASW_Tokenizer::MAX_TOKENS * 11 - 1,
+            ANTISPAMWIZARD_Tokenizer::MAX_TOKENS * 11 - 1,
             $bytes,
             'Premise: older samples were still admitted alongside it'
         );
@@ -3684,7 +3684,7 @@ class ModelStoreTest extends TestCase {
     public function test_a_sample_that_tokenises_to_nothing_is_passed_over_without_stopping_the_walk(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         // A moderated body that is punctuation alone -- or one whose every token
         // the site has excluded -- reaches find_all() and tokenises to nothing.
         // It must cost no budget and, above all, must not stop the walk: a break
@@ -3716,13 +3716,13 @@ class ModelStoreTest extends TestCase {
     public function test_a_sample_over_the_budget_is_skipped_and_nothing_older_follows_it(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         for ( $i = 0; $i < 10; $i++ ) {
             $repo->insert( 'latin', 'spam', $this->learned_sample( $i ), 9800 + $i );
         }
         // 10 000 twenty-character tokens: 209 999 packed bytes, past the budget
         // on its own. The walk stops there and admits nothing older.
-        $repo->insert( 'latin', 'spam', $this->learned_sample( 901, ASW_Tokenizer::MAX_TOKENS, 20 ), 9900 );
+        $repo->insert( 'latin', 'spam', $this->learned_sample( 901, ANTISPAMWIZARD_Tokenizer::MAX_TOKENS, 20 ), 9900 );
 
         $this->assertSame(
             array(),
@@ -3734,16 +3734,16 @@ class ModelStoreTest extends TestCase {
     public function test_the_combined_units_learned_rows_take_the_budget_and_its_legacy_lists_do_not(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         for ( $i = 0; $i < 150; $i++ ) {
             $repo->insert( 'unknown', 'spam', $this->learned_sample( $i ), 10000 + $i );
         }
 
-        $loader = new ASW_Legacy_And_Script_Training_Data( $repo );
-        $store  = new ASW_Model_Store( new ASW_Tokenizer( array() ), array(), $loader, $repo );
+        $loader = new ANTISPAMWIZARD_Legacy_And_Script_Training_Data( $repo );
+        $store  = new ANTISPAMWIZARD_Model_Store( new ANTISPAMWIZARD_Tokenizer( array() ), array(), $loader, $repo );
 
         $samples = $store->combined_sample_tokens();
-        $legacy  = $this->tokenizer_lists( array( ASW_Legacy_And_Script_Training_Data::LEGACY_SPAM ) );
+        $legacy  = $this->tokenizer_lists( array( ANTISPAMWIZARD_Legacy_And_Script_Training_Data::LEGACY_SPAM ) );
 
         $this->assertSame( $legacy, array_slice( $samples, 0, count( $legacy ) ), 'The shipped legacy lists are never capped' );
 
@@ -3751,7 +3751,7 @@ class ModelStoreTest extends TestCase {
         $this->assertNotEmpty( $learned, 'Premise: the unknown-script rows reached the combined unit' );
         $this->assertLessThan( 150, count( $learned ), 'Premise: the budget actually bound them' );
         $this->assertLessThanOrEqual(
-            ASW_Model_Store::LEARNED_SIMILARITY_BUDGET,
+            ANTISPAMWIZARD_Model_Store::LEARNED_SIMILARITY_BUDGET,
             $this->packed_bytes( $learned ),
             'The combined unit spends the same budget on the rows this site learned'
         );
@@ -3764,11 +3764,11 @@ class ModelStoreTest extends TestCase {
      * @return array<int, array<int, string>>
      */
     private function tokenizer_lists( array $samples ): array {
-        $tokenizer = new ASW_Tokenizer( array() );
+        $tokenizer = new ANTISPAMWIZARD_Tokenizer( array() );
         $lists     = array();
 
         foreach ( $samples as $sample ) {
-            $tokens = $tokenizer->tokenize_for_script( $sample, ASW_Script_Detector::detect( $sample ) );
+            $tokens = $tokenizer->tokenize_for_script( $sample, ANTISPAMWIZARD_Script_Detector::detect( $sample ) );
             if ( ! empty( $tokens ) ) {
                 $lists[] = $tokens;
             }
@@ -3780,7 +3780,7 @@ class ModelStoreTest extends TestCase {
     public function test_learned_ham_never_enters_a_similarity_corpus(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'latin', 'spam', $this->learned_sample( 1, 5 ), 10500 );
         $repo->insert( 'latin', 'ham', $this->learned_sample( 2, 5 ), 10501 );
         $repo->insert( 'unknown', 'spam', $this->learned_sample( 3, 5 ), 10502 );
@@ -3831,17 +3831,17 @@ class ModelStoreTest extends TestCase {
     public function test_a_sample_the_budget_skips_still_invalidates_the_cached_unit(): void {
         global $wpdb;
 
-        $repo = new ASW_Sample_Repository( $wpdb );
+        $repo = new ANTISPAMWIZARD_Sample_Repository( $wpdb );
         $repo->insert( 'latin', 'spam', $this->learned_sample( 5, 20 ), 10600 );
 
         $warm = $this->learned_only_store( $repo );
         $this->assertCount( 1, $warm->script_sample_tokens( 'latin' ) );
-        $this->assertSame( array( ASW_Model_Store::TRANSIENT_PREFIX . 'latin' ), $this->cached_unit_keys() );
+        $this->assertSame( array( ANTISPAMWIZARD_Model_Store::TRANSIENT_PREFIX . 'latin' ), $this->cached_unit_keys() );
 
         // A sample past the budget: the similarity corpus cannot carry it and
         // stops the walk before the older one, but the classifier learns it, so
         // the fingerprint must move and the cached unit must not be served.
-        $oversized = $this->learned_sample( 902, ASW_Tokenizer::MAX_TOKENS, 20 );
+        $oversized = $this->learned_sample( 902, ANTISPAMWIZARD_Tokenizer::MAX_TOKENS, 20 );
         $repo->insert( 'latin', 'spam', $oversized, 10601 );
 
         $cold       = $this->learned_only_store( $repo );
@@ -3849,7 +3849,7 @@ class ModelStoreTest extends TestCase {
         $classifier = $cold->script_classifier( 'latin' );
 
         $this->assertSame( array(), $samples, 'The oversized sample stops the walk and nothing older follows it' );
-        $this->assertInstanceOf( ASW_Naive_Bayes::class, $classifier );
+        $this->assertInstanceOf( ANTISPAMWIZARD_Naive_Bayes::class, $classifier );
         $this->assertArrayHasKey(
             strtok( $oversized, ' ' ),
             $classifier->get_state()['token_counts']['spam'],

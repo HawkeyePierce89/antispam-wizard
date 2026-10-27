@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Verdicts are delivered through CF7's native wpcf7_spam filter. The integration
  * is a soft dependency: it is registered on plugins_loaded only when CF7 is active.
  */
-class ASW_CF7_Integration {
+class ANTISPAMWIZARD_CF7_Integration {
 
     /**
      * Whether CF7 is available.
@@ -50,7 +50,7 @@ class ASW_CF7_Integration {
      * stylesheet only loads on pages that actually render a CF7 form. Returns
      * the filter value unchanged. If a site filters CF7's asset loading off,
      * the honeypot still stays hidden via the inline style fallback on the
-     * wrapper emitted by ASW_Comment_Form::render_bot_fields(), so only
+     * wrapper emitted by ANTISPAMWIZARD_Comment_Form::render_bot_fields(), so only
      * strict-CSP sites that also suppress CF7 assets would see the fallback
      * label.
      *
@@ -58,16 +58,16 @@ class ASW_CF7_Integration {
      * @return mixed
      */
     public function enqueue_styles( $value = true ) {
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $enabled = ! empty( $settings['enabled'] );
         $cf7_enabled = isset( $settings['cf7_enabled'] ) ? $settings['cf7_enabled'] : true;
         $bot_on      = ! empty( $settings['honeypot_enabled'] ) || ! empty( $settings['submit_time_enabled'] );
         if ( $enabled && $cf7_enabled && $bot_on ) {
             wp_enqueue_style(
-                'asw-comment-form',
-                ASW_URL . 'public/css/comment-form.css',
+                'antispamwizard-comment-form',
+                ANTISPAMWIZARD_URL . 'public/css/comment-form.css',
                 array(),
-                ASW_VERSION
+                ANTISPAMWIZARD_VERSION
             );
         }
         return $value;
@@ -80,7 +80,7 @@ class ASW_CF7_Integration {
      * @return string
      */
     public function render_fields( string $elements ): string {
-        $settings = ASW_Settings::get_all();
+        $settings = ANTISPAMWIZARD_Settings::get_all();
         $enabled = ! empty( $settings['enabled'] );
         $cf7_enabled = isset( $settings['cf7_enabled'] ) ? $settings['cf7_enabled'] : true;
         if ( ! $enabled || ! $cf7_enabled ) {
@@ -97,7 +97,7 @@ class ASW_CF7_Integration {
         if ( $form_id <= 0 ) {
             return $elements;
         }
-        return $elements . ASW_Comment_Form::render_bot_fields( $form_id );
+        return $elements . ANTISPAMWIZARD_Comment_Form::render_bot_fields( $form_id );
     }
 
     /**
@@ -270,7 +270,7 @@ class ASW_CF7_Integration {
                 return $spam;
             }
 
-            $settings = ASW_Settings::get_all();
+            $settings = ANTISPAMWIZARD_Settings::get_all();
             $enabled = ! empty( $settings['enabled'] );
             $cf7_enabled = isset( $settings['cf7_enabled'] ) ? $settings['cf7_enabled'] : true;
             if ( ! $enabled || ! $cf7_enabled ) {
@@ -296,11 +296,11 @@ class ASW_CF7_Integration {
             // with the honeypot field, the token field, and comment_post_ID = contact-form ID.
             // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Contact Form 7 owns nonce handling for its own submissions; these two values are deliberately copied raw and still slashed so the shared bot checks see byte-identical input on the CF7 and comment paths (they unslash and validate each field themselves). Sanitizing here would let a tags-only honeypot fill through.
             $request = array();
-            if ( isset( $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ] ) ) {
-                $request[ ASW_Comment_Form::HONEYPOT_FIELD ] = $_POST[ ASW_Comment_Form::HONEYPOT_FIELD ];
+            if ( isset( $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] ) ) {
+                $request[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ] = $_POST[ ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD ];
             }
-            if ( isset( $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ] ) ) {
-                $request[ ASW_Comment_Form::TIMESTAMP_FIELD ] = $_POST[ ASW_Comment_Form::TIMESTAMP_FIELD ];
+            if ( isset( $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] ) ) {
+                $request[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] = $_POST[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ];
             }
             // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             // Contact-form ID for token binding.
@@ -319,9 +319,9 @@ class ASW_CF7_Integration {
             $request['comment_post_ID'] = $form_id;
 
             // Build CF7-scoped detector lazily via callable that returns build_checks with injected request.
-            $cf7_detector = new ASW_Detector(
+            $cf7_detector = new ANTISPAMWIZARD_Detector(
                 function () use ( $request ) {
-                    $checks = ASW::get_instance()->build_checks( $request );
+                    $checks = ANTISPAMWIZARD::get_instance()->build_checks( $request );
                     // The build_checks already injects request into the two bot checks when called with $request.
                     // Ensure ordering/short-circuit/fail-open contract untouched.
                     return $checks;
@@ -341,10 +341,10 @@ class ASW_CF7_Integration {
             $normalized_content = isset( $data['comment_content'] ) ? $data['comment_content'] : ( $payload['comment_content'] ?? '' );
             $ip_hash = isset( $data['comment_author_IP_hashed'] ) ? $data['comment_author_IP_hashed'] : '';
             $email   = isset( $payload['comment_author_email'] ) ? $payload['comment_author_email'] : '';
-            $email_hash = ASW_Detector::hash_email( (string) $email );
+            $email_hash = ANTISPAMWIZARD_Detector::hash_email( (string) $email );
 
-            ASW_Spam_Log::add_entry( $normalized_content, $check_names, $ip_hash, 0, 'form', $email_hash );
-            ASW_Stats::record( $check_names );
+            ANTISPAMWIZARD_Spam_Log::add_entry( $normalized_content, $check_names, $ip_hash, 0, 'form', $email_hash );
+            ANTISPAMWIZARD_Stats::record( $check_names );
 
             $sanitized_reasons = array_map( 'wp_strip_all_tags', $reasons );
             if ( is_object( $submission ) && method_exists( $submission, 'add_spam_log' ) ) {
@@ -362,9 +362,9 @@ class ASW_CF7_Integration {
 
             return true;
         } catch ( \Throwable $e ) {
-            // Same rule as ASW_Detector::run(): the exception MESSAGE is deliberately
-            // omitted. This try wraps evaluate(), ASW_Spam_Log::add_entry() and
-            // ASW_Stats::record(), so a $wpdb or lock-file failure would write a query
+            // Same rule as ANTISPAMWIZARD_Detector::run(): the exception MESSAGE is deliberately
+            // omitted. This try wraps evaluate(), ANTISPAMWIZARD_Spam_Log::add_entry() and
+            // ANTISPAMWIZARD_Stats::record(), so a $wpdb or lock-file failure would write a query
             // or a filesystem path into debug.log, which is web-readable on
             // misconfigured hosts. The throw site alone attributes the break, and it
             // is reduced to basename() for the same reason: the throw can come from

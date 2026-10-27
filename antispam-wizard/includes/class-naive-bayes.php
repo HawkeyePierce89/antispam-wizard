@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Standalone Naive Bayes text classifier with no WordPress dependencies.
  */
-class ASW_Naive_Bayes {
+class ANTISPAMWIZARD_Naive_Bayes {
 
     /**
      * Maximum unique tokens per category.
@@ -45,9 +45,9 @@ class ASW_Naive_Bayes {
     /**
      * Tokenizer instance.
      *
-     * @var ASW_Tokenizer
+     * @var ANTISPAMWIZARD_Tokenizer
      */
-    private ASW_Tokenizer $tokenizer;
+    private ANTISPAMWIZARD_Tokenizer $tokenizer;
 
     /**
      * Script group for script-aware tokenization.
@@ -62,11 +62,11 @@ class ASW_Naive_Bayes {
     /**
      * Constructor.
      *
-     * @param ASW_Tokenizer|null $tokenizer Optional tokenizer instance.
+     * @param ANTISPAMWIZARD_Tokenizer|null $tokenizer Optional tokenizer instance.
      * @param string|null                   $script    Optional script group for script-aware tokenization.
      */
-    public function __construct( ?ASW_Tokenizer $tokenizer = null, ?string $script = null ) {
-        $this->tokenizer = $tokenizer ?? new ASW_Tokenizer();
+    public function __construct( ?ANTISPAMWIZARD_Tokenizer $tokenizer = null, ?string $script = null ) {
+        $this->tokenizer = $tokenizer ?? new ANTISPAMWIZARD_Tokenizer();
         $this->script    = $script;
     }
 
@@ -131,7 +131,7 @@ class ASW_Naive_Bayes {
             // floored at 1: a state whose categories carry no tokens at all --
             // every sample tokenised to nothing, or a cached unit pruned to
             // fit -- would otherwise be a DivisionByZeroError here, which
-            // ASW_Detector::run()'s fail-open catch swallows while disabling
+            // ANTISPAMWIZARD_Detector::run()'s fail-open catch swallows while disabling
             // the check and writing to the debug.log the harnesses scan.
             $denominator = max( 1, $this->token_totals[ $cat ] + $vocab_size );
             foreach ( $tokens as $token ) {
@@ -273,7 +273,7 @@ class ASW_Naive_Bayes {
 
         // Auto-detect script for combined/legacy classifiers so that CJK/Thai
         // samples are tokenized with n-grams instead of the word tokenizer.
-        $detected = ASW_Script_Detector::detect( $text );
+        $detected = ANTISPAMWIZARD_Script_Detector::detect( $text );
 
         return $this->tokenizer->tokenize_for_script( $text, $detected );
     }

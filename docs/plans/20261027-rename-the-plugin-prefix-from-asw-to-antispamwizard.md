@@ -109,7 +109,7 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
   `composer.json`, `.gitignore`.
 - Rename: `tests/ASWTest.php` → `tests/AntiSpamWizardTest.php`
 
-- [ ] Run three precondition checks before replacing anything. If any check gives a different
+- [x] Run three precondition checks before replacing anything. If any check gives a different
   result, stop and report:
   - `git grep -nE '[A-Za-z0-9](asw|ASW)' -- . ':!docs/plans' ':!antispam-wizard/data'` must be
     empty. This proves no token is glued to a preceding letter or digit.
@@ -119,8 +119,8 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
     must output exactly two lines, `aswphonenumber` and `aswshadow`. Anything else stops the run.
     This lists every token glued to a following letter; `[a-z]+` rather than `[a-z]` shows the full
     token.
-- [ ] `git mv tests/ASWTest.php tests/AntiSpamWizardTest.php`
-- [ ] Over the file set above, apply these replacements in order, case-sensitive, with perl
+- [x] `git mv tests/ASWTest.php tests/AntiSpamWizardTest.php`
+- [x] Over the file set above, apply these replacements in order, case-sensitive, with perl
   in-place:
   1. `ASWTest` → `AntiSpamWizardTest`
   2. `ASW` → `ANTISPAMWIZARD`
@@ -129,12 +129,12 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
   Build the file list with `git ls-files` and exclude `docs/plans/`, `antispam-wizard/data/`,
   `*.mo`, `*.png` and the Task 2 docs. Afterwards, `git status --short antispam-wizard/data` must be
   empty.
-- [ ] Update `tests/TokenizerTest.php::test_phone_token_is_one_token_of_the_ngram_path`:
+- [x] Update `tests/TokenizerTest.php::test_phone_token_is_one_token_of_the_ngram_path`:
   - Replace the hard-coded first bigram `'as'` with the marker's actual first bigram,
     `mb_substr( ANTISPAMWIZARD_Tokenizer::PHONE_TOKEN, 0, 2 )`.
   - Keep the `'ph'` assertion and the `'81'` negative, so the test still proves the digits were
     folded.
-- [ ] Hand-fix the human-readable labels that the pass turned into an all-caps identifier, using the
+- [x] Hand-fix the human-readable labels that the pass turned into an all-caps identifier, using the
   spelling AntiSpam Wizard:
   - `dev/smoke.sh`: `--title="AntiSpam Wizard Smoke"`.
   - `dev/plugin-check.sh`: `--title="AntiSpam Wizard Plugin Check"`.
@@ -143,16 +143,16 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
       the form up by that title, so every occurrence must stay identical.
     - The user agent `'Mozilla/5.0 (compatible; AntiSpam Wizard Smoke)'` changes in both
       occurrences.
-- [ ] Spot-check that each `phpcs:ignore` line still carries its exact sniff code and reason.
+- [x] Spot-check that each `phpcs:ignore` line still carries its exact sniff code and reason.
   `git diff --stat` must not touch any `.po`/`.pot`/`.mo` file, `antispam-wizard/readme.txt` or
   anything under `antispam-wizard/data/`.
-- [ ] Add `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()`:
+- [x] Add `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()`:
   - It scans every file under `antispam-wizard/` with extension `php`, `js` or `css` for
     `/(?<![A-Za-z0-9])a[s]w/i` and asserts no match. The corpus `.txt` files fall outside these
     extensions. The bracketed form keeps the test file itself out of the residual grep.
   - It asserts that `admin/js/admin.js` reads `antispamwizardAdmin`, so the localized-object
     contract is pinned on both sides. StopWordsTabTest already pins the PHP side.
-- [ ] Run `docker compose run --rm test`. It must be green with the same test count as before plus
+- [x] Run `docker compose run --rm test`. It must be green with the same test count as before plus
   the new test, and nothing skipped.
 
 ### Task 2: Rename and review the documentation

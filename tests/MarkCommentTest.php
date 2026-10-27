@@ -7,11 +7,11 @@ use PHPUnit\Framework\TestCase;
  * has been stored -- the only way to reach the pill's rollback with a claim that
  * was written successfully and can no longer be cleared.
  */
-class ASW_Late_Option_Breaking_Sample_Repository extends ASW_Sample_Repository {
+class ANTISPAMWIZARD_Late_Option_Breaking_Sample_Repository extends ANTISPAMWIZARD_Sample_Repository {
 
     public function insert( string $script, string $category, string $content, int $comment_id, string $email_hash = '' ) {
         $result                            = parent::insert( $script, $category, $content, $comment_id, $email_hash );
-        $GLOBALS['wp_update_option_fails'] = array( ASW_Spam_Log::OPTION_KEY );
+        $GLOBALS['wp_update_option_fails'] = array( ANTISPAMWIZARD_Spam_Log::OPTION_KEY );
         return $result;
     }
 }
@@ -20,17 +20,17 @@ class ASW_Late_Option_Breaking_Sample_Repository extends ASW_Sample_Repository {
  * The same, for a sample write that is refused: the claim was taken, nothing was
  * stored, and the rollback that would release it is refused too.
  */
-class ASW_Refusing_Late_Option_Breaking_Sample_Repository extends ASW_Sample_Repository {
+class ANTISPAMWIZARD_Refusing_Late_Option_Breaking_Sample_Repository extends ANTISPAMWIZARD_Sample_Repository {
 
     public function insert( string $script, string $category, string $content, int $comment_id, string $email_hash = '' ) {
-        $GLOBALS['wp_update_option_fails'] = array( ASW_Spam_Log::OPTION_KEY );
+        $GLOBALS['wp_update_option_fails'] = array( ANTISPAMWIZARD_Spam_Log::OPTION_KEY );
         return false;
     }
 }
 
 class MarkCommentTest extends TestCase {
 
-    private ASW_Admin_Page $admin_page;
+    private ANTISPAMWIZARD_Admin_Page $admin_page;
 
     protected function setUp(): void {
         global $wp_options, $wp_actions, $wp_filters, $wp_menu_pages, $wp_enqueued_styles, $wp_current_user_caps, $wp_nonces, $wp_json_responses, $wp_comments, $wpdb;
@@ -49,21 +49,21 @@ class MarkCommentTest extends TestCase {
         $GLOBALS['wp_comment_status_change_fails'] = false;
         $GLOBALS['wp_update_comment_meta_fails']   = false;
 
-        if ( ! defined( 'ASW_PATH' ) ) {
-            define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
         }
 
         // Reset wpdb in-memory tables.
         $wpdb->reset_tables();
 
-        // Reset the ASW singleton and initialize it so the repository is available.
-        $reflection = new ReflectionClass( ASW::class );
+        // Reset the ANTISPAMWIZARD singleton and initialize it so the repository is available.
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $instance   = $reflection->getProperty( 'instance' );
         $instance->setValue( null, null );
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
-        $this->admin_page = new ASW_Admin_Page();
+        $this->admin_page = new ANTISPAMWIZARD_Admin_Page();
     }
 
     protected function tearDown(): void {
@@ -84,11 +84,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'perfectly good comment', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 42 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'perfectly good comment', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 42 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '42';
         $_POST['category']   = 'ham';
@@ -104,7 +104,7 @@ class MarkCommentTest extends TestCase {
         // comment flagged on submission never carries, so it lands unapproved.
         $this->assertSame( '0', $wp_comments[42]['comment_approved'] );
         // Sample should be in the DB repository, not in files.
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples    = $repository->find_all( 'latin', 'ham' );
         $this->assertContains( 'This is a perfectly good comment about programming.', $samples );
     }
@@ -118,11 +118,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Buy cheap pills', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 77 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Buy cheap pills', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 77 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '77';
         $_POST['category']   = 'spam';
 
@@ -130,7 +130,7 @@ class MarkCommentTest extends TestCase {
 
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
-        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}asw_samples" );
+        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}antispamwizard_samples" );
         $this->assertCount( 1, $rows );
         $this->assertSame( 77, (int) $rows[0]->comment_id );
         $this->assertSame( 'Buy cheap pills from our online store now.', $rows[0]->content );
@@ -146,11 +146,11 @@ class MarkCommentTest extends TestCase {
             'comment_author_email' => 'Subject@Example.COM',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Buy cheap watches', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 78 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Buy cheap watches', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 78 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '78';
         $_POST['category']   = 'spam';
 
@@ -158,12 +158,12 @@ class MarkCommentTest extends TestCase {
 
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
-        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}asw_samples" );
+        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}antispamwizard_samples" );
         $this->assertCount( 1, $rows );
         // The secondary subject key: hashed and case/whitespace-normalised, never
         // the raw address, so the sample stays reachable by a personal-data
         // request once the comment itself is hard-deleted.
-        $this->assertSame( ASW_Detector::hash_email( 'subject@example.com' ), $rows[0]->email_hash );
+        $this->assertSame( ANTISPAMWIZARD_Detector::hash_email( 'subject@example.com' ), $rows[0]->email_hash );
         $this->assertStringNotContainsString( 'Subject@Example.COM', implode( '|', array_map( 'strval', (array) $rows[0] ) ) );
     }
 
@@ -176,11 +176,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Buy cheap shoes', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 79 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Buy cheap shoes', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 79 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '79';
         $_POST['category']   = 'spam';
 
@@ -188,7 +188,7 @@ class MarkCommentTest extends TestCase {
 
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
-        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}asw_samples" );
+        $rows = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}antispamwizard_samples" );
         $this->assertCount( 1, $rows );
         $this->assertSame( '', $rows[0]->email_hash );
         $this->assertSame( 79, (int) $rows[0]->comment_id );
@@ -203,11 +203,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'whitespace test', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 99 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'whitespace test', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 99 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '99';
         $_POST['category']   = 'ham';
@@ -218,7 +218,7 @@ class MarkCommentTest extends TestCase {
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
         // Verify that stored content is normalized (no extra whitespace, no newlines, trimmed).
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples    = $repository->find_all( 'latin', 'ham' );
         $this->assertContains( 'This has newlines and extra spaces', $samples );
         // Original un-normalized content should NOT be present.
@@ -235,11 +235,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'unicode ws test', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 100 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'unicode ws test', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 100 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '100';
         $_POST['category']   = 'ham';
@@ -251,7 +251,7 @@ class MarkCommentTest extends TestCase {
         $this->assertTrue( $wp_json_responses[0]['success'] );
 
         // NBSP and ideographic space should be normalized to regular spaces.
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples    = $repository->find_all( 'latin', 'ham' );
         $this->assertContains( 'Hello world test', $samples );
     }
@@ -265,11 +265,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Buy cheap pills now', array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 10 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Buy cheap pills now', array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 10 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '10';
         $_POST['category']   = 'spam';
@@ -284,7 +284,7 @@ class MarkCommentTest extends TestCase {
         // Comment should be spammed.
         $this->assertSame( 'spam', $wp_comments[10]['comment_approved'] );
         // Sample should be in the DB repository.
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples    = $repository->find_all( 'latin', 'spam' );
         $this->assertContains( 'Buy cheap pills now!!!', $samples );
     }
@@ -320,7 +320,7 @@ class MarkCommentTest extends TestCase {
         global $wp_json_responses, $wp_current_user_caps;
         $wp_current_user_caps = array();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '42';
         $_POST['category']   = 'ham';
@@ -335,7 +335,7 @@ class MarkCommentTest extends TestCase {
     public function test_mark_comment_fails_with_invalid_comment_id(): void {
         global $wp_json_responses;
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '0';
         $_POST['category']   = 'ham';
@@ -350,7 +350,7 @@ class MarkCommentTest extends TestCase {
     public function test_mark_comment_fails_with_invalid_category(): void {
         global $wp_json_responses;
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '42';
         $_POST['category']   = 'invalid';
@@ -365,7 +365,7 @@ class MarkCommentTest extends TestCase {
     public function test_mark_comment_fails_when_comment_not_found(): void {
         global $wp_json_responses;
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '999';
         $_POST['category']   = 'ham';
@@ -378,44 +378,44 @@ class MarkCommentTest extends TestCase {
     }
 
     public function test_spam_log_stores_comment_id(): void {
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
 
-        ASW_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash123', 42 );
-        $entries = ASW_Spam_Log::get_entries();
+        ANTISPAMWIZARD_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash123', 42 );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
 
         $this->assertCount( 1, $entries );
         $this->assertSame( 42, $entries[0]['comment_id'] );
     }
 
     public function test_spam_log_default_comment_id_is_zero(): void {
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
 
-        ASW_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash123' );
-        $entries = ASW_Spam_Log::get_entries();
+        ANTISPAMWIZARD_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash123' );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
 
         $this->assertCount( 1, $entries );
         $this->assertSame( 0, $entries[0]['comment_id'] );
     }
 
     public function test_spam_log_update_entry_comment_id(): void {
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
 
-        $entry_id = ASW_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash123' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 77 );
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash123' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 77 );
 
-        $entries = ASW_Spam_Log::get_entries();
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertSame( 77, $entries[0]['comment_id'] );
     }
 
     public function test_spam_log_update_targets_correct_entry_under_concurrency(): void {
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
 
-        $entry_id_1 = ASW_Spam_Log::add_entry( 'first spam', array( 'test' ), 'hash1' );
-        $entry_id_2 = ASW_Spam_Log::add_entry( 'second spam', array( 'test' ), 'hash2' );
+        $entry_id_1 = ANTISPAMWIZARD_Spam_Log::add_entry( 'first spam', array( 'test' ), 'hash1' );
+        $entry_id_2 = ANTISPAMWIZARD_Spam_Log::add_entry( 'second spam', array( 'test' ), 'hash2' );
 
-        ASW_Spam_Log::update_entry_comment_id( $entry_id_1, 100 );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id_1, 100 );
 
-        $entries = ASW_Spam_Log::get_entries();
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries();
         $this->assertSame( 100, $entries[0]['comment_id'] );
         $this->assertSame( 0, $entries[1]['comment_id'] );
     }
@@ -429,11 +429,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Some comment text', array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 50 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Some comment text', array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 50 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '50';
         $_POST['category']   = 'spam';
@@ -452,21 +452,21 @@ class MarkCommentTest extends TestCase {
     }
 
     public function test_unmark_trained_allows_retry(): void {
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 99 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'test text', array( 'test' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 99 );
 
         // Mark trained.
-        $this->assertSame( 'ok', ASW_Spam_Log::mark_trained( 99, 'spam' ) );
-        $this->assertTrue( ASW_Spam_Log::is_trained( 99 ) );
+        $this->assertSame( 'ok', ANTISPAMWIZARD_Spam_Log::mark_trained( 99, 'spam' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Spam_Log::is_trained( 99 ) );
 
         // Unmark trained.
-        ASW_Spam_Log::unmark_trained( 99 );
-        $this->assertFalse( ASW_Spam_Log::is_trained( 99 ) );
+        ANTISPAMWIZARD_Spam_Log::unmark_trained( 99 );
+        $this->assertFalse( ANTISPAMWIZARD_Spam_Log::is_trained( 99 ) );
 
         // Can be re-trained now.
-        $this->assertSame( 'ok', ASW_Spam_Log::mark_trained( 99, 'ham' ) );
-        $this->assertTrue( ASW_Spam_Log::is_trained( 99 ) );
+        $this->assertSame( 'ok', ANTISPAMWIZARD_Spam_Log::mark_trained( 99, 'ham' ) );
+        $this->assertTrue( ANTISPAMWIZARD_Spam_Log::is_trained( 99 ) );
     }
 
     public function test_init_registers_mark_comment_ajax_hook(): void {
@@ -475,7 +475,7 @@ class MarkCommentTest extends TestCase {
 
         $this->admin_page->init();
 
-        $this->assertArrayHasKey( 'wp_ajax_asw_mark_comment', $wp_actions );
+        $this->assertArrayHasKey( 'wp_ajax_antispamwizard_mark_comment', $wp_actions );
     }
 
     public function test_mark_cyrillic_comment_routes_to_cyrillic_in_db(): void {
@@ -487,11 +487,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Купите дешевые таблетки', array( 'stop_words' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 20 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Купите дешевые таблетки', array( 'stop_words' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 20 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '20';
         $_POST['category']   = 'spam';
@@ -504,7 +504,7 @@ class MarkCommentTest extends TestCase {
         $this->assertStringContainsString( 'Cyrillic', $wp_json_responses[0]['data']['script_label'] );
 
         // Verify it was saved to DB with cyrillic script.
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples    = $repository->find_all( 'cyrillic', 'spam' );
         $this->assertContains( 'Купите дешевые таблетки прямо сейчас!', $samples );
 
@@ -522,11 +522,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( '12345 67890', array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 30 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( '12345 67890', array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 30 );
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '30';
         $_POST['category']   = 'spam';
@@ -539,7 +539,7 @@ class MarkCommentTest extends TestCase {
         $this->assertStringContainsString( 'Legacy', $wp_json_responses[0]['data']['script_label'] );
 
         // Verify it was saved to DB with 'unknown' script.
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $samples    = $repository->find_all( 'unknown', 'spam' );
         $this->assertContains( '12345 67890 !!!', $samples );
     }
@@ -553,14 +553,14 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'test comment', array( 'test' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 60 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'test comment', array( 'test' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 60 );
 
-        $repository     = ASW::get_instance()->get_repository();
+        $repository     = ANTISPAMWIZARD::get_instance()->get_repository();
         $rev_before     = $repository->latest_revision();
 
-        $nonce = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['nonce']      = $nonce;
         $_POST['comment_id'] = '60';
         $_POST['category']   = 'spam';
@@ -575,7 +575,7 @@ class MarkCommentTest extends TestCase {
     /**
      * Confirming a comment the plugin already put in the spam queue fires no
      * transition, so the pill drops the plugin's flag itself: a moderator's spam
-     * verdict is never shown to the comment's author (ASW_Shadow_Display).
+     * verdict is never shown to the comment's author (ANTISPAMWIZARD_Shadow_Display).
      */
     public function test_confirming_a_flagged_comment_as_spam_stops_its_shadow_display(): void {
         global $wp_json_responses, $wp_comments, $wp_comment_meta;
@@ -590,15 +590,15 @@ class MarkCommentTest extends TestCase {
             'comment_content'  => 'Cheap shoes in our shop, visit today.',
             'comment_approved' => 'trash',
         );
-        $wp_comment_meta[11] = array( '_asw_reason' => 'links' );
-        $wp_comment_meta[12] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[11] = array( '_antispamwizard_reason' => 'links' );
+        $wp_comment_meta[12] = array( '_antispamwizard_reason' => 'links' );
 
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
         foreach ( array( 11, 12 ) as $comment_id ) {
-            $entry_id = ASW_Spam_Log::add_entry( 'Cheap goods', array( 'links' ), 'hash' );
-            ASW_Spam_Log::update_entry_comment_id( $entry_id, $comment_id );
+            $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Cheap goods', array( 'links' ), 'hash' );
+            ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, $comment_id );
 
-            $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+            $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
             $_POST['comment_id'] = (string) $comment_id;
             $_POST['category']   = 'spam';
             $this->admin_page->ajax_mark_comment();
@@ -608,8 +608,8 @@ class MarkCommentTest extends TestCase {
         $this->assertTrue( $wp_json_responses[1]['success'] );
         $this->assertSame( 'spam', $wp_comments[11]['comment_approved'] );
         $this->assertSame( 'spam', $wp_comments[12]['comment_approved'] );
-        $this->assertArrayNotHasKey( '_asw_reason', $wp_comment_meta[11], 'already spam: no transition fired' );
-        $this->assertArrayNotHasKey( '_asw_reason', $wp_comment_meta[12], 'trash → spam keeps the flag, the pill does not' );
+        $this->assertArrayNotHasKey( '_antispamwizard_reason', $wp_comment_meta[11], 'already spam: no transition fired' );
+        $this->assertArrayNotHasKey( '_antispamwizard_reason', $wp_comment_meta[12], 'trash → spam keeps the flag, the pill does not' );
     }
 
     public function test_a_failed_spam_confirmation_keeps_the_flag(): void {
@@ -620,13 +620,13 @@ class MarkCommentTest extends TestCase {
             'comment_content'  => 'Cheap bags in our shop, visit today.',
             'comment_approved' => 'trash',
         );
-        $wp_comment_meta[13] = array( '_asw_reason' => 'links' );
+        $wp_comment_meta[13] = array( '_antispamwizard_reason' => 'links' );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Cheap bags', array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 13 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Cheap bags', array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 13 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '13';
         $_POST['category']   = 'spam';
 
@@ -635,14 +635,14 @@ class MarkCommentTest extends TestCase {
         $GLOBALS['wp_comment_status_change_fails'] = false;
 
         $this->assertFalse( $wp_json_responses[0]['success'] );
-        $this->assertSame( 'links', $wp_comment_meta[13]['_asw_reason'], 'no verdict was recorded' );
+        $this->assertSame( 'links', $wp_comment_meta[13]['_antispamwizard_reason'], 'no verdict was recorded' );
     }
 
     /**
      * Trashing a comment from the spam queue records 'spam' as the status
      * wp_untrash_comment()/wp_unspam_comment() restore, so a Ham verdict on it
      * must not hand the comment back to the spam queue (which would train spam
-     * through ASW_Moderation and keep it shadow-displayed): it lands unapproved,
+     * through ANTISPAMWIZARD_Moderation and keep it shadow-displayed): it lands unapproved,
      * trained as ham only, with the plugin's flag dropped.
      */
     public function test_a_ham_verdict_on_a_comment_trashed_from_the_spam_queue_does_not_restore_it_as_spam(): void {
@@ -655,25 +655,25 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'trash',
         );
         $wp_comment_meta[14] = array(
-            '_asw_reason'           => 'bayesian',
+            '_antispamwizard_reason'           => 'bayesian',
             '_wp_trash_meta_status' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'A genuine question', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 14 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'A genuine question', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 14 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '14';
         $_POST['category']   = 'ham';
         $this->admin_page->ajax_mark_comment();
 
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $this->assertTrue( $wp_json_responses[0]['success'] );
         $this->assertSame( '0', $wp_comments[14]['comment_approved'] );
         $this->assertSame( array( $text ), $repository->find_all( 'latin', 'ham' ) );
         $this->assertSame( array(), $repository->find_all( 'latin', 'spam' ) );
-        $this->assertArrayNotHasKey( '_asw_reason', $wp_comment_meta[14] );
+        $this->assertArrayNotHasKey( '_antispamwizard_reason', $wp_comment_meta[14] );
         $this->assertArrayNotHasKey( '_wp_trash_meta_status', $wp_comment_meta[14] );
     }
 
@@ -690,15 +690,15 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'trash',
         );
         $wp_comment_meta[15] = array(
-            '_asw_reason'           => 'bayesian',
+            '_antispamwizard_reason'           => 'bayesian',
             '_wp_trash_meta_status' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'Another genuine question', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 15 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'Another genuine question', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 15 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '15';
         $_POST['category']   = 'ham';
 
@@ -709,7 +709,7 @@ class MarkCommentTest extends TestCase {
         $this->assertFalse( $wp_json_responses[0]['success'] );
         $this->assertSame( 'trash', $wp_comments[15]['comment_approved'] );
         $this->assertSame( 'spam', $wp_comment_meta[15]['_wp_trash_meta_status'] );
-        $this->assertSame( 'bayesian', $wp_comment_meta[15]['_asw_reason'] );
+        $this->assertSame( 'bayesian', $wp_comment_meta[15]['_antispamwizard_reason'] );
     }
 
     /**
@@ -726,19 +726,19 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'trash',
         );
         $wp_comment_meta[18] = array(
-            '_asw_reason'           => 'bayesian',
+            '_antispamwizard_reason'           => 'bayesian',
             '_wp_trash_meta_status' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'A third genuine question', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 18 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'A third genuine question', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 18 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '18';
         $_POST['category']   = 'ham';
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         $GLOBALS['wp_comment_status_change_fails'] = true;
@@ -756,7 +756,7 @@ class MarkCommentTest extends TestCase {
         $this->assertFalse( $wp_json_responses[0]['success'] );
         $this->assertSame( 'trash', $wp_comments[18]['comment_approved'] );
         $this->assertSame( '0', $wp_comment_meta[18]['_wp_trash_meta_status'] );
-        $this->assertStringContainsString( 'ASW: trash status rollback failed for comment 18', $logged );
+        $this->assertStringContainsString( 'ANTISPAMWIZARD: trash status rollback failed for comment 18', $logged );
     }
 
     /**
@@ -775,11 +775,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'A comment another moderator', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 19 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'A comment another moderator', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 19 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '19';
         $_POST['category']   = 'ham';
 
@@ -791,7 +791,7 @@ class MarkCommentTest extends TestCase {
 
         $this->assertFalse( $wp_json_responses[0]['success'] );
         $this->assertStringContainsString( 'status could not be changed', $wp_json_responses[0]['data']['message'] );
-        $this->assertFalse( ASW_Spam_Log::is_trained( 19 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Spam_Log::is_trained( 19 ) );
     }
 
     /**
@@ -807,11 +807,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '0',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( 'A held comment', array( 'bayesian' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 16 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( 'A held comment', array( 'bayesian' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 16 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '16';
         $_POST['category']   = 'ham';
 
@@ -846,7 +846,7 @@ class MarkCommentTest extends TestCase {
         global $wp_json_responses, $wp_comments;
 
         $text       = 'A body whose status write the database refuses.';
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
 
         // The same text, already trained as ham from another comment.
         $repository->insert( 'latin', 'ham', $text, 45, '' );
@@ -857,11 +857,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'test' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 70 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'test' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 70 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '70';
         $_POST['category']   = 'spam';
 
@@ -879,7 +879,7 @@ class MarkCommentTest extends TestCase {
         // reconciled here rather than waiting for a later moderation.
         $this->assertSame( array(), $repository->find_all( 'latin', 'ham' ) );
         // The claim is gone, so the retry the error asks for can take it again.
-        $this->assertFalse( ASW_Spam_Log::is_trained( 70 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Spam_Log::is_trained( 70 ) );
 
         $wp_json_responses = array();
         $this->admin_page->ajax_mark_comment();
@@ -889,7 +889,7 @@ class MarkCommentTest extends TestCase {
         // insert() deduplicates, so the retry stores no second copy.
         $this->assertSame( array( $text ), $repository->find_all( 'latin', 'spam' ) );
         $this->assertSame( array(), $repository->find_all( 'latin', 'ham' ) );
-        $this->assertTrue( ASW_Spam_Log::is_trained( 70 ) );
+        $this->assertTrue( ANTISPAMWIZARD_Spam_Log::is_trained( 70 ) );
     }
 
     /**
@@ -909,7 +909,7 @@ class MarkCommentTest extends TestCase {
         global $wp_json_responses, $wp_comments, $wpdb;
 
         $text       = 'A body whose supersession read the database refuses.';
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
 
         // Stands in for the newer decision's row: another moderation committed the
         // opposite category for this text and removed this request's row.
@@ -923,11 +923,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 67 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 67 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '67';
         $_POST['category']   = 'spam';
 
@@ -958,19 +958,19 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 68 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 68 );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Refusing_Late_Option_Breaking_Sample_Repository( $wpdb ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Refusing_Late_Option_Breaking_Sample_Repository( $wpdb ) );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '68';
         $_POST['category']   = 'spam';
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         $this->admin_page->ajax_mark_comment();
@@ -987,11 +987,11 @@ class MarkCommentTest extends TestCase {
 
     /**
      * The pill is the second writer of the sample table, and it has to keep the
-     * same invariant ASW_Moderation's flip delete keeps: a text is stored under
+     * same invariant ANTISPAMWIZARD_Moderation's flip delete keeps: a text is stored under
      * exactly one category, never both. The gap this pins is the common case on
      * the Spam Log screen -- confirming a comment the plugin already moved to the
      * spam queue. No status change is needed there, so no
-     * transition_comment_status fires and ASW_Moderation never runs; without the
+     * transition_comment_status fires and ANTISPAMWIZARD_Moderation never runs; without the
      * pill's own reconciliation the text stayed trained as ham *and* spam for
      * good, since the claim then refuses every retry.
      */
@@ -999,7 +999,7 @@ class MarkCommentTest extends TestCase {
         global $wp_json_responses, $wp_comments;
 
         $text       = 'Identical body trained from two different comments.';
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
 
         // The same text, already trained as ham from another comment.
         $this->assertSame( 'inserted', $repository->insert( 'latin', 'ham', $text, 41, '' ) );
@@ -1011,11 +1011,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 60 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 60 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '60';
         $_POST['category']   = 'spam';
 
@@ -1039,7 +1039,7 @@ class MarkCommentTest extends TestCase {
         global $wp_json_responses, $wp_comments, $wpdb;
 
         $text       = 'Another identical body trained twice over.';
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
         $repository->insert( 'latin', 'ham', $text, 43, '' );
 
         $wp_comments[61] = array(
@@ -1048,11 +1048,11 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 61 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 61 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '61';
         $_POST['category']   = 'spam';
 
@@ -1062,7 +1062,7 @@ class MarkCommentTest extends TestCase {
 
         $this->assertFalse( $wp_json_responses[0]['success'] );
         // The claim is gone, so the moderator can click the pill again.
-        $this->assertFalse( ASW_Spam_Log::is_trained( 61 ) );
+        $this->assertFalse( ANTISPAMWIZARD_Spam_Log::is_trained( 61 ) );
 
         $wp_json_responses = array();
         $this->admin_page->ajax_mark_comment();
@@ -1087,7 +1087,7 @@ class MarkCommentTest extends TestCase {
         global $wp_json_responses, $wp_comments;
 
         $text       = 'One body two moderators disagree about.';
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
 
         $wp_comments[63] = array(
             'comment_ID'       => 63,
@@ -1095,9 +1095,9 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 63 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 63 );
 
         // Fires from inside wp_unspam_comment(), i.e. between the pill's two lock
         // sections: another request trains the same body as spam from a different
@@ -1110,7 +1110,7 @@ class MarkCommentTest extends TestCase {
             }
         );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '63';
         $_POST['category']   = 'ham';
 
@@ -1128,7 +1128,7 @@ class MarkCommentTest extends TestCase {
      * was undone, and the pill cannot clear it -- mark_trained() refuses an entry
      * that already carries a category -- so the moderator is told to check the
      * training data rather than to try again, and the otherwise invisible loss is
-     * logged the way ASW_Moderation::roll_back_claim() logs its own.
+     * logged the way ANTISPAMWIZARD_Moderation::roll_back_claim() logs its own.
      */
     public function test_a_refused_claim_rollback_on_a_failed_status_change_is_reported(): void {
         global $wp_json_responses, $wp_comments, $wpdb;
@@ -1141,21 +1141,21 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => '1',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 65 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 65 );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Late_Option_Breaking_Sample_Repository( $wpdb ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Late_Option_Breaking_Sample_Repository( $wpdb ) );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '65';
         $_POST['category']   = 'spam';
 
         $GLOBALS['wp_comment_status_change_fails'] = true;
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         $this->admin_page->ajax_mark_comment();
@@ -1182,7 +1182,7 @@ class MarkCommentTest extends TestCase {
 
         // Already trained as ham from another comment, and already in the spam
         // queue, so the pill reconciles without changing any status.
-        ASW::get_instance()->get_repository()->insert( 'latin', 'ham', $text, 44, '' );
+        ANTISPAMWIZARD::get_instance()->get_repository()->insert( 'latin', 'ham', $text, 44, '' );
 
         $wp_comments[66] = array(
             'comment_ID'       => 66,
@@ -1190,19 +1190,19 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 66 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 66 );
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $repo       = $reflection->getProperty( 'repository' );
-        $repo->setValue( ASW::get_instance(), new ASW_Late_Option_Breaking_Sample_Repository( $wpdb ) );
+        $repo->setValue( ANTISPAMWIZARD::get_instance(), new ANTISPAMWIZARD_Late_Option_Breaking_Sample_Repository( $wpdb ) );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '66';
         $_POST['category']   = 'spam';
 
-        $tmp     = tempnam( sys_get_temp_dir(), 'asw_test_' );
+        $tmp     = tempnam( sys_get_temp_dir(), 'antispamwizard_test_' );
         $old_log = ini_set( 'error_log', $tmp );
 
         $wpdb->delete_result = false;
@@ -1221,7 +1221,7 @@ class MarkCommentTest extends TestCase {
     }
 
     /**
-     * The pill and ASW_Moderation's transition handler write the same rows, so
+     * The pill and ANTISPAMWIZARD_Moderation's transition handler write the same rows, so
      * they have to serialise on the same per-body lock. Asserted on a comment
      * already at the target status, where no transition fires: the only writer
      * that can have created the file is the AJAX handler itself.
@@ -1230,8 +1230,8 @@ class MarkCommentTest extends TestCase {
         global $wp_comments;
 
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
-        foreach ( glob( $lock_dir . '/asw_moderation_*.lock' ) ?: array() as $stale ) {
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
+        foreach ( glob( $lock_dir . '/antispamwizard_moderation_*.lock' ) ?: array() as $stale ) {
             unlink( $stale );
         }
 
@@ -1243,25 +1243,25 @@ class MarkCommentTest extends TestCase {
             'comment_approved' => 'spam',
         );
 
-        ASW_Spam_Log::clear();
-        $entry_id = ASW_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
-        ASW_Spam_Log::update_entry_comment_id( $entry_id, 62 );
+        ANTISPAMWIZARD_Spam_Log::clear();
+        $entry_id = ANTISPAMWIZARD_Spam_Log::add_entry( $text, array( 'links' ), 'hash' );
+        ANTISPAMWIZARD_Spam_Log::update_entry_comment_id( $entry_id, 62 );
 
-        $_POST['nonce']      = wp_create_nonce( ASW_Admin_Page::MARK_NONCE );
+        $_POST['nonce']      = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::MARK_NONCE );
         $_POST['comment_id'] = '62';
         $_POST['category']   = 'spam';
 
         $this->admin_page->ajax_mark_comment();
 
-        $locks = glob( $lock_dir . '/asw_moderation_*.lock' ) ?: array();
+        $locks = glob( $lock_dir . '/antispamwizard_moderation_*.lock' ) ?: array();
         $this->assertSame(
-            array( $lock_dir . '/asw_moderation_' . md5( ABSPATH ) . '_' . substr( md5( $text ), -2 ) . '.lock' ),
+            array( $lock_dir . '/antispamwizard_moderation_' . md5( ABSPATH ) . '_' . substr( md5( $text ), -2 ) . '.lock' ),
             $locks
         );
     }
 
     public function test_get_script_sample_counts_returns_correct_data(): void {
-        $td     = new ASW_Training_Data();
+        $td     = new ANTISPAMWIZARD_Training_Data();
         $counts = $td->get_script_sample_counts();
 
         $this->assertIsArray( $counts );
@@ -1280,7 +1280,7 @@ class MarkCommentTest extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString( 'Loaded Models', $output );
-        $this->assertStringContainsString( 'asw-models-table', $output );
+        $this->assertStringContainsString( 'antispamwizard-models-table', $output );
         $this->assertStringContainsString( 'Script Group', $output );
         $this->assertStringContainsString( 'Spam Samples', $output );
         $this->assertStringContainsString( 'Ham Samples', $output );

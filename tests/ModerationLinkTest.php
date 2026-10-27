@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests for the "Mark as spam" link ASW_Moderation renders under each comment
+ * Tests for the "Mark as spam" link ANTISPAMWIZARD_Moderation renders under each comment
  * on the site, and for its admin-post handler.
  */
 
@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  * makes "the nonce store was never consulted" an assertable fact rather than an
  * inference from the wp_die() message.
  */
-class ASW_Nonce_Store_Spy implements ArrayAccess {
+class ANTISPAMWIZARD_Nonce_Store_Spy implements ArrayAccess {
 
     public int $reads = 0;
 
@@ -69,23 +69,23 @@ class ModerationLinkTest extends TestCase {
 
         $GLOBALS['wp_comment_status_change_fails'] = false;
 
-        if ( ! defined( 'ASW_PATH' ) ) {
-            define( 'ASW_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+        if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
         }
 
         $wpdb->reset_tables();
 
-        $reflection = new ReflectionClass( ASW::class );
+        $reflection = new ReflectionClass( ANTISPAMWIZARD::class );
         $instance   = $reflection->getProperty( 'instance' );
         $instance->setValue( null, null );
 
-        ASW::get_instance()->init();
+        ANTISPAMWIZARD::get_instance()->init();
 
-        // ASW_Shadow_Display's registry is static and outlives a test; a
+        // ANTISPAMWIZARD_Shadow_Display's registry is static and outlives a test; a
         // neighbour's shadow row would otherwise hide the link here.
-        ( new ReflectionProperty( ASW_Shadow_Display::class, 'shadowed' ) )->setValue( null, array() );
+        ( new ReflectionProperty( ANTISPAMWIZARD_Shadow_Display::class, 'shadowed' ) )->setValue( null, array() );
 
-        ASW_Spam_Log::clear();
+        ANTISPAMWIZARD_Spam_Log::clear();
     }
 
     protected function tearDown(): void {
@@ -99,8 +99,8 @@ class ModerationLinkTest extends TestCase {
         parent::tearDown();
     }
 
-    private function moderation(): ASW_Moderation {
-        return new ASW_Moderation();
+    private function moderation(): ANTISPAMWIZARD_Moderation {
+        return new ANTISPAMWIZARD_Moderation();
     }
 
     /**
@@ -125,7 +125,7 @@ class ModerationLinkTest extends TestCase {
      */
     private function request( int $comment_id, string $nonce ): void {
         $_GET     = array(
-            'action'     => ASW_Moderation::ACTION,
+            'action'     => ANTISPAMWIZARD_Moderation::ACTION,
             'comment_id' => (string) $comment_id,
         );
         $_REQUEST = $_GET + array( '_wpnonce' => $nonce );
@@ -136,8 +136,8 @@ class ModerationLinkTest extends TestCase {
      */
     private function mint_nonce( int $comment_id ): string {
         global $wp_nonces;
-        wp_create_nonce( ASW_Moderation::ACTION . '_' . $comment_id );
-        return $wp_nonces[ ASW_Moderation::ACTION . '_' . $comment_id ];
+        wp_create_nonce( ANTISPAMWIZARD_Moderation::ACTION . '_' . $comment_id );
+        return $wp_nonces[ ANTISPAMWIZARD_Moderation::ACTION . '_' . $comment_id ];
     }
 
     // ---------------------------------------------------------------- Hooks.
@@ -153,7 +153,7 @@ class ModerationLinkTest extends TestCase {
         $found = null;
         foreach ( $wp_filters['comment_text'] as $hook ) {
             if ( is_array( $hook['callback'] )
-                && $hook['callback'][0] instanceof ASW_Moderation
+                && $hook['callback'][0] instanceof ANTISPAMWIZARD_Moderation
                 && 'append_moderation_link' === $hook['callback'][1] ) {
                 $found = $hook;
             }
@@ -173,7 +173,7 @@ class ModerationLinkTest extends TestCase {
         $moderation->register_hooks();
 
         foreach ( array( 'admin_post_', 'admin_post_nopriv_' ) as $prefix ) {
-            $hook = $prefix . ASW_Moderation::ACTION;
+            $hook = $prefix . ANTISPAMWIZARD_Moderation::ACTION;
             $this->assertArrayHasKey( $hook, $wp_actions );
 
             $found = false;
@@ -217,8 +217,8 @@ class ModerationLinkTest extends TestCase {
         $output = $this->moderation()->append_moderation_link( '<p>Nice post.</p>', $comment );
 
         $this->assertStringStartsWith( '<p>Nice post.</p>', $output );
-        $this->assertStringContainsString( 'class="asw-moderate"', $output );
-        $this->assertStringContainsString( 'class="asw-moderate-link"', $output );
+        $this->assertStringContainsString( 'class="antispamwizard-moderate"', $output );
+        $this->assertStringContainsString( 'class="antispamwizard-moderate-link"', $output );
         $this->assertStringContainsString( 'Mark as spam', $output );
     }
 
@@ -229,12 +229,12 @@ class ModerationLinkTest extends TestCase {
         $output = $this->moderation()->append_moderation_link( 'body', $comment );
 
         $this->assertStringContainsString( 'admin-post.php', $output );
-        $this->assertStringContainsString( 'action=' . ASW_Moderation::ACTION, $output );
+        $this->assertStringContainsString( 'action=' . ANTISPAMWIZARD_Moderation::ACTION, $output );
         $this->assertStringContainsString( 'comment_id=202', $output );
 
         // The nonce is bound to this one comment, so a harvested link cannot be
         // replayed against another.
-        $action = ASW_Moderation::ACTION . '_202';
+        $action = ANTISPAMWIZARD_Moderation::ACTION . '_202';
         $this->assertArrayHasKey( $action, $wp_nonces );
         $this->assertStringContainsString( '_wpnonce=' . rawurlencode( $wp_nonces[ $action ] ), $output );
     }
@@ -286,7 +286,7 @@ class ModerationLinkTest extends TestCase {
 
         // The control: the same child without REST_REQUEST renders the link, so a
         // child that merely failed to boot cannot make this pass vacuously.
-        $this->assertStringContainsString( 'asw-moderate-link', $this->render_in_child_process( false ) );
+        $this->assertStringContainsString( 'antispamwizard-moderate-link', $this->render_in_child_process( false ) );
     }
 
     /**
@@ -301,9 +301,9 @@ class ModerationLinkTest extends TestCase {
             . "\$GLOBALS['wp_is_feed']           = false;\n"
             . "\$GLOBALS['wp_current_user_caps'] = array( 'manage_options' => true );\n"
             . "\$comment = (object) array( 'comment_ID' => 207, 'comment_post_ID' => 7, 'comment_approved' => '1' );\n"
-            . "echo ( new ASW_Moderation() )->append_moderation_link( 'body', \$comment );\n";
+            . "echo ( new ANTISPAMWIZARD_Moderation() )->append_moderation_link( 'body', \$comment );\n";
 
-        $file = tempnam( sys_get_temp_dir(), 'asw-rest-' );
+        $file = tempnam( sys_get_temp_dir(), 'antispamwizard-rest-' );
         file_put_contents( $file, $script );
 
         try {
@@ -320,20 +320,20 @@ class ModerationLinkTest extends TestCase {
     }
 
     public function test_no_link_under_a_shadow_displayed_comment(): void {
-        // ASW_Shadow_Display presents the author's flagged comment as held
+        // ANTISPAMWIZARD_Shadow_Display presents the author's flagged comment as held
         // ('0'), but its real status is spam: the link decides on that, never on
         // the presented copy.
         $comment = $this->seed_comment( 210, '0' );
-        ( new ReflectionProperty( ASW_Shadow_Display::class, 'shadowed' ) )->setValue( null, array( 210 => true ) );
+        ( new ReflectionProperty( ANTISPAMWIZARD_Shadow_Display::class, 'shadowed' ) )->setValue( null, array( 210 => true ) );
 
         $this->assertSame( '<p>Nice post.</p>', $this->moderation()->append_moderation_link( '<p>Nice post.</p>', $comment ) );
     }
 
     public function test_the_link_still_renders_under_an_ordinary_comment_beside_a_shadow_one(): void {
         $comment = $this->seed_comment( 211 );
-        ( new ReflectionProperty( ASW_Shadow_Display::class, 'shadowed' ) )->setValue( null, array( 210 => true ) );
+        ( new ReflectionProperty( ANTISPAMWIZARD_Shadow_Display::class, 'shadowed' ) )->setValue( null, array( 210 => true ) );
 
-        $this->assertStringContainsString( 'asw-moderate-link', $this->moderation()->append_moderation_link( 'body', $comment ) );
+        $this->assertStringContainsString( 'antispamwizard-moderate-link', $this->moderation()->append_moderation_link( 'body', $comment ) );
     }
 
     public function test_a_non_string_body_is_handed_back_untouched(): void {
@@ -358,9 +358,9 @@ class ModerationLinkTest extends TestCase {
 
         $this->moderation()->enqueue_styles();
 
-        $this->assertArrayHasKey( 'asw-comment-form', $wp_enqueued_styles );
-        $this->assertSame( ASW_URL . 'public/css/comment-form.css', $wp_enqueued_styles['asw-comment-form']['src'] );
-        $this->assertSame( ASW_VERSION, $wp_enqueued_styles['asw-comment-form']['ver'] );
+        $this->assertArrayHasKey( 'antispamwizard-comment-form', $wp_enqueued_styles );
+        $this->assertSame( ANTISPAMWIZARD_URL . 'public/css/comment-form.css', $wp_enqueued_styles['antispamwizard-comment-form']['src'] );
+        $this->assertSame( ANTISPAMWIZARD_VERSION, $wp_enqueued_styles['antispamwizard-comment-form']['ver'] );
     }
 
     public function test_the_stylesheet_is_not_enqueued_for_a_visitor(): void {
@@ -395,10 +395,10 @@ class ModerationLinkTest extends TestCase {
         $this->assertSame( array( array( 'location' => get_permalink( 7 ), 'status' => 302 ) ), $wp_redirects );
 
         // The link itself teaches nothing: the transition it fires does.
-        $samples = ASW::get_instance()->get_repository()->find_all( 'latin', 'spam' );
+        $samples = ANTISPAMWIZARD::get_instance()->get_repository()->find_all( 'latin', 'spam' );
         $this->assertSame( array( 'Order cheap viagra from our online pharmacy today.' ), $samples );
 
-        $entries = ASW_Spam_Log::get_entries_by_comment_ids( array( 210 ) );
+        $entries = ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( 210 ) );
         $this->assertCount( 1, $entries );
         $this->assertSame( 'spam', $entries[0]['trained_as'] );
     }
@@ -420,7 +420,7 @@ class ModerationLinkTest extends TestCase {
 
         $args = array();
         parse_str( $query, $args );
-        $this->assertSame( ASW_Moderation::ACTION, $args['action'] );
+        $this->assertSame( ANTISPAMWIZARD_Moderation::ACTION, $args['action'] );
 
         $_GET     = $args;
         $_REQUEST = $args;
@@ -431,7 +431,7 @@ class ModerationLinkTest extends TestCase {
         $this->assertCount( 1, $wp_redirects );
         $this->assertSame(
             array( 'Cheap replica watches, order today.' ),
-            ASW::get_instance()->get_repository()->find_all( 'latin', 'spam' )
+            ANTISPAMWIZARD::get_instance()->get_repository()->find_all( 'latin', 'spam' )
         );
     }
 
@@ -444,7 +444,7 @@ class ModerationLinkTest extends TestCase {
         $this->moderation()->handle_mark_spam();
 
         $this->assertSame( 'spam', $wp_comments[211]['comment_approved'] );
-        $this->assertSame( array(), ASW_Spam_Log::get_entries_by_comment_ids( array( 211 ) ) );
+        $this->assertSame( array(), ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( 211 ) ) );
         $this->assertCount( 1, $wp_redirects );
     }
 
@@ -468,7 +468,7 @@ class ModerationLinkTest extends TestCase {
         // The link for comment 214, replayed against comment 213.
         $this->request( 213, $this->mint_nonce( 214 ) );
 
-        $this->expectException( ASW_Test_WP_Die_Exception::class );
+        $this->expectException( ANTISPAMWIZARD_Test_WP_Die_Exception::class );
         try {
             $this->moderation()->handle_mark_spam();
         } finally {
@@ -485,13 +485,13 @@ class ModerationLinkTest extends TestCase {
 
         // A perfectly valid nonce, so only the ordering can decide the outcome.
         $nonce                = $this->mint_nonce( 215 );
-        $spy                  = new ASW_Nonce_Store_Spy();
-        $spy[ ASW_Moderation::ACTION . '_215' ] = $nonce;
+        $spy                  = new ANTISPAMWIZARD_Nonce_Store_Spy();
+        $spy[ ANTISPAMWIZARD_Moderation::ACTION . '_215' ] = $nonce;
         $wp_nonces            = $spy;
         $this->request( 215, $nonce );
         $wp_current_user_caps = array();
 
-        $this->expectException( ASW_Test_WP_Die_Exception::class );
+        $this->expectException( ANTISPAMWIZARD_Test_WP_Die_Exception::class );
         try {
             $this->moderation()->handle_mark_spam();
         } finally {
@@ -515,7 +515,7 @@ class ModerationLinkTest extends TestCase {
         // visible with no sign that the click did nothing.
         $wp_comment_status_change_fails = true;
 
-        $this->expectException( ASW_Test_WP_Die_Exception::class );
+        $this->expectException( ANTISPAMWIZARD_Test_WP_Die_Exception::class );
         try {
             $this->moderation()->handle_mark_spam();
         } finally {
@@ -525,7 +525,7 @@ class ModerationLinkTest extends TestCase {
             $this->assertCount( 1, $wp_died );
             $this->assertSame( 500, $wp_died[0]['response'] );
             $this->assertSame( 'Comment status could not be changed. Please try again.', $wp_died[0]['message'] );
-            $this->assertSame( array(), ASW::get_instance()->get_repository()->find_all( 'latin', 'spam' ) );
+            $this->assertSame( array(), ANTISPAMWIZARD::get_instance()->get_repository()->find_all( 'latin', 'spam' ) );
         }
     }
 
@@ -533,7 +533,7 @@ class ModerationLinkTest extends TestCase {
         global $wp_died, $wp_redirects;
         $this->request( 999, $this->mint_nonce( 999 ) );
 
-        $this->expectException( ASW_Test_WP_Die_Exception::class );
+        $this->expectException( ANTISPAMWIZARD_Test_WP_Die_Exception::class );
         try {
             $this->moderation()->handle_mark_spam();
         } finally {

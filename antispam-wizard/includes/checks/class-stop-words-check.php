@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Prefix "=" for exact match (entire text must equal the word).
  * - Default substring match (text must contain the word).
  */
-class ASW_Stop_Words_Check implements ASW_Check {
+class ANTISPAMWIZARD_Stop_Words_Check implements ANTISPAMWIZARD_Check {
 
     /**
      * Whether to use script-aware stop words.
@@ -38,13 +38,13 @@ class ASW_Stop_Words_Check implements ASW_Check {
      * Run the stop-words check against comment data.
      *
      * @param array $comment_data WordPress comment data array.
-     * @return ASW_Check_Result
+     * @return ANTISPAMWIZARD_Check_Result
      */
-    public function check( array $comment_data ): ASW_Check_Result {
-        $settings = ASW_Settings::get_all();
+    public function check( array $comment_data ): ANTISPAMWIZARD_Check_Result {
+        $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['stop_words_enabled'] ) ) {
-            return new ASW_Check_Result( false, 'stop_words', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'check disabled', 'antispam-wizard' ) );
         }
 
         $stop_words = $settings['stop_words_list'];
@@ -54,19 +54,19 @@ class ASW_Stop_Words_Check implements ASW_Check {
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ASW_Check_Result( false, 'stop_words', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'empty comment', 'antispam-wizard' ) );
         }
 
         if ( $this->script_aware ) {
-            $script            = ASW_Script_Detector::detect( $text );
-            $script_stop_words = ASW_Settings::get_default_stop_words_for_script( $script );
-            $global_defaults   = ASW_Settings::get_defaults()['stop_words_list'];
+            $script            = ANTISPAMWIZARD_Script_Detector::detect( $text );
+            $script_stop_words = ANTISPAMWIZARD_Settings::get_default_stop_words_for_script( $script );
+            $global_defaults   = ANTISPAMWIZARD_Settings::get_defaults()['stop_words_list'];
             $new_words         = array_diff( $script_stop_words, $global_defaults );
             $stop_words        = array_unique( array_merge( $stop_words, $new_words ) );
         }
 
         if ( empty( $stop_words ) ) {
-            return new ASW_Check_Result( false, 'stop_words', __( 'no stop words configured', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'no stop words configured', 'antispam-wizard' ) );
         }
 
         $clean_text = self::normalize( self::clean_emoji( mb_strtolower( $text, 'UTF-8' ) ) );
@@ -78,11 +78,11 @@ class ASW_Stop_Words_Check implements ASW_Check {
             }
             if ( self::match_stop_word( $clean_text, $word ) ) {
                 $display_word = ltrim( $word, '=' );
-                return new ASW_Check_Result( true, 'stop_words', $display_word );
+                return new ANTISPAMWIZARD_Check_Result( true, 'stop_words', $display_word );
             }
         }
 
-        return new ASW_Check_Result( false, 'stop_words', __( 'not found', 'antispam-wizard' ) );
+        return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'not found', 'antispam-wizard' ) );
     }
 
     /**

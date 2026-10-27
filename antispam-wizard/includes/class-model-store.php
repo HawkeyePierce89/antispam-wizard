@@ -26,10 +26,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * build_combined_unit(): the combined unit's *similarity corpus* holds the
  * legacy samples and the unknown-script DB rows only, never the ten per-script
  * lists, which is what brings that unit under the object cache's per-item
- * limit. ASW_Similarity_Check reaches that corpus for *any* body whose
+ * limit. ANTISPAMWIZARD_Similarity_Check reaches that corpus for *any* body whose
  * detected script has no similarity list of its own, and every such body can
  * score differently than it did against the monolithic cache. On the shipped
- * corpus that is the bodies ASW_Script_Detector::detect() calls 'unknown',
+ * corpus that is the bodies ANTISPAMWIZARD_Script_Detector::detect() calls 'unknown',
  * which have no unit at all; one of the ten named scripts reaches it only when
  * its own list comes out empty. That list is built from the script's *spam*
  * samples alone, so a populated ham corpus does not fill it: it is empty when
@@ -49,10 +49,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * CorpusQualityTest pins all of it: the shipped corpus against the bound, an
  * unbounded learning history against it, and the full-dictionary worst case.
  *
- * Every transient key keeps the literal `asw_classifiers_` prefix, because
+ * Every transient key keeps the literal `antispamwizard_classifiers_` prefix, because
  * uninstall.php removes the cache with a LIKE over that prefix.
  *
- * A unit's key names the unit (`asw_classifiers_cyrillic`, `asw_classifiers_combined`)
+ * A unit's key names the unit (`antispamwizard_classifiers_cyrillic`, `antispamwizard_classifiers_combined`)
  * and nothing else; the fingerprint of the samples it was built from is stored
  * *inside* the value and checked on read. That is deliberate: with the
  * fingerprint in the key, a rebuild wrote a new row beside the one it replaced
@@ -62,15 +62,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * generation while an older unit kept the erased comment's text readable as a
  * token list. With the key fixed there is no older generation to find.
  */
-class ASW_Model_Store {
+class ANTISPAMWIZARD_Model_Store {
 
     /**
      * Shared prefix of every unit's transient key.
      *
-     * uninstall.php deletes `_transient_asw_classifiers_%` by LIKE, so a unit
+     * uninstall.php deletes `_transient_antispamwizard_classifiers_%` by LIKE, so a unit
      * key that dropped this prefix would leak past uninstall.
      */
-    public const TRANSIENT_PREFIX = 'asw_classifiers_';
+    public const TRANSIENT_PREFIX = 'antispamwizard_classifiers_';
 
     /**
      * Key suffix of the combined unit. Not a script group name, so it can
@@ -156,7 +156,7 @@ class ASW_Model_Store {
      * writing system pays a cold rebuild for good.
      *
      * The number is what is left once the worst case is paid for. With a full
-     * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE dictionary in *both* categories
+     * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE dictionary in *both* categories
      * (synthesised from 4-10-character novel tokens) plus that script's whole
      * shipped similarity corpus, the binding unit -- cyrillic -- is 2 085 461
      * bytes raw and 771 963 compressed at COMPRESSION_LEVEL; combined is
@@ -173,7 +173,7 @@ class ASW_Model_Store {
      *
      * Only the Similarity check's corpus is capped. The classifier keeps
      * learning from every sample, and its own bounds are
-     * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE (the token count) and, on a
+     * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE (the token count) and, on a
      * cache-backed host, MAX_CACHED_UNIT_BYTES through storable_unit() (the
      * bytes). That is a deliberate verdict change, documented on
      * admit_within_budget().
@@ -212,9 +212,9 @@ class ASW_Model_Store {
      * unit that crosses it is never cached at all and every submission in that
      * writing system pays a cold rebuild for good. LEARNED_SIMILARITY_BUDGET
      * and the compressed envelope bound the two halves this class controls by
-     * construction, but they cannot bound the third: ASW_Tokenizer caps a
+     * construction, but they cannot bound the third: ANTISPAMWIZARD_Tokenizer caps a
      * sample at 10 000 tokens and puts no cap on a token's *length*, and
-     * ASW_Naive_Bayes::learn() admits new tokens first-come-first-served until
+     * ANTISPAMWIZARD_Naive_Bayes::learn() admits new tokens first-come-first-served until
      * its *count* cap, so the dictionary's bytes are decided by what the site
      * has learned. A full two-category dictionary of 10-character CJK tokens --
      * reachable, since a Cyrillic-dominant sample is word-tokenised and keeps a
@@ -245,7 +245,7 @@ class ASW_Model_Store {
      * is still refused by the backend -- which is the silent
      * refuse-then-cold-rebuild-for-ever failure this whole mechanism exists to
      * prevent, and the one nothing in the plugin or the harnesses would notice.
-     * A kilobyte covers the struct, a unit key (`asw_classifiers_devanagari`)
+     * A kilobyte covers the struct, a unit key (`antispamwizard_classifiers_devanagari`)
      * and any blog/salt prefix a drop-in adds, and costs a site nothing it
      * would otherwise have kept: a unit within a kilobyte of the limit is one
      * halving away either way.
@@ -269,12 +269,12 @@ class ASW_Model_Store {
      * inflate_unit() hands this to gzuncompress() as its maximum length rather
      * than inflating unbounded: deflate reaches ~1000:1, so a damaged row that
      * is still valid deflate would otherwise allocate hundreds of megabytes and
-     * fatal the submission path -- the one failure ASW_Detector::run()'s
+     * fatal the submission path -- the one failure ANTISPAMWIZARD_Detector::run()'s
      * fail-open catch cannot absorb.
      *
      * It is a bound on the *writer* as well, which is why it is a constant
      * rather than an expression inside the reader. The compressed size and the
-     * inflated size are independent axes: ASW_Tokenizer puts no cap on a
+     * inflated size are independent axes: ANTISPAMWIZARD_Tokenizer puts no cap on a
      * token's length, so a history of long, distinct, highly repetitive tokens
      * (one 65 536-character comment per token, the run compressing ~1000:1)
      * serializes far past this ceiling while deflating to well under
@@ -295,9 +295,9 @@ class ASW_Model_Store {
      * Tokenizer used for similarity sample tokenisation and the combined
      * classifier -- the same instance build_checks() hands the checks.
      *
-     * @var ASW_Tokenizer
+     * @var ANTISPAMWIZARD_Tokenizer
      */
-    private ASW_Tokenizer $tokenizer;
+    private ANTISPAMWIZARD_Tokenizer $tokenizer;
 
     /**
      * Excluded tokens from settings. Part of every unit's cache key, because
@@ -310,16 +310,16 @@ class ASW_Model_Store {
     /**
      * Corpus loader.
      *
-     * @var ASW_Training_Data
+     * @var ANTISPAMWIZARD_Training_Data
      */
-    private ASW_Training_Data $training_data;
+    private ANTISPAMWIZARD_Training_Data $training_data;
 
     /**
      * Sample repository, or null when the table is unavailable.
      *
-     * @var ASW_Sample_Repository|null
+     * @var ANTISPAMWIZARD_Sample_Repository|null
      */
-    private ?ASW_Sample_Repository $repository;
+    private ?ANTISPAMWIZARD_Sample_Repository $repository;
 
     /**
      * Detected script per text, keyed by md5 of the text.
@@ -331,14 +331,14 @@ class ASW_Model_Store {
     /**
      * Loaded per-script units, keyed by script group.
      *
-     * @var array<string, array{classifier: ASW_Naive_Bayes|null, samples: array<int, array<int, string>>}>
+     * @var array<string, array{classifier: ANTISPAMWIZARD_Naive_Bayes|null, samples: array<int, array<int, string>>}>
      */
     private array $script_units = array();
 
     /**
      * Loaded combined unit, or null when it has not been asked for.
      *
-     * @var array{classifier: ASW_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}|null
+     * @var array{classifier: ANTISPAMWIZARD_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}|null
      */
     private ?array $combined_unit = null;
 
@@ -364,16 +364,16 @@ class ASW_Model_Store {
     /**
      * Constructor.
      *
-     * @param ASW_Tokenizer              $tokenizer       Shared tokenizer.
+     * @param ANTISPAMWIZARD_Tokenizer              $tokenizer       Shared tokenizer.
      * @param array<int, string>         $excluded_tokens Excluded tokens from settings.
-     * @param ASW_Training_Data          $training_data   Corpus loader.
-     * @param ASW_Sample_Repository|null $repository      Sample repository, or null.
+     * @param ANTISPAMWIZARD_Training_Data          $training_data   Corpus loader.
+     * @param ANTISPAMWIZARD_Sample_Repository|null $repository      Sample repository, or null.
      */
     public function __construct(
-        ASW_Tokenizer $tokenizer,
+        ANTISPAMWIZARD_Tokenizer $tokenizer,
         array $excluded_tokens,
-        ASW_Training_Data $training_data,
-        ?ASW_Sample_Repository $repository
+        ANTISPAMWIZARD_Training_Data $training_data,
+        ?ANTISPAMWIZARD_Sample_Repository $repository
     ) {
         $this->tokenizer       = $tokenizer;
         $this->excluded_tokens = $excluded_tokens;
@@ -404,9 +404,9 @@ class ASW_Model_Store {
      * Get a script group's classifier, loading its unit on first ask.
      *
      * @param string $script Script group name.
-     * @return ASW_Naive_Bayes|null Null when the script has no training data at all.
+     * @return ANTISPAMWIZARD_Naive_Bayes|null Null when the script has no training data at all.
      */
-    public function script_classifier( string $script ): ?ASW_Naive_Bayes {
+    public function script_classifier( string $script ): ?ANTISPAMWIZARD_Naive_Bayes {
         $unit = $this->script_unit( $script );
 
         return null === $unit ? null : $unit['classifier'];
@@ -427,9 +427,9 @@ class ASW_Model_Store {
     /**
      * Get the combined classifier, loading the combined unit on first ask.
      *
-     * @return ASW_Naive_Bayes
+     * @return ANTISPAMWIZARD_Naive_Bayes
      */
-    public function combined_classifier(): ASW_Naive_Bayes {
+    public function combined_classifier(): ANTISPAMWIZARD_Naive_Bayes {
         return $this->combined_unit()['classifier'];
     }
 
@@ -474,7 +474,7 @@ class ASW_Model_Store {
     public static function unit_keys(): array {
         $keys = array();
 
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $keys[] = self::TRANSIENT_PREFIX . $script;
         }
 
@@ -490,7 +490,7 @@ class ASW_Model_Store {
      * delete can purge them without a live store and can never be talked into
      * deleting a transient this class does not own.
      *
-     * The return value is load-bearing for ASW_Privacy::erase(): a unit holds
+     * The return value is load-bearing for ANTISPAMWIZARD_Privacy::erase(): a unit holds
      * the trained comment's text as a token list, so text this call could not
      * remove stays readable while the erasure request reports success. It
      * cannot be read off delete_transient(), which answers false both for a
@@ -510,7 +510,7 @@ class ASW_Model_Store {
      * database-error message over a unit that holds nothing.
      *
      * There is no durable record of a purge that did not finish, and none is
-     * needed: ASW_Privacy::erase() runs this on page 1 of *every* erasure
+     * needed: ANTISPAMWIZARD_Privacy::erase() runs this on page 1 of *every* erasure
      * request, so the retry its message asks for -- and any later erasure --
      * attempts the purge again whatever that page deleted. A marker would have
      * to be written by the very option store that has just refused a write, and
@@ -542,7 +542,7 @@ class ASW_Model_Store {
             }
         }
 
-        // Rows the key list cannot name: the monolithic `asw_classifiers_<md5>`
+        // Rows the key list cannot name: the monolithic `antispamwizard_classifiers_<md5>`
         // transient earlier versions wrote, and any unit row stranded in
         // wp_options by an object cache that was dropped in afterwards (from
         // then on WordPress reads and writes transients in the cache, and core's
@@ -578,11 +578,11 @@ class ASW_Model_Store {
      */
     private static function report_retained_text(): void {
         // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: a personal-data purge left a unit holding the erased text and no lever could remove it, which nothing else on the site would ever surface. The line carries no user input.
-        error_log( 'ASW: model cache purge retained a unit still holding training text' );
+        error_log( 'ANTISPAMWIZARD: model cache purge retained a unit still holding training text' );
     }
 
     /**
-     * Delete every `_transient_asw_classifiers_%` option row, whatever its key.
+     * Delete every `_transient_antispamwizard_classifiers_%` option row, whatever its key.
      *
      * There is no core API for deleting options by pattern, and no way to reach
      * these rows through the transient API: an eraser can only name the keys it
@@ -743,7 +743,7 @@ class ASW_Model_Store {
      * Whether this host can compress and decompress a unit.
      *
      * Every PHP build WordPress supports ships zlib, so the fallback below is
-     * for a host that has had it compiled out. The ASW_TESTING-gated switch is
+     * for a host that has had it compiled out. The ANTISPAMWIZARD_TESTING-gated switch is
      * what lets the suite drive that host without one: the two forms a unit can
      * be stored in have to be pinned against both capabilities, and neither the
      * strict read rule nor the lenient one in holds_training_text() is
@@ -752,7 +752,7 @@ class ASW_Model_Store {
      * @return bool
      */
     private static function zlib_available(): bool {
-        if ( defined( 'ASW_TESTING' ) && ! empty( $GLOBALS['asw_zlib_unavailable'] ) ) {
+        if ( defined( 'ANTISPAMWIZARD_TESTING' ) && ! empty( $GLOBALS['antispamwizard_zlib_unavailable'] ) ) {
             return false;
         }
 
@@ -839,7 +839,7 @@ class ASW_Model_Store {
      * @return string|false Deflate stream, or false.
      */
     private static function compress_payload( string $payload ) {
-        if ( defined( 'ASW_TESTING' ) && ! empty( $GLOBALS['asw_gzcompress_fails'] ) ) {
+        if ( defined( 'ANTISPAMWIZARD_TESTING' ) && ! empty( $GLOBALS['antispamwizard_gzcompress_fails'] ) ) {
             return false;
         }
 
@@ -869,7 +869,7 @@ class ASW_Model_Store {
      * MAX_CACHED_UNIT_BYTES less CACHE_ITEM_OVERHEAD_BYTES: stored_size() can
      * only weigh the value, where memcached weighs the whole item.
      *
-     * Behind the ASW_TESTING gate every other capability switch here uses, so
+     * Behind the ANTISPAMWIZARD_TESTING gate every other capability switch here uses, so
      * a test can drive the prune-and-reweigh loop over a small fixture instead
      * of having to build a genuinely oversized unit -- which takes megabytes of
      * novel vocabulary and seconds of wall clock, and would make the mechanism
@@ -879,8 +879,8 @@ class ASW_Model_Store {
      * @return int
      */
     private static function size_limit(): int {
-        if ( defined( 'ASW_TESTING' ) && isset( $GLOBALS['asw_max_cached_unit_bytes'] ) ) {
-            return (int) $GLOBALS['asw_max_cached_unit_bytes'];
+        if ( defined( 'ANTISPAMWIZARD_TESTING' ) && isset( $GLOBALS['antispamwizard_max_cached_unit_bytes'] ) ) {
+            return (int) $GLOBALS['antispamwizard_max_cached_unit_bytes'];
         }
 
         return self::MAX_CACHED_UNIT_BYTES - self::CACHE_ITEM_OVERHEAD_BYTES;
@@ -909,7 +909,7 @@ class ASW_Model_Store {
      * packed representation and the compressed envelope shrink whatever they
      * are given, and LEARNED_SIMILARITY_BUDGET bounds the similarity corpus,
      * but the dictionary's *bytes* are a function of what the site has learned
-     * (ASW_Naive_Bayes::MAX_DICTIONARY_SIZE caps the token count, not the token
+     * (ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE caps the token count, not the token
      * length) and can reach 211 % of the limit on their own.
      *
      * It is admission control, not a refusal. Declining to write a unit that
@@ -950,11 +950,11 @@ class ASW_Model_Store {
      * the unit happened to be warm, which is a far worse bargain than the
      * vocabulary the prune costs.
      *
-     * @param ASW_Naive_Bayes|null $classifier The unit's live classifier, pruned in place when it must be.
+     * @param ANTISPAMWIZARD_Naive_Bayes|null $classifier The unit's live classifier, pruned in place when it must be.
      * @param array                $export     The exported, packed unit.
      * @return array|null The value to store, or null when this host cannot store one.
      */
-    private function storable_unit( ?ASW_Naive_Bayes $classifier, array $export ): ?array {
+    private function storable_unit( ?ANTISPAMWIZARD_Naive_Bayes $classifier, array $export ): ?array {
         $stored = self::wrap_unit( $export, $inflated );
 
         if ( null === $stored || ! self::size_limit_applies() ) {
@@ -1032,7 +1032,7 @@ class ASW_Model_Store {
      * is that it is the reader's: a writer that measured against anything else
      * would cache values inflate_unit() then refuses on every read.
      *
-     * Behind the ASW_TESTING gate the other capability switches use, for the
+     * Behind the ANTISPAMWIZARD_TESTING gate the other capability switches use, for the
      * reason size_limit() carries one -- reaching MAX_INFLATED_UNIT_BYTES
      * honestly takes 64 MB of novel vocabulary, and a rule pinned only by the
      * suite's slowest test is one that stops being run.
@@ -1040,8 +1040,8 @@ class ASW_Model_Store {
      * @return int
      */
     private static function inflate_ceiling(): int {
-        if ( defined( 'ASW_TESTING' ) && isset( $GLOBALS['asw_max_inflated_unit_bytes'] ) ) {
-            return (int) $GLOBALS['asw_max_inflated_unit_bytes'];
+        if ( defined( 'ANTISPAMWIZARD_TESTING' ) && isset( $GLOBALS['antispamwizard_max_inflated_unit_bytes'] ) ) {
+            return (int) $GLOBALS['antispamwizard_max_inflated_unit_bytes'];
         }
 
         return self::MAX_INFLATED_UNIT_BYTES;
@@ -1058,7 +1058,7 @@ class ASW_Model_Store {
      * class can predict, so it reweighs instead of aiming.
      *
      * The dropped occurrences leave `token_totals` with them, which is exactly
-     * what ASW_Naive_Bayes::learn() does with a token it refuses to admit once
+     * what ANTISPAMWIZARD_Naive_Bayes::learn() does with a token it refuses to admit once
      * MAX_DICTIONARY_SIZE is reached: it counts neither the token nor its
      * occurrences. The pruned state therefore reads as a model that never saw
      * those tokens, rather than one whose smoothing denominators remember them.
@@ -1066,10 +1066,10 @@ class ASW_Model_Store {
      * The walk bottoms out at an *empty* vocabulary, which is the terminal
      * state storable_unit() is written against -- a unit that will not fit even
      * with no dictionary at all caches nothing. That is only a valid state
-     * because ASW_Naive_Bayes::classify() floors its Laplace denominator at 1:
+     * because ANTISPAMWIZARD_Naive_Bayes::classify() floors its Laplace denominator at 1:
      * an emptied category would otherwise leave it dividing by
      * `token_totals + vocabulary_size`, i.e. by 0, a DivisionByZeroError that
-     * ASW_Detector::run()'s fail-open catch swallows while silently disabling
+     * ANTISPAMWIZARD_Detector::run()'s fail-open catch swallows while silently disabling
      * the Bayesian check for the unit's whole day and appending a
      * plugin-attributable line to the debug.log dev/smoke.sh scans on every
      * submission. Stopping a token short of empty instead would leave a unit
@@ -1078,7 +1078,7 @@ class ASW_Model_Store {
      * history the byte bounds exist for. Once every category is already empty
      * there is nothing left to drop and this returns null.
      *
-     * @param array $state Classifier state from ASW_Naive_Bayes::get_state().
+     * @param array $state Classifier state from ANTISPAMWIZARD_Naive_Bayes::get_state().
      * @return array|null The pruned state, or null when there was nothing left to drop.
      */
     private static function halve_dictionary( array $state ): ?array {
@@ -1140,7 +1140,7 @@ class ASW_Model_Store {
         // Inflated under a ceiling rather than unbounded: deflate reaches
         // ~1000:1, so a damaged row that is still valid deflate would otherwise
         // allocate hundreds of megabytes and fatal the submission path -- the
-        // one failure mode ASW_Detector::run()'s fail-open catch cannot absorb,
+        // one failure mode ANTISPAMWIZARD_Detector::run()'s fail-open catch cannot absorb,
         // and the opposite of this class's rebuild-rather-than-break rule. The
         // ceiling is MAX_INFLATED_UNIT_BYTES, which storable_unit() prunes
         // against as well, so no unit this class writes can reach it; past it
@@ -1336,7 +1336,7 @@ class ASW_Model_Store {
      * @return string
      */
     protected function detect_script( string $text ): string {
-        return ASW_Script_Detector::detect( $text );
+        return ANTISPAMWIZARD_Script_Detector::detect( $text );
     }
 
     /**
@@ -1394,11 +1394,11 @@ class ASW_Model_Store {
      * Load a per-script unit, from cache when possible.
      *
      * @param string $script Script group name.
-     * @return array{classifier: ASW_Naive_Bayes|null, samples: array<int, array<int, string>>}|null
+     * @return array{classifier: ANTISPAMWIZARD_Naive_Bayes|null, samples: array<int, array<int, string>>}|null
      *         Null when $script is not a script group ('unknown' has no unit).
      */
     private function script_unit( string $script ): ?array {
-        if ( ! isset( ASW_Script_Detector::SCRIPT_GROUPS[ $script ] ) ) {
+        if ( ! isset( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS[ $script ] ) ) {
             return null;
         }
 
@@ -1459,7 +1459,7 @@ class ASW_Model_Store {
             set_transient( $key, $stored, DAY_IN_SECONDS );
 
             // The pre-write check above closes the mid-load race, but not the
-            // one that matters most: ASW_Privacy::erase() deletes a subject's
+            // one that matters most: ANTISPAMWIZARD_Privacy::erase() deletes a subject's
             // sample rows and *then* purges every unit key, so an erasure
             // landing in the window between that check and this write is
             // followed by the already-loaded, pre-erasure tokens going straight
@@ -1489,7 +1489,7 @@ class ASW_Model_Store {
     /**
      * Load the combined unit, from cache when possible.
      *
-     * @return array{classifier: ASW_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}
+     * @return array{classifier: ANTISPAMWIZARD_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}
      */
     private function combined_unit(): array {
         if ( null !== $this->combined_unit ) {
@@ -1514,12 +1514,12 @@ class ASW_Model_Store {
 
         $this->clear_sample_read_failure();
 
-        $legacy_spam = $this->training_data->load_samples( ASW_PATH . 'data/spam-samples.txt' );
-        $legacy_ham  = $this->training_data->load_samples( ASW_PATH . 'data/ham-samples.txt' );
+        $legacy_spam = $this->training_data->load_samples( ANTISPAMWIZARD_PATH . 'data/spam-samples.txt' );
+        $legacy_ham  = $this->training_data->load_samples( ANTISPAMWIZARD_PATH . 'data/ham-samples.txt' );
 
         $script_spam = array();
         $script_ham  = array();
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $script_spam[ $script ] = $this->training_data->load_script_samples( $script, 'spam' );
             $script_ham[ $script ]  = $this->training_data->load_script_samples( $script, 'ham' );
         }
@@ -1560,7 +1560,7 @@ class ASW_Model_Store {
     /**
      * Tokenise as much of a learned sample list as the byte budget pays for.
      *
-     * The walk runs from the **last** element -- ASW_Sample_Repository::find_all()
+     * The walk runs from the **last** element -- ANTISPAMWIZARD_Sample_Repository::find_all()
      * orders by ascending id, so that is the newest sample -- downwards, and
      * **stops at the first sample whose packed length would take the running
      * total past LEARNED_SIMILARITY_BUDGET**, admitting nothing older. It does
@@ -1573,8 +1573,8 @@ class ASW_Model_Store {
      *
      * A single sample is therefore admitted **whole or not at all**. One can
      * never be over the budget by construction on realistic text -- a comment is
-     * bounded by ASW_Detector::MAX_COMMENT_LENGTH and a tokenisation by
-     * ASW_Tokenizer's 10 000-token cap, ~110 000 packed bytes for real text --
+     * bounded by ANTISPAMWIZARD_Detector::MAX_COMMENT_LENGTH and a tokenisation by
+     * ANTISPAMWIZARD_Tokenizer's 10 000-token cap, ~110 000 packed bytes for real text --
      * but a pathological one that is over it stops the walk and leaves the
      * corpus at whatever it had admitted. That state self-heals: the next sample the site
      * learns is newer still, so the walk reaches it first and the oversized one
@@ -1584,7 +1584,7 @@ class ASW_Model_Store {
      * matching a body against learned spam older than the budget's reach for
      * that script. The Bayesian check is untouched *by the budget* -- the
      * classifier trains on every learned sample, capped in vocabulary by
-     * ASW_Naive_Bayes::MAX_DICTIONARY_SIZE and, on a cache-backed host whose
+     * ANTISPAMWIZARD_Naive_Bayes::MAX_DICTIONARY_SIZE and, on a cache-backed host whose
      * unit reaches the item limit, by storable_unit()'s prune -- and the
      * shipped corpus is never subject to the budget.
      *
@@ -1607,7 +1607,7 @@ class ASW_Model_Store {
             $sample = $learned[ $i ];
             $tokens = $this->tokenizer->tokenize_for_script(
                 $sample,
-                null === $script ? ASW_Script_Detector::detect( $sample ) : $script
+                null === $script ? ANTISPAMWIZARD_Script_Detector::detect( $sample ) : $script
             );
 
             if ( empty( $tokens ) ) {
@@ -1641,14 +1641,14 @@ class ASW_Model_Store {
      * @param array<int, string> $spam_file    Shipped spam samples.
      * @param array<int, string> $spam_learned Learned spam samples, ascending id.
      * @param array<int, string> $ham          Ham samples.
-     * @return array{classifier: ASW_Naive_Bayes|null, samples: array<int, array<int, string>>}
+     * @return array{classifier: ANTISPAMWIZARD_Naive_Bayes|null, samples: array<int, array<int, string>>}
      */
     private function build_script_unit( string $script, array $spam_file, array $spam_learned, array $ham ): array {
         $spam = array_merge( $spam_file, $spam_learned );
 
         $classifier = null;
         if ( ! empty( $spam ) || ! empty( $ham ) ) {
-            $classifier = new ASW_Naive_Bayes( new ASW_Tokenizer( $this->excluded_tokens ), $script );
+            $classifier = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer( $this->excluded_tokens ), $script );
             $this->training_data->train_classifier_with_samples( $classifier, $spam, $ham );
         }
 
@@ -1684,7 +1684,7 @@ class ASW_Model_Store {
      * unit under the 1 048 576-byte object-cache item limit while it carries
      * them (1 859 022 bytes packed, of which the per-script lists are
      * 1 101 154; without them, 766 696). The deviation applies to every body
-     * that falls back here -- ASW_Similarity_Check consults this corpus
+     * that falls back here -- ANTISPAMWIZARD_Similarity_Check consults this corpus
      * whenever the detected script's own list is empty, not only for
      * 'unknown'. On the shipped corpus that is the 'unknown' bodies, which
      * have no unit of their own: a body with no letters at all (a bare phone
@@ -1697,7 +1697,7 @@ class ASW_Model_Store {
      * spam corpus file is missing, unreadable or empty with no learned spam
      * samples under that script, or when every spam sample of it tokenises to
      * nothing under the site's excluded tokens -- which
-     * ASW_Similarity_Check's store-backed tests pin through a fixture whose
+     * ANTISPAMWIZARD_Similarity_Check's store-backed tests pin through a fixture whose
      * Latin corpus is empty. The score such a body gets does change, and how
      * far it changes depends on which of those routes brought it here; the
      * four are not one case.
@@ -1705,7 +1705,7 @@ class ASW_Model_Store {
      * Small for two of them. A body with **no letters at all** scores near
      * zero against the ten word lists whether they are here or not, except
      * through the tokens it can share with them -- chiefly
-     * ASW_Tokenizer::PHONE_TOKEN and bare numerals -- and that marker is
+     * ANTISPAMWIZARD_Tokenizer::PHONE_TOKEN and bare numerals -- and that marker is
      * already the strongest single feature of the combined classifier, which
      * stays trained on every script's samples and cached in full. A **named
      * script whose own list came out empty** is the same argument one step
@@ -1722,13 +1722,13 @@ class ASW_Model_Store {
      * script **outside** SCRIPT_GROUPS matches the ten lists near zero as
      * far as the shipped corpus *files* go -- but a learned sample is filed
      * under its comment's dominant script and
-     * ASW_Tokenizer::tokenize_for_script() picks a tokenisation strategy
+     * ANTISPAMWIZARD_Tokenizer::tokenize_for_script() picks a tokenisation strategy
      * without filtering tokens by script, so a mostly-Latin comment quoting
      * Armenian is stored in the latin list carrying its Armenian tokens.
      * Where that has happened the removed list could have matched such a body
      * on its own writing system, so "no sample in its script" is a property
      * of the files, not a guarantee about the lists. A body routed here by a
-     * **PCRE failure** in ASW_Script_Detector::detect() is the worse case: it
+     * **PCRE failure** in ANTISPAMWIZARD_Script_Detector::detect() is the worse case: it
      * is ordinary text in one of the ten scripts, and the list this unit no
      * longer carries is precisely the one that would have matched it -- a
      * strong match before this change and near zero after, for any of the
@@ -1742,7 +1742,7 @@ class ASW_Model_Store {
      * has_script_samples is therefore computed from the loaded per-script
      * samples rather than from what the corpus ended up holding, and stops at
      * the first non-empty tokenisation. It is the only input to
-     * ASW_Similarity_Check::resolve_from_store()'s legacy-vs-script
+     * ANTISPAMWIZARD_Similarity_Check::resolve_from_store()'s legacy-vs-script
      * tokenisation branch, so a flip to false would change tokenisation for
      * every fallback body.
      *
@@ -1750,7 +1750,7 @@ class ASW_Model_Store {
      * @param array<int, string>               $legacy_ham  Legacy ham samples.
      * @param array<string, array<int, string>> $script_spam Per-script spam samples.
      * @param array<string, array<int, string>> $script_ham  Per-script ham samples.
-     * @return array{classifier: ASW_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}
+     * @return array{classifier: ANTISPAMWIZARD_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}
      */
     private function build_combined_unit(
         array $legacy_spam,
@@ -1760,7 +1760,7 @@ class ASW_Model_Store {
     ): array {
         $all_spam = $legacy_spam;
         $all_ham  = $legacy_ham;
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             $all_spam = array_merge( $all_spam, $script_spam[ $script ] );
             $all_ham  = array_merge( $all_ham, $script_ham[ $script ] );
         }
@@ -1774,13 +1774,13 @@ class ASW_Model_Store {
             $all_ham      = array_merge( $all_ham, $this->repository->find_all( 'unknown', 'ham' ) );
         }
 
-        $classifier = new ASW_Naive_Bayes( $this->tokenizer );
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes( $this->tokenizer );
         $this->training_data->train_classifier_with_samples( $classifier, $all_spam, $all_ham );
 
         $samples = array();
 
         foreach ( $legacy_spam as $sample ) {
-            $tokens = $this->tokenizer->tokenize_for_script( $sample, ASW_Script_Detector::detect( $sample ) );
+            $tokens = $this->tokenizer->tokenize_for_script( $sample, ANTISPAMWIZARD_Script_Detector::detect( $sample ) );
             if ( ! empty( $tokens ) ) {
                 $samples[] = $tokens;
             }
@@ -1808,13 +1808,13 @@ class ASW_Model_Store {
      * The per-script lists are no longer stored in the combined unit, so this
      * answers from the samples that were loaded to train the combined
      * classifier. It stops at the first non-empty result: the question is
-     * whether ASW_Similarity_Check may tokenise a fallback body for its own
+     * whether ANTISPAMWIZARD_Similarity_Check may tokenise a fallback body for its own
      * script, not how many lists there would have been.
      *
      * @param array<string, array<int, string>> $script_spam Per-script spam samples.
      */
     private function any_script_sample_tokenises( array $script_spam ): bool {
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             foreach ( $script_spam[ $script ] as $sample ) {
                 if ( ! empty( $this->tokenizer->tokenize_for_script( $sample, $script ) ) ) {
                     return true;
@@ -1830,7 +1830,7 @@ class ASW_Model_Store {
      *
      * @param array $cached Cached unit.
      * @param string $script Script group name.
-     * @return array{classifier: ASW_Naive_Bayes|null, samples: array<int, array<int, string>>}|null
+     * @return array{classifier: ANTISPAMWIZARD_Naive_Bayes|null, samples: array<int, array<int, string>>}|null
      *         Null when the cached unit is unusable and must be rebuilt.
      */
     private function restore_script_unit( array $cached, string $script ): ?array {
@@ -1849,7 +1849,7 @@ class ASW_Model_Store {
             if ( null === $state ) {
                 return null;
             }
-            $classifier = new ASW_Naive_Bayes( new ASW_Tokenizer( $this->excluded_tokens ), $script );
+            $classifier = new ANTISPAMWIZARD_Naive_Bayes( new ANTISPAMWIZARD_Tokenizer( $this->excluded_tokens ), $script );
             $classifier->set_state( $state );
 
             // A script's corpus may legitimately be one-sided, so one category
@@ -1876,7 +1876,7 @@ class ASW_Model_Store {
      * Restore the combined unit from its cached form.
      *
      * @param array $cached Cached unit.
-     * @return array{classifier: ASW_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}|null
+     * @return array{classifier: ANTISPAMWIZARD_Naive_Bayes, samples: array<int, array<int, string>>, has_script_samples: bool}|null
      *         Null when the cached unit is unusable and must be rebuilt.
      */
     private function restore_combined_unit( array $cached ): ?array {
@@ -1891,7 +1891,7 @@ class ASW_Model_Store {
             return null;
         }
 
-        $classifier = new ASW_Naive_Bayes( $this->tokenizer );
+        $classifier = new ANTISPAMWIZARD_Naive_Bayes( $this->tokenizer );
         $classifier->set_state( $state );
 
         // Both categories are required here: a partial combined model would
@@ -1917,7 +1917,7 @@ class ASW_Model_Store {
     /**
      * Export a per-script unit for caching.
      *
-     * @param array{classifier: ASW_Naive_Bayes|null, samples: array} $unit        Unit.
+     * @param array{classifier: ANTISPAMWIZARD_Naive_Bayes|null, samples: array} $unit        Unit.
      * @param string                                                 $fingerprint Fingerprint of the samples it was built from.
      * @return array{fingerprint: string, classifier: array|null, samples: array<int, string>}
      */
@@ -1932,7 +1932,7 @@ class ASW_Model_Store {
     /**
      * Export the combined unit for caching.
      *
-     * @param array{classifier: ASW_Naive_Bayes, samples: array, has_script_samples: bool} $unit        Unit.
+     * @param array{classifier: ANTISPAMWIZARD_Naive_Bayes, samples: array, has_script_samples: bool} $unit        Unit.
      * @param string                                                                       $fingerprint Fingerprint of the samples it was built from.
      * @return array{fingerprint: string, classifier: array, samples: array<int, string>, has_script_samples: bool}
      */
@@ -1976,7 +1976,7 @@ class ASW_Model_Store {
      * single string removed ~25% of every unit's serialized size, and the two
      * units that were over the limit are what made that worth doing.
      *
-     * A space is an exact delimiter rather than a convenient one: ASW_Tokenizer
+     * A space is an exact delimiter rather than a convenient one: ANTISPAMWIZARD_Tokenizer
      * splits the word path on /[^\p{L}\p{N}\p{M}]+/u and strips the same class
      * before emitting bigrams on the n-gram path, so no token it emits can ever
      * contain a space. explode( ' ', … ) is therefore the exact inverse of this.
@@ -1997,10 +1997,10 @@ class ASW_Model_Store {
     /**
      * Unpack a cached sample list, or reject the unit that carries it.
      *
-     * Validated to both levels, not just the outer one: ASW_Cosine_Similarity
+     * Validated to both levels, not just the outer one: ANTISPAMWIZARD_Cosine_Similarity
      * builds its term-frequency vector by using each token as an array key, so
      * an array or object among them is an illegal offset -- a TypeError that
-     * ASW_Detector::run()'s fail-open catch swallows, silently disabling the
+     * ANTISPAMWIZARD_Detector::run()'s fail-open catch swallows, silently disabling the
      * Similarity check for the rest of the unit's 24-hour life while writing a
      * plugin-attributable line into debug.log on every submission.
      *
@@ -2069,12 +2069,12 @@ class ASW_Model_Store {
      * `token_totals` and `doc_counts` are one entry per category and are left
      * native. The delimiter is safe for the same reason it is in
      * pack_sample_tokens(): the keys here are tokenizer output, and no token
-     * ASW_Tokenizer emits can contain a space.
+     * ANTISPAMWIZARD_Tokenizer emits can contain a space.
      *
-     * ASW_Naive_Bayes is untouched by any of this -- the store unpacks before
+     * ANTISPAMWIZARD_Naive_Bayes is untouched by any of this -- the store unpacks before
      * calling set_state(), so the state that class accepts is exactly today's.
      *
-     * @param array $state Classifier state from ASW_Naive_Bayes::get_state().
+     * @param array $state Classifier state from ANTISPAMWIZARD_Naive_Bayes::get_state().
      * @return array The same state with token_counts packed.
      */
     private function pack_classifier_state( array $state ): array {
@@ -2189,7 +2189,7 @@ class ASW_Model_Store {
         $parts = array();
 
         foreach ( array( 'spam', 'ham' ) as $category ) {
-            $parts[] = $this->file_stamp( ASW_PATH . 'data/' . $category . '-samples-' . $script . '.txt' );
+            $parts[] = $this->file_stamp( ANTISPAMWIZARD_PATH . 'data/' . $category . '-samples-' . $script . '.txt' );
         }
 
         $parts[] = 'excl:' . $this->excluded_fingerprint();
@@ -2216,11 +2216,11 @@ class ASW_Model_Store {
         $parts = array();
 
         foreach ( array( 'spam-samples.txt', 'ham-samples.txt' ) as $file ) {
-            $parts[] = $this->file_stamp( ASW_PATH . 'data/' . $file );
+            $parts[] = $this->file_stamp( ANTISPAMWIZARD_PATH . 'data/' . $file );
         }
-        foreach ( array_keys( ASW_Script_Detector::SCRIPT_GROUPS ) as $script ) {
+        foreach ( array_keys( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS ) as $script ) {
             foreach ( array( 'spam', 'ham' ) as $category ) {
-                $parts[] = $this->file_stamp( ASW_PATH . 'data/' . $category . '-samples-' . $script . '.txt' );
+                $parts[] = $this->file_stamp( ANTISPAMWIZARD_PATH . 'data/' . $category . '-samples-' . $script . '.txt' );
             }
         }
 

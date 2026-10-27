@@ -4,4 +4,4 @@ vendor/
 composer.lock
 .phpunit.result.cache
 messages.mo
-.asw-pc-export.*
+.antispamwizard-pc-export.*

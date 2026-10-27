@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * the stale one stands down instead of writing its category over the newer
  * decision.
  */
-class ASW_Moderation {
+class ANTISPAMWIZARD_Moderation {
 
     /**
      * Check name recorded on a Spam Log entry this class creates.
@@ -43,7 +43,7 @@ class ASW_Moderation {
     /**
      * admin-post.php action name behind the "Mark as spam" link.
      */
-    const ACTION = 'asw_mark_spam';
+    const ACTION = 'antispamwizard_mark_spam';
 
     /**
      * Return the directory used for lock files, creating it if necessary.
@@ -57,7 +57,7 @@ class ASW_Moderation {
      */
     private static function get_lock_dir(): string {
         $upload_dir = wp_upload_dir();
-        $lock_dir   = $upload_dir['basedir'] . '/.asw-locks';
+        $lock_dir   = $upload_dir['basedir'] . '/.antispamwizard-locks';
         if ( ! is_dir( $lock_dir ) ) {
             wp_mkdir_p( $lock_dir );
             // Prevent direct web access to the lock directory.
@@ -77,7 +77,7 @@ class ASW_Moderation {
      * Run a critical section under the per-body moderation lock.
      *
      * Every writer of a training sample takes it -- this class's transition
-     * handler and the Spam Log's AJAX pill, ASW_Admin_Page::ajax_mark_comment()
+     * handler and the Spam Log's AJAX pill, ANTISPAMWIZARD_Admin_Page::ajax_mark_comment()
      * -- because they all address the sample table by the same key.
      *
      * That key is the *content*, not the comment id: insert() and
@@ -98,7 +98,7 @@ class ASW_Moderation {
      * the process -- so the nested acquisition would block on the outer one for
      * the rest of the request.
      *
-     * The bucket is a bounded pool of 256 files, as ASW_Duplicate_Check's is, so
+     * The bucket is a bounded pool of 256 files, as ANTISPAMWIZARD_Duplicate_Check's is, so
      * the lock directory cannot grow one file per comment. Bodies that share a
      * bucket only wait for each other.
      *
@@ -107,15 +107,15 @@ class ASW_Moderation {
      * @return mixed Whatever $critical returns.
      */
     public static function with_body_lock( string $content, callable $critical ) {
-        $lock_file = self::get_lock_dir() . '/asw_moderation_' . md5( ABSPATH ) . '_' . substr( md5( $content ), -2 ) . '.lock';
+        $lock_file = self::get_lock_dir() . '/antispamwizard_moderation_' . md5( ABSPATH ) . '_' . substr( md5( $content ), -2 ) . '.lock';
         $fp        = @fopen( $lock_file, 'c' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.PHP.NoSilencedErrors.Discouraged -- flock() needs a real stream handle; WP_Filesystem exposes no locking primitive. The @ suppresses PHP's own "failed to open stream" warning, which carries the absolute path into the web-readable debug.log; the sanitized diagnostic below reports the failure instead.
         if ( false === $fp ) {
             // The file name only, never the absolute path: moderation fires from
             // front-end and cron paths as well as the admin screens, and
             // debug.log is web-readable on misconfigured hosts. Same rule as
-            // ASW_Detector::run().
+            // ANTISPAMWIZARD_Detector::run().
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: the lock file could not be opened, so this commit proceeds unserialised. Silent failure would make concurrent-write corruption undebuggable; the log line carries no user input.
-            error_log( 'ASW: unable to open lock file: ' . basename( $lock_file ) );
+            error_log( 'ANTISPAMWIZARD: unable to open lock file: ' . basename( $lock_file ) );
         }
 
         // Fail open, like every other lock site in the plugin: a host without
@@ -168,7 +168,7 @@ class ASW_Moderation {
         try {
             $this->train( (string) $new_status, (string) $old_status, $comment );
         } catch ( \Throwable $e ) {
-            // Fail open, as ASW_Detector::run() and ASW_CF7_Integration::filter_spam()
+            // Fail open, as ANTISPAMWIZARD_Detector::run() and ANTISPAMWIZARD_CF7_Integration::filter_spam()
             // do: this runs inside wp_set_comment_status(), and add_entry() /
             // claim_training() call update_option(), so a third-party option filter
             // or a $wpdb failure throwing here would fatal the Comments screen in
@@ -176,7 +176,7 @@ class ASW_Moderation {
             // can carry a query, an absolute path or a credential into a
             // debug.log that is web-readable on misconfigured hosts.
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic for a swallowed exception; names the throw site only, never the message.
-            error_log( 'ASW: moderation training failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
+            error_log( 'ANTISPAMWIZARD: moderation training failed at ' . basename( $e->getFile() ) . ':' . $e->getLine() );
         }
     }
 
@@ -202,7 +202,7 @@ class ASW_Moderation {
             return;
         }
 
-        // Same scope as ASW_Detector::filter_comment(), which refuses any type but
+        // Same scope as ANTISPAMWIZARD_Detector::filter_comment(), which refuses any type but
         // 'comment': a pingback or trackback body is a site title and a post
         // excerpt, is never classified by the plugin, and bulk-spamming a batch of
         // them would fill the corpus with text detection never sees.
@@ -256,16 +256,16 @@ class ASW_Moderation {
         // needs teaching. Record what the moderator did so the Spam Log shows it
         // and its pill offers a retry if the sample write below fails. Marking as
         // ham never creates an entry: the plugin has nothing to answer for there.
-        if ( 'spam' === $category && array() === ASW_Spam_Log::get_entries_by_comment_ids( array( $comment_id ) ) ) {
+        if ( 'spam' === $category && array() === ANTISPAMWIZARD_Spam_Log::get_entries_by_comment_ids( array( $comment_id ) ) ) {
             $ip      = isset( $comment->comment_author_IP ) ? (string) $comment->comment_author_IP : '';
-            $ip_hash = ( '' === $ip ) ? '' : ASW_Detector::hash_ip( $ip );
-            ASW_Spam_Log::add_entry( $content, array( self::CHECK_NAME ), $ip_hash, $comment_id );
+            $ip_hash = ( '' === $ip ) ? '' : ANTISPAMWIZARD_Detector::hash_ip( $ip );
+            ANTISPAMWIZARD_Spam_Log::add_entry( $content, array( self::CHECK_NAME ), $ip_hash, $comment_id );
         }
 
         // The lock. 'already_trained' means the log says this comment is already
         // a sample in this category -- the AJAX pill claimed it and then fired
         // the very transition being handled, or the reverse.
-        $claim = ASW_Spam_Log::claim_training( $comment_id, $category );
+        $claim = ANTISPAMWIZARD_Spam_Log::claim_training( $comment_id, $category );
 
         // The entry exists but the option write that would have claimed it was
         // refused, so the log still names the previous category. Training anyway
@@ -280,7 +280,7 @@ class ASW_Moderation {
 
         $opposite = ( 'spam' === $category ) ? 'ham' : 'spam';
 
-        $repository = ASW::get_instance()->get_repository();
+        $repository = ANTISPAMWIZARD::get_instance()->get_repository();
 
         // A null repository claimed but can store nothing, so the claim is undone
         // exactly as a failed write undoes it. roll_back_claim() is a no-op for
@@ -294,7 +294,7 @@ class ASW_Moderation {
         $content_hash = hash( 'sha256', $content );
 
         try {
-            $script = ASW_Script_Detector::detect( $content );
+            $script = ANTISPAMWIZARD_Script_Detector::detect( $content );
 
             // 'already_trained' is the lock, but it is believed only when the table
             // really agrees with it: the claimed category stored, and the opposite
@@ -326,7 +326,7 @@ class ASW_Moderation {
             // trained from is routinely hard-deleted (emptying the spam queue), and
             // comment_id alone would then no longer reach the stored text.
             $email      = isset( $comment->comment_author_email ) ? (string) $comment->comment_author_email : '';
-            $email_hash = ASW_Detector::hash_email( $email );
+            $email_hash = ANTISPAMWIZARD_Detector::hash_email( $email );
 
             $inserted = $repository->insert( $script, $category, $content, $comment_id, $email_hash );
 
@@ -380,14 +380,14 @@ class ASW_Moderation {
      * is neither seen here nor touched by the delete_by_hash() the fall through
      * runs.
      *
-     * @param ASW_Sample_Repository $repository   The sample store.
+     * @param ANTISPAMWIZARD_Sample_Repository $repository   The sample store.
      * @param string                $script       Script group of the content.
      * @param string                $content_hash SHA-256 hash of the content.
      * @param string                $category     'spam' or 'ham'.
      * @param string                $opposite     The other category.
      * @return bool
      */
-    private function training_is_settled( ASW_Sample_Repository $repository, string $script, string $content_hash, string $category, string $opposite ): bool {
+    private function training_is_settled( ANTISPAMWIZARD_Sample_Repository $repository, string $script, string $content_hash, string $category, string $opposite ): bool {
         $stored = false;
 
         foreach ( $repository->find_categories_by_hash( $script, $content_hash ) as $row ) {
@@ -420,7 +420,7 @@ class ASW_Moderation {
         // userland function still TypeErrors on null -- and an earlier
         // comment_text filter returning null is an ordinary third-party bug. This
         // runs outside any fail-open catch, so that would fatal the whole post
-        // page. Same rule as ASW_Detector's is_string() guards.
+        // page. Same rule as ANTISPAMWIZARD_Detector's is_string() guards.
         if ( ! is_string( $text ) ) {
             return $text;
         }
@@ -447,7 +447,7 @@ class ASW_Moderation {
         $approved = isset( $comment->comment_approved ) ? (string) $comment->comment_approved : '';
         // A shadow-displayed comment is presented as '0' but is really spam;
         // decide on the real status.
-        if ( 'spam' === $approved || ASW_Shadow_Display::is_shadowed( $comment_id ) ) {
+        if ( 'spam' === $approved || ANTISPAMWIZARD_Shadow_Display::is_shadowed( $comment_id ) ) {
             return $text;
         }
 
@@ -464,14 +464,14 @@ class ASW_Moderation {
             self::ACTION . '_' . $comment_id
         );
 
-        return $text . '<p class="asw-moderate"><a class="asw-moderate-link" href="' . esc_url( $url ) . '">'
+        return $text . '<p class="antispamwizard-moderate"><a class="antispamwizard-moderate-link" href="' . esc_url( $url ) . '">'
             . esc_html__( 'Mark as spam', 'antispam-wizard' ) . '</a></p>';
     }
 
     /**
      * Enqueue the stylesheet that carries the link's rule.
      *
-     * Shares the `asw-comment-form` handle with ASW_Comment_Form, so a page that
+     * Shares the `antispamwizard-comment-form` handle with ANTISPAMWIZARD_Comment_Form, so a page that
      * renders both loads the file once.
      */
     public function enqueue_styles(): void {
@@ -480,10 +480,10 @@ class ASW_Moderation {
         }
 
         wp_enqueue_style(
-            'asw-comment-form',
-            ASW_URL . 'public/css/comment-form.css',
+            'antispamwizard-comment-form',
+            ANTISPAMWIZARD_URL . 'public/css/comment-form.css',
             array(),
-            ASW_VERSION
+            ANTISPAMWIZARD_VERSION
         );
     }
 
@@ -513,7 +513,7 @@ class ASW_Moderation {
         if ( 'spam' !== (string) $comment->comment_approved && ! wp_spam_comment( $comment_id ) ) {
             // Redirecting anyway would send the moderator back to a page where the
             // comment is still visible and nothing was trained, with no sign that
-            // the click did nothing. The msgid is the one ASW_Admin_Page already
+            // the click did nothing. The msgid is the one ANTISPAMWIZARD_Admin_Page already
             // ships for the same failure on the Spam Log pill, so this adds no POT
             // entry.
             wp_die( esc_html__( 'Comment status could not be changed. Please try again.', 'antispam-wizard' ), '', array( 'response' => 500 ) );
@@ -523,7 +523,7 @@ class ASW_Moderation {
         wp_safe_redirect( $permalink ? $permalink : home_url( '/' ) );
 
         // @codeCoverageIgnoreStart
-        if ( ! defined( 'ASW_TESTING' ) ) {
+        if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
             exit;
         }
         // @codeCoverageIgnoreEnd
@@ -544,11 +544,11 @@ class ASW_Moderation {
      * this same action -- stands down too, rather than failing open. The Spam Log
      * entry this would create is keyed by comment_id alone (unlike a sample,
      * which also carries the salted email_hash, and unlike a form entry), and
-     * ASW_Privacy reaches those entries only by looking the subject's comments
+     * ANTISPAMWIZARD_Privacy reaches those entries only by looking the subject's comments
      * up: an entry written for a row that no longer exists could never be
      * exported or erased, and its fragment and IP hash would sit in the log
      * beyond the reach of the requests readme.txt promises they answer. Its pill
-     * would be dead as well -- ASW_Admin_Page::ajax_mark_comment() refuses a
+     * would be dead as well -- ANTISPAMWIZARD_Admin_Page::ajax_mark_comment() refuses a
      * comment it cannot load. There is no moderator decision left to preserve
      * either way: the comment is gone.
      *
@@ -644,9 +644,9 @@ class ASW_Moderation {
      */
     private function roll_back_claim( int $comment_id, string $claim, string $opposite ): void {
         if ( 'ok' === $claim ) {
-            $rolled_back = ASW_Spam_Log::unmark_trained( $comment_id );
+            $rolled_back = ANTISPAMWIZARD_Spam_Log::unmark_trained( $comment_id );
         } elseif ( 'flipped' === $claim ) {
-            $rolled_back = ASW_Spam_Log::restore_training( $comment_id, $opposite );
+            $rolled_back = ANTISPAMWIZARD_Spam_Log::restore_training( $comment_id, $opposite );
         } else {
             return;
         }
@@ -663,7 +663,7 @@ class ASW_Moderation {
             // and no other signal on the site would show that, so it is logged.
             // The id is an int and carries no user input.
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational diagnostic: a refused rollback silently blocks all further training of one comment, which is otherwise invisible.
-            error_log( 'ASW: moderation training rollback failed for comment ' . $comment_id );
+            error_log( 'ANTISPAMWIZARD: moderation training rollback failed for comment ' . $comment_id );
         }
     }
 }
