@@ -203,8 +203,16 @@ class TokenizerTest extends TestCase {
     public function test_phone_token_is_one_token_of_the_ngram_path(): void {
         $tokens = $this->tokenizer->tokenize_ngrams( '电话 13812345678' );
 
-        $this->assertContains( mb_substr( ANTISPAMWIZARD_Tokenizer::PHONE_TOKEN, 0, 2 ), $tokens );
-        $this->assertContains( 'ph', $tokens );
+        // The marker is split like any other run of letters: every one of its
+        // bigrams, in order, after the two CJK ones. Pinned literally so a
+        // change to the marker's length (and so to its weight on this path)
+        // fails here rather than only in the aggregate corpus figures.
+        $this->assertSame( 'antispamwizardphonenumber', ANTISPAMWIZARD_Tokenizer::PHONE_TOKEN );
+        $this->assertSame(
+            array_merge( array( '电话', '话a' ), $this->tokenizer->tokenize_ngrams( ANTISPAMWIZARD_Tokenizer::PHONE_TOKEN ) ),
+            $tokens
+        );
+        $this->assertCount( 26, $tokens );
         $this->assertNotContains( '81', $tokens );
     }
 

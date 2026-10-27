@@ -112,7 +112,11 @@ The marketing site antispamwizard.com lives in the private sibling repository
 and runs its own tests, build/verify and deployment. Its content states only facts present in
 `antispam-wizard/readme.txt`, so a readme change that adds or removes a user-facing claim needs a
 matching change there; its `verify.sh` posts real flagged comments through `wp-comments-post.php`
-as a live shadow-display check (`docs/shadow-display.md`).
+as a live shadow-display check (`docs/shadow-display.md`). It also names plugin identifiers directly —
+`checks/detect.php` and `checks/waitlist.php` (`ANTISPAMWIZARD_Settings`, the `ANTISPAMWIZARD_Comment_Form` field
+constants and `mint_token()`), `verify.sh` and `tests/SiteThemeTest.php` (`_antispamwizard_reason`), and its waitlist
+plugin (`ANTISPAMWIZARD_Detector::hash_ip()`, behind a `class_exists` guard that silently falls back) — so renaming
+any of them needs a matching change there.
 
 ### Model-loading benchmark
 ```bash
@@ -161,7 +165,13 @@ so only the cold memory figure is meaningful there (`WORDPRESS_IMAGE=7.1-php8.3-
 Honeypot, Submit Time, Stop Words, Links, Emoji, Spacing, Multi-Language, Duplicate, Bayesian, Similarity — 10 checks total. The two bot checks (Honeypot and Submit Time) are ordered first to short-circuit earlier and save CPU; each check is independently toggleable with configurable thresholds.
 
 ### Conventions
-- Class prefix: `ANTISPAMWIZARD_*` (WordPress style, no PHP namespaces)
+- Prefix: `ANTISPAMWIZARD_*` for classes and constants, `antispamwizard` / `antispamwizard_` / `antispamwizard-` for
+  every option, transient, meta key, table, hook and action name, CSS class, `data-` attribute, JS object and lock
+  path (WordPress style, no PHP namespaces). The WordPress.org review rejected the old three-letter prefix; it must
+  not come back. `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()` scans every
+  tracked text file and path outside `antispam-wizard/data/` and `docs/plans/`, and
+  `…::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins the AJAX actions, `antispamwizardAdmin`
+  keys and DOM names `admin.js` shares with PHP, plus the honeypot selector in `comment-form.css`
 - File naming: `class-{name}.php`, `interface-{name}.php`
 - PHP 8.1+ with strict typing
 - WordPress 6.4+ (tested up to 7.1)

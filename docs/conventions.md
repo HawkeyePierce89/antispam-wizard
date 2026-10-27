@@ -119,6 +119,21 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
   `evaluate()`; neither guard may fall back to `''`, which would collide every malformed body
   from one IP into a single duplicate-hash bucket.
 - Tests reset the singleton via reflection in setUp
+- Every plugin-owned identifier carries the full plugin prefix: `ANTISPAMWIZARD_*` for classes and constants,
+  `antispamwizard` / `antispamwizard_` / `antispamwizard-` for options, transients, comment meta, the samples table,
+  hooks and AJAX/admin-post actions, CSS classes, `data-` attributes, the localized `antispamwizardAdmin` object and
+  the `.antispamwizard-locks/` directory. The plugin shipped with a three-letter prefix that the WordPress.org review
+  rejected as too short and generic, so the whole tree was renamed in one pass (the 2026-10-27
+  prefix-rename plan in `docs/plans/`).
+  `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()` matches the old token after any
+  non-alphanumeric character (so `_x_reason` and `wp_ajax_x_*` forms are caught) in every tracked text file and path
+  name of the plugin, `dev/`, `tests/`, `docs/`, `.github/` and the root config. The seed corpus
+  (`antispam-wizard/data/`, whose Thai file carries made-up Line IDs that are text, not identifiers) and
+  `docs/plans/` are exempt. Because the rename edited the PHP and JS/CSS sides of each shared name independently,
+  `PluginMetadataTest::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins them against each other:
+  the AJAX actions `admin.js` posts equal the registered `wp_ajax_*` hooks, every `antispamwizardAdmin.*` key it reads
+  is localized, every `antispamwizard-*` name it touches exists in the admin views, `class-admin-page.php` or
+  `admin.css`, and the comment form's honeypot wrapper class is a selector in `comment-form.css`.
 - Every Plugin Check deviation that is not fixed outright is carried as a `phpcs:ignore <exact
   sniff code>` with a one-line reason on the same line — bare suppressions are not allowed
   (`grep -rn "phpcs:ignore" antispam-wizard` should show a reason on every hit)

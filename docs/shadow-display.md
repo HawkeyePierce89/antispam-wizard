@@ -396,7 +396,9 @@ core can prove the widening, the cache key and the presentation survive both ren
   stored as spam, `_antispamwizard_reason` recorded, the `Location` carrying `unapproved=<ID>` and
   `moderation-hash=`, the hash equal to `wp_hash()` of the stored `comment_date_gmt`, a cookie-less
   GET of that `Location` showing the comment, the same page showing the awaiting-moderation note,
-  and a plain GET of the post not showing it — fifteen shadow lines in all. Both comments are
+  and a plain GET of the post not showing it — fifteen shadow lines in all. It reads the meta key by
+  name (as does the site's `tests/SiteThemeTest.php`), so renaming `_antispamwizard_reason` needs a
+  matching change there. Both comments are
   deleted from the exit trap
   (`SiteThemeTest::test_verify_carries_the_shadow_display_case_and_its_cleanup` in that
   repository).

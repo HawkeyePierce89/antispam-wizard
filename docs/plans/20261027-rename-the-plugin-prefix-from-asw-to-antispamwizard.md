@@ -237,8 +237,13 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
   - activation creates the renamed table;
   - the schema probes pass;
   - Plugin Check reports no ERROR.
-- The private site repository `HawkeyePierce89/antispam-wizard-site` bind-mounts this plugin. Its
-  `checks/detect.php` calls `ASW_Comment_Form::HONEYPOT_FIELD` and other plugin classes directly, so
-  it will break against the renamed plugin and needs a follow-up change there. That change is out of
+- The private site repository `HawkeyePierce89/antispam-wizard-site` bind-mounts this plugin and
+  names plugin identifiers directly, so it breaks against the renamed plugin and needs a follow-up
+  change there:
+  - `checks/detect.php` and `checks/waitlist.php`: `ASW_Settings`, `ASW_Comment_Form::HONEYPOT_FIELD`
+    / `TIMESTAMP_FIELD` / `mint_token()`;
+  - `verify.sh:182,218` and `tests/SiteThemeTest.php:441,483`: the `_asw_reason` meta key;
+  - `plugins/asw-waitlist/asw-waitlist.php:33-34`: `ASW_Detector::hash_ip()`. Its `class_exists`
+    guard falls back silently instead of failing, so nothing else will flag it. That change is out of
   scope here, and the site's own `asw-site` / `asw-waitlist` names are unrelated.
 - Reply to the WordPress.org review once the release is rebuilt from the merged branch.
