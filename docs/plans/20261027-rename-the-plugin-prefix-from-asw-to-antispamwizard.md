@@ -191,7 +191,7 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
 
 ### Task 3: Verify acceptance criteria
 
-- [ ] Run the residual greps:
+- [x] Run the residual greps:
   - `git grep -nP '(?<![A-Za-z0-9])(asw|ASW)' -- . ':!docs/plans' ':!antispam-wizard/data' ':!*.mo' ':!*.png'`
     must return nothing.
   - The ticket's own `git grep -inE '\basw' -- . ':!*.mo' ':!*.png' ':!docs/plans' ':!antispam-wizard/data'`
@@ -201,23 +201,23 @@ there is no migration, no alias, no shim and no `DB_VERSION` bump.
   - `docs/plans/`: historical plans plus this plan file.
   - `antispam-wizard/data/`: seed corpus text, the 8 `aswshop…` Line IDs in
     `spam-samples-thai.txt`.
-- [ ] `git diff master --stat -- antispam-wizard/data` is empty.
-- [ ] UninstallTest passes and pins:
+- [x] `git diff master --stat -- antispam-wizard/data` is empty.
+- [x] UninstallTest passes and pins:
   - the renamed table and options;
   - the transients, including the `_transient_antispamwizard_classifiers_%` stray-row sweep and its
     timeout twin;
   - the `_antispamwizard_reason` meta;
   - the `.antispamwizard-locks` directory.
-- [ ] Cross-reference the DOM hooks with grep:
+- [x] Cross-reference the DOM hooks with grep:
   - Every CSS class and `data-antispamwizard-*` attribute that `admin/js/admin.js` queries appears
     in the admin views or `class-admin-page.php`.
   - The hidden-field class that the comment form renders exists in `public/css/comment-form.css`
     and in its inline fallback.
-- [ ] Confirm that `grep -rn 'AntiSpam Wizard' dev/smoke.sh dev/plugin-check.sh tests/smoke/cf7-check.php`
+- [x] Confirm that `grep -rn 'AntiSpam Wizard' dev/smoke.sh dev/plugin-check.sh tests/smoke/cf7-check.php`
   shows the three hand-fixed labels with the capital S.
-- [ ] Run the full suite with `docker compose run --rm test`. It must be green, with none skipped and
+- [x] Run the full suite with `docker compose run --rm test`. It must be green, with none skipped and
   none weakened.
-- [ ] There is no separate linter command in this repository; Plugin Check runs in CI. Coverage is
+- [x] There is no separate linter command in this repository; Plugin Check runs in CI. Coverage is
   unchanged by a rename, and the new guard test is the only added logic.
 
 ### Task 4: Update documentation

@@ -71,6 +71,15 @@ class UninstallTest extends TestCase {
         $this->assertNotEmpty( $wpdb->queries );
         $this->assertStringContainsString( 'antispamwizard\\_dup\\_', $wpdb->queries[0] );
         $this->assertStringContainsString( 'antispamwizard\\_classifiers\\_', $wpdb->queries[0] );
+        // Each sweep and its timeout twin, exactly as esc_like() escapes them.
+        foreach ( array(
+            '\\_transient\\_antispamwizard\\_dup\\_%',
+            '\\_transient\\_timeout\\_antispamwizard\\_dup\\_%',
+            '\\_transient\\_antispamwizard\\_classifiers\\_%',
+            '\\_transient\\_timeout\\_antispamwizard\\_classifiers\\_%',
+        ) as $like ) {
+            $this->assertStringContainsString( $like, $wpdb->queries[0] );
+        }
 
         $this->assertNotEmpty( $wpdb->deletes );
         $this->assertSame( 'wp_commentmeta', $wpdb->deletes[0]['table'] );
