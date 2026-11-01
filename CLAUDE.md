@@ -116,11 +116,12 @@ The marketing site antispamwizard.com lives in the private sibling repository
 `HawkeyePierce89/antispam-wizard-site`, which bind-mounts this plugin from `../antispam-wizard/char-oday-antispam-wizard`
 into `wp-content/plugins/char-oday-antispam-wizard` (main file `char-oday-antispam-wizard.php`) and runs its own tests,
 build/verify and deployment. The slug change there is **pending** and is more than the mount source: the
-`docker-compose.yml` mount source and target, the activation slug in `build.sh`, the active-plugin check and the
-`debug.log` path filter in `verify.sh`, the WordPress.org download URL (now
-`https://wordpress.org/plugins/char-oday-antispam-wizard/`) in `content/home.html`, `content/release-1-0-0.html`,
-`README.md` and the assertions pinning it in `tests/SiteThemeTest.php` and `verify.sh`, and the default plugin path in
-its `CLAUDE.md`, `docs/site.md` and `README.md`. Its content states only facts present in
+`docker-compose.yml` mount source and target, the main-file path `export.sh` asserts in the export tar, the activation
+slug in `build.sh`, the active-plugin check and the `debug.log` path filter in `verify.sh`, the WordPress.org download URL
+(now `https://wordpress.org/plugins/char-oday-antispam-wizard/`) in `content/home.html`, `content/release-1-0-0.html`,
+`README.md`, the theme parts `header.html` and `footer.html` and the assertions pinning it in `tests/SiteThemeTest.php`
+and `verify.sh`, and the default plugin path in its `CLAUDE.md`, `docs/site.md` and `README.md`. Of these only the mount
+source and the `export.sh` path break the build; both were fixed on 2026-11-01. Its content states only facts present in
 `char-oday-antispam-wizard/readme.txt`, so a readme change that adds or removes a user-facing claim needs a
 matching change there; its `verify.sh` posts real flagged comments through `wp-comments-post.php`
 as a live shadow-display check (`docs/shadow-display.md`). It also names plugin identifiers directly —

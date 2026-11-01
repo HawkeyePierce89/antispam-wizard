@@ -278,10 +278,11 @@ guard test lists every item with a one-line reason.
   under the new slug.
 - Follow-up (pending): the private site repository `HawkeyePierce89/antispam-wizard-site` needs the
   slug change in: the `docker-compose.yml` mount source (`../antispam-wizard/char-oday-antispam-wizard`)
-  and target (`wp-content/plugins/char-oday-antispam-wizard`), the activation slug in `build.sh`, the
-  active-plugin check and `debug.log` path filter in `verify.sh`, the WordPress.org download URL
-  (`https://wordpress.org/plugins/char-oday-antispam-wizard/`) in `content/home.html`,
-  `content/release-1-0-0.html`, `README.md`, `tests/SiteThemeTest.php` and `verify.sh`, and the default
+  and target (`wp-content/plugins/char-oday-antispam-wizard`), the main-file path `export.sh` asserts in the
+  export tar, the activation slug in `build.sh`, the active-plugin check and `debug.log` path filter in
+  `verify.sh`, the WordPress.org download URL (`https://wordpress.org/plugins/char-oday-antispam-wizard/`) in
+  `content/home.html`, `content/release-1-0-0.html`, `README.md`, the theme parts `header.html` and
+  `footer.html`, `tests/SiteThemeTest.php` and `verify.sh`, and the default
   plugin path in its `CLAUDE.md`, `docs/site.md` and `README.md`. The old-prefix
   follow-up from PR #9 is still open there too.
 - Update the `wporg-submission` memory: slug `char-oday-antispam-wizard`, display name, and the new
