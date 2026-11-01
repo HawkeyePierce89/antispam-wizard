@@ -12,8 +12,8 @@ class PluginMetadataTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->plugin_file = dirname( __DIR__ ) . '/antispam-wizard/antispam-wizard.php';
-        $this->readme_file = dirname( __DIR__ ) . '/antispam-wizard/readme.txt';
+        $this->plugin_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/char-oday-antispam-wizard.php';
+        $this->readme_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/readme.txt';
     }
 
     /**
@@ -157,11 +157,11 @@ class PluginMetadataTest extends TestCase {
      * The training-data directory is guarded by index.php instead.
      */
     public function test_no_hidden_files_are_shipped(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
 
         $this->assertFileDoesNotExist(
             $plugin_dir . '/data/.htaccess',
-            'antispam-wizard/data/.htaccess must not ship: Plugin Check flags hidden files'
+            'char-oday-antispam-wizard/data/.htaccess must not ship: Plugin Check flags hidden files'
         );
 
         // Assert over the tracked set, not the working tree: dev/plugin-check.sh
@@ -179,7 +179,7 @@ class PluginMetadataTest extends TestCase {
         // config for safe.directory in git >= 2.38.
         exec(
             'git -c ' . escapeshellarg( 'safe.directory=*' )
-                . ' -C ' . escapeshellarg( dirname( __DIR__ ) ) . ' ls-files antispam-wizard 2>/dev/null',
+                . ' -C ' . escapeshellarg( dirname( __DIR__ ) ) . ' ls-files char-oday-antispam-wizard 2>/dev/null',
             $tracked,
             $status
         );
@@ -188,7 +188,7 @@ class PluginMetadataTest extends TestCase {
 
         $hidden = array();
         foreach ( $tracked as $file ) {
-            $relative = substr( $file, strlen( 'antispam-wizard/' ) );
+            $relative = substr( $file, strlen( 'char-oday-antispam-wizard/' ) );
             foreach ( explode( '/', $relative ) as $segment ) {
                 if ( str_starts_with( $segment, '.' ) ) {
                     $hidden[] = $relative;
@@ -205,16 +205,16 @@ class PluginMetadataTest extends TestCase {
     }
 
     public function test_data_directory_has_silence_guard(): void {
-        $index = dirname( __DIR__ ) . '/antispam-wizard/data/index.php';
+        $index = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/index.php';
 
         $this->assertFileExists(
             $index,
-            'antispam-wizard/data/index.php must exist to keep the training corpus unlistable'
+            'char-oday-antispam-wizard/data/index.php must exist to keep the training corpus unlistable'
         );
         $this->assertStringContainsString(
             'Silence is golden.',
             file_get_contents( $index ),
-            'antispam-wizard/data/index.php must carry the silence guard'
+            'char-oday-antispam-wizard/data/index.php must carry the silence guard'
         );
     }
 
@@ -408,7 +408,7 @@ class PluginMetadataTest extends TestCase {
      * closes a `phpcs:disable` whose reason was already stated.
      */
     public function test_every_phpcs_suppression_carries_a_reason(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -459,7 +459,7 @@ class PluginMetadataTest extends TestCase {
      * would break the invariant that every deviation is narrowly scoped.
      */
     public function test_every_phpcs_disable_is_closed_by_a_matching_enable(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -522,7 +522,7 @@ class PluginMetadataTest extends TestCase {
      * anchored above a multi-line `prepare()` and must not be caught here.
      */
     public function test_not_prepared_suppressions_are_anchored_on_a_single_line_statement(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -622,7 +622,7 @@ class PluginMetadataTest extends TestCase {
      * patterns cannot see turns into a count mismatch rather than a pass.
      */
     public function test_lock_file_failures_never_log_an_absolute_path(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -713,7 +713,7 @@ class PluginMetadataTest extends TestCase {
      * source text, per acquisition, for every lock site the plugin has.
      */
     public function test_every_exclusive_lock_is_released_in_a_finally_block(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -804,13 +804,13 @@ class PluginMetadataTest extends TestCase {
      */
     public function test_no_plugin_file_carries_the_retired_three_letter_prefix(): void {
         $root       = dirname( __DIR__ );
-        $plugin_dir = $root . '/antispam-wizard';
+        $plugin_dir = $root . '/char-oday-antispam-wizard';
         $pattern    = '/(?<![A-Za-z0-9])a[s]w/i';
         $text_ext   = array( 'php', 'js', 'css', 'md', 'txt', 'po', 'pot', 'sh', 'yml', 'json', 'xml' );
-        $excluded   = array( 'antispam-wizard/data/', 'docs/plans/' );
+        $excluded   = array( 'char-oday-antispam-wizard/data/', 'docs/plans/' );
 
         $paths = array();
-        foreach ( array( 'antispam-wizard', 'dev', 'tests', 'docs', '.github' ) as $dir ) {
+        foreach ( array( 'char-oday-antispam-wizard', 'dev', 'tests', 'docs', '.github' ) as $dir ) {
             $iterator = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator( $root . '/' . $dir, FilesystemIterator::SKIP_DOTS )
             );
@@ -867,7 +867,7 @@ class PluginMetadataTest extends TestCase {
      * renders is the selector its stylesheet hides.
      */
     public function test_admin_js_and_comment_form_css_names_match_the_php_side(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $js         = file_get_contents( $plugin_dir . '/admin/js/admin.js' );
         $admin_page = file_get_contents( $plugin_dir . '/admin/class-admin-page.php' );
 

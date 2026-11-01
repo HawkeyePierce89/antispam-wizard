@@ -23,7 +23,7 @@ class CF7PrivacyTest extends TestCase {
         $wp_privacy_policy_content = array();
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
 
         $reflection = new ReflectionClass( ANTISPAMWIZARD::class );

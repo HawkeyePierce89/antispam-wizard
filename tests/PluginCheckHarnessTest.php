@@ -88,6 +88,23 @@ class PluginCheckHarnessTest extends TestCase {
         $this->assertMatchesRegularExpression( '/rm -f "\$OVERRIDE"/', $this->script );
     }
 
+    /**
+     * Plugin Check runs against the directory slug; the WordPress.org review ties
+     * the text domain to that slug, so the harness must check the plugin under it.
+     */
+    public function test_checks_the_plugin_under_its_directory_slug() {
+        $this->assertMatchesRegularExpression(
+            '/^PLUGIN_SLUG="char-oday-antispam-wizard"$/m',
+            $this->script,
+            'dev/plugin-check.sh must address the plugin by its directory slug.'
+        );
+        $this->assertMatchesRegularExpression(
+            '/^PLUGIN_MOUNT="\/var\/www\/html\/wp-content\/plugins\/\$\{PLUGIN_SLUG\}"$/m',
+            $this->script,
+            'The export must be mounted at wp-content/plugins/<slug>.'
+        );
+    }
+
     public function test_uses_git_ls_files_for_the_export() {
         $this->assertStringContainsString( 'git ls-files -z', $this->script );
         $this->assertMatchesRegularExpression(
@@ -101,7 +118,7 @@ class PluginCheckHarnessTest extends TestCase {
     public function test_override_replaces_ports_and_plugin_bind_mount() {
         $this->assertStringContainsString( 'ports: !override []', $this->script );
         $this->assertStringContainsString( 'volumes: !override', $this->script );
-        // The export is mounted read-only in place of ./antispam-wizard.
+        // The export is mounted read-only in place of ./char-oday-antispam-wizard.
         $this->assertMatchesRegularExpression(
             '/\$\{EXPORT_ROOT\}:\$\{PLUGIN_MOUNT\}:ro/',
             $this->script

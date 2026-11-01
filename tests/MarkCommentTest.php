@@ -50,7 +50,7 @@ class MarkCommentTest extends TestCase {
         $GLOBALS['wp_update_comment_meta_fails']   = false;
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
 
         // Reset wpdb in-memory tables.
@@ -1274,7 +1274,7 @@ class MarkCommentTest extends TestCase {
     }
 
     public function test_render_general_tab_shows_loaded_models_section(): void {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();

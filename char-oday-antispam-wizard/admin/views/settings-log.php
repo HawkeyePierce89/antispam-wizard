@@ -16,28 +16,28 @@ $entries = array_reverse( ANTISPAMWIZARD_Spam_Log::get_entries() );
  * and to a CSS modifier for badge color.
  */
 $check_meta = array(
-    'honeypot'   => array( 'label' => __( 'Honeypot', 'antispam-wizard' ),      'mod' => 'honeypot' ),
-    'submit_time'=> array( 'label' => __( 'Submit Time', 'antispam-wizard' ),   'mod' => 'submit-time' ),
-    'stop_words' => array( 'label' => __( 'Stop Words', 'antispam-wizard' ),    'mod' => 'stop-words' ),
-    'links'      => array( 'label' => __( 'Links', 'antispam-wizard' ),         'mod' => 'links' ),
-    'emoji'      => array( 'label' => __( 'Emoji', 'antispam-wizard' ),         'mod' => 'emoji' ),
-    'spacing'    => array( 'label' => __( 'Spacing', 'antispam-wizard' ),       'mod' => 'spacing' ),
-    'multi_lang' => array( 'label' => __( 'Mixed Scripts', 'antispam-wizard' ), 'mod' => 'mixed' ),
-    'duplicate'  => array( 'label' => __( 'Duplicate', 'antispam-wizard' ),     'mod' => 'duplicates' ),
-    'bayesian'   => array( 'label' => __( 'Bayesian', 'antispam-wizard' ),      'mod' => 'bayesian' ),
-    'similarity' => array( 'label' => __( 'Similarity', 'antispam-wizard' ),    'mod' => 'similarity' ),
-    'manual'     => array( 'label' => __( 'Marked by moderator', 'antispam-wizard' ), 'mod' => 'duplicates' ),
+    'honeypot'   => array( 'label' => __( 'Honeypot', 'char-oday-antispam-wizard' ),      'mod' => 'honeypot' ),
+    'submit_time'=> array( 'label' => __( 'Submit Time', 'char-oday-antispam-wizard' ),   'mod' => 'submit-time' ),
+    'stop_words' => array( 'label' => __( 'Stop Words', 'char-oday-antispam-wizard' ),    'mod' => 'stop-words' ),
+    'links'      => array( 'label' => __( 'Links', 'char-oday-antispam-wizard' ),         'mod' => 'links' ),
+    'emoji'      => array( 'label' => __( 'Emoji', 'char-oday-antispam-wizard' ),         'mod' => 'emoji' ),
+    'spacing'    => array( 'label' => __( 'Spacing', 'char-oday-antispam-wizard' ),       'mod' => 'spacing' ),
+    'multi_lang' => array( 'label' => __( 'Mixed Scripts', 'char-oday-antispam-wizard' ), 'mod' => 'mixed' ),
+    'duplicate'  => array( 'label' => __( 'Duplicate', 'char-oday-antispam-wizard' ),     'mod' => 'duplicates' ),
+    'bayesian'   => array( 'label' => __( 'Bayesian', 'char-oday-antispam-wizard' ),      'mod' => 'bayesian' ),
+    'similarity' => array( 'label' => __( 'Similarity', 'char-oday-antispam-wizard' ),    'mod' => 'similarity' ),
+    'manual'     => array( 'label' => __( 'Marked by moderator', 'char-oday-antispam-wizard' ), 'mod' => 'duplicates' ),
 );
 ?>
 
 <div class="antispamwizard-card">
-    <h3 class="antispamwizard-card-title"><?php esc_html_e( 'Spam Log', 'antispam-wizard' ); ?></h3>
-    <p class="antispamwizard-card-description"><?php esc_html_e( 'Recent comments and form submissions blocked by AntiSpam Wizard (newest first, max 100).', 'antispam-wizard' ); ?></p>
+    <h3 class="antispamwizard-card-title"><?php esc_html_e( 'Spam Log', 'char-oday-antispam-wizard' ); ?></h3>
+    <p class="antispamwizard-card-description"><?php esc_html_e( 'Recent comments and form submissions blocked by AntiSpam Wizard (newest first, max 100).', 'char-oday-antispam-wizard' ); ?></p>
 
     <?php if ( ! empty( $entries ) ) : ?>
         <form method="post" style="margin-top:12px;">
             <?php wp_nonce_field( 'antispamwizard_clear_log', 'antispamwizard_clear_log_nonce' ); ?>
-            <button type="submit" name="antispamwizard_clear_log" class="antispamwizard-button antispamwizard-button--secondary"><?php esc_html_e( 'Clear Log', 'antispam-wizard' ); ?></button>
+            <button type="submit" name="antispamwizard_clear_log" class="antispamwizard-button antispamwizard-button--secondary"><?php esc_html_e( 'Clear Log', 'char-oday-antispam-wizard' ); ?></button>
         </form>
     <?php endif; ?>
 </div>
@@ -76,7 +76,7 @@ $check_meta = array(
                             <span class="antispamwizard-log-ip"><?php echo esc_html( substr( $entry['ip_hash'], 0, 12 ) . '…' ); ?></span>
                         <?php endif; ?>
                         <?php if ( 'form' === $source ) : ?>
-                            <span class="antispamwizard-log-source"><?php esc_html_e( 'Form', 'antispam-wizard' ); ?></span>
+                            <span class="antispamwizard-log-source"><?php esc_html_e( 'Form', 'char-oday-antispam-wizard' ); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -85,11 +85,11 @@ $check_meta = array(
                         <?php if ( ! empty( $entry['trained_as'] ) ) : ?>
                             <span class="antispamwizard-pill antispamwizard-pill--trained"><?php
                                 // translators: %s: Training category the entry was marked as (spam or ham).
-                                echo esc_html( sprintf( __( 'Trained as %s', 'antispam-wizard' ), $entry['trained_as'] ) );
+                                echo esc_html( sprintf( __( 'Trained as %s', 'char-oday-antispam-wizard' ), $entry['trained_as'] ) );
                             ?></span>
                         <?php else : ?>
-                            <button type="button" class="antispamwizard-pill antispamwizard-pill--ham antispamwizard-mark-ham" data-comment-id="<?php echo esc_attr( $entry['comment_id'] ); ?>"><?php esc_html_e( 'Ham', 'antispam-wizard' ); ?></button>
-                            <button type="button" class="antispamwizard-pill antispamwizard-pill--spam antispamwizard-mark-spam" data-comment-id="<?php echo esc_attr( $entry['comment_id'] ); ?>"><?php esc_html_e( 'Spam', 'antispam-wizard' ); ?></button>
+                            <button type="button" class="antispamwizard-pill antispamwizard-pill--ham antispamwizard-mark-ham" data-comment-id="<?php echo esc_attr( $entry['comment_id'] ); ?>"><?php esc_html_e( 'Ham', 'char-oday-antispam-wizard' ); ?></button>
+                            <button type="button" class="antispamwizard-pill antispamwizard-pill--spam antispamwizard-mark-spam" data-comment-id="<?php echo esc_attr( $entry['comment_id'] ); ?>"><?php esc_html_e( 'Spam', 'char-oday-antispam-wizard' ); ?></button>
                         <?php endif; ?>
                     <?php endif; ?>
                 </div>
@@ -98,6 +98,6 @@ $check_meta = array(
     </div>
 <?php else : ?>
     <div class="antispamwizard-card">
-        <p class="antispamwizard-empty"><?php esc_html_e( 'No spam has been blocked yet.', 'antispam-wizard' ); ?></p>
+        <p class="antispamwizard-empty"><?php esc_html_e( 'No spam has been blocked yet.', 'char-oday-antispam-wizard' ); ?></p>
     </div>
 <?php endif; ?>

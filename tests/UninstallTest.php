@@ -52,7 +52,7 @@ class UninstallTest extends TestCase {
         if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
             define( 'WP_UNINSTALL_PLUGIN', true );
         }
-        require dirname( __DIR__ ) . '/antispam-wizard/uninstall.php';
+        require dirname( __DIR__ ) . '/char-oday-antispam-wizard/uninstall.php';
     }
 
     /**
@@ -116,7 +116,7 @@ class UninstallTest extends TestCase {
         if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
             define( 'WP_UNINSTALL_PLUGIN', true );
         }
-        require dirname( __DIR__ ) . '/antispam-wizard/uninstall.php';
+        require dirname( __DIR__ ) . '/char-oday-antispam-wizard/uninstall.php';
 
         // All plugin options should be gone.
         $this->assertArrayNotHasKey( 'antispamwizard_settings', $wp_options );
@@ -195,7 +195,7 @@ class UninstallTest extends TestCase {
         $this->assertContains( $htaccess, $wp_deleted_files );
         $this->assertStringNotContainsString(
             'unlink(',
-            file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/uninstall.php' ),
+            file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/uninstall.php' ),
             'uninstall.php must use wp_delete_file() rather than unlink()'
         );
     }
@@ -219,9 +219,9 @@ class UninstallTest extends TestCase {
 
     public function test_lock_file_operations_carry_annotated_phpcs_ignores() {
         $files = array(
-            'antispam-wizard/includes/class-spam-log.php',
-            'antispam-wizard/includes/class-stats.php',
-            'antispam-wizard/includes/checks/class-duplicate-check.php',
+            'char-oday-antispam-wizard/includes/class-spam-log.php',
+            'char-oday-antispam-wizard/includes/class-stats.php',
+            'char-oday-antispam-wizard/includes/checks/class-duplicate-check.php',
         );
 
         foreach ( $files as $relative ) {
@@ -248,7 +248,7 @@ class UninstallTest extends TestCase {
     }
 
     public function test_uninstall_rmdir_carries_an_annotated_phpcs_ignore() {
-        $source = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/uninstall.php' );
+        $source = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/uninstall.php' );
         $this->assertMatchesRegularExpression(
             '/phpcs:ignore WordPress\\.WP\\.AlternativeFunctions\\.file_system_operations_rmdir -- \\S.*\\n\\s*rmdir\\( \\$lock_dir \\);/',
             $source

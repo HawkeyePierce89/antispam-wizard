@@ -51,24 +51,24 @@ class ANTISPAMWIZARD_Submit_Time_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['submit_time_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $comment_type = isset( $commentdata['comment_type'] ) ? $commentdata['comment_type'] : '';
         if ( '' !== $comment_type && 'comment' !== $comment_type ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'skipped non-comment type', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'skipped non-comment type', 'char-oday-antispam-wizard' ) );
         }
 
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress issues no nonce on the pre_comment_approved path, and adding one to the comment form would flag legitimate visitors on cached pages. The token read below is wp_unslash()-ed and HMAC-verified against the post ID, and the check fails open on anything missing or malformed.
         $request_data = null !== $this->request ? $this->request : $_POST;
 
         if ( ! isset( $request_data[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token absent', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token absent', 'char-oday-antispam-wizard' ) );
         }
 
         $raw_token_data = wp_unslash( $request_data[ ANTISPAMWIZARD_Comment_Form::TIMESTAMP_FIELD ] );
         if ( is_array( $raw_token_data ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token malformed or tampered', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token malformed or tampered', 'char-oday-antispam-wizard' ) );
         }
 
         $raw_token = (string) $raw_token_data;
@@ -76,27 +76,27 @@ class ANTISPAMWIZARD_Submit_Time_Check implements ANTISPAMWIZARD_Check {
         $timestamp = ANTISPAMWIZARD_Comment_Form::parse_token( $raw_token, $post_id );
 
         if ( null === $timestamp ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token malformed or tampered', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token malformed or tampered', 'char-oday-antispam-wizard' ) );
         }
 
         $elapsed = time() - $timestamp;
 
         if ( $elapsed < 0 ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'future timestamp', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'future timestamp', 'char-oday-antispam-wizard' ) );
         }
 
         if ( $elapsed > self::MAX_TOKEN_AGE ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token expired', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'token expired', 'char-oday-antispam-wizard' ) );
         }
 
         $min_seconds = isset( $settings['submit_time_min_seconds'] ) ? (int) $settings['submit_time_min_seconds'] : 5;
 
         if ( $elapsed < $min_seconds ) {
             // translators: 1: Elapsed seconds, 2: Minimum configured seconds.
-            $details = sprintf( __( 'submitted in %1$ds (min %2$ds)', 'antispam-wizard' ), $elapsed, $min_seconds );
+            $details = sprintf( __( 'submitted in %1$ds (min %2$ds)', 'char-oday-antispam-wizard' ), $elapsed, $min_seconds );
             return new ANTISPAMWIZARD_Check_Result( true, 'submit_time', $details );
         }
 
-        return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'elapsed time acceptable', 'antispam-wizard' ) );
+        return new ANTISPAMWIZARD_Check_Result( false, 'submit_time', __( 'elapsed time acceptable', 'char-oday-antispam-wizard' ) );
     }
 }

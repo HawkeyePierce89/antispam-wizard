@@ -38,7 +38,7 @@ ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
 if ( ! class_exists( 'ANTISPAMWIZARD_Settings' ) ) {
-	fwrite( STDERR, "detect-check: FAIL plugin not loaded (ANTISPAMWIZARD_Settings missing) — is antispam-wizard active?\n" );
+	fwrite( STDERR, "detect-check: FAIL plugin not loaded (ANTISPAMWIZARD_Settings missing) — is char-oday-antispam-wizard active?\n" );
 	exit( 1 );
 }
 

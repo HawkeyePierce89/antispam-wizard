@@ -39,12 +39,12 @@ class ANTISPAMWIZARD_Emoji_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['emoji_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'emoji', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'emoji', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'emoji', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'emoji', __( 'empty comment', 'char-oday-antispam-wizard' ) );
         }
 
         $max_emoji = (int) $settings['emoji_max'];
@@ -55,7 +55,7 @@ class ANTISPAMWIZARD_Emoji_Check implements ANTISPAMWIZARD_Check {
                 true,
                 'emoji',
                 // translators: 1: Number of emoji found, 2: Configured maximum.
-                sprintf( __( 'too many emoji %1$d/%2$d', 'antispam-wizard' ), $count, $max_emoji )
+                sprintf( __( 'too many emoji %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $max_emoji )
             );
         }
 
@@ -63,7 +63,7 @@ class ANTISPAMWIZARD_Emoji_Check implements ANTISPAMWIZARD_Check {
             false,
             'emoji',
             // translators: 1: Number of emoji found, 2: Configured maximum.
-            sprintf( __( 'emoji %1$d/%2$d', 'antispam-wizard' ), $count, $max_emoji )
+            sprintf( __( 'emoji %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $max_emoji )
         );
     }
 

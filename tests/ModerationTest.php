@@ -57,7 +57,7 @@ class ModerationTest extends TestCase {
         $GLOBALS['wp_comment_status_change_fails'] = false;
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
 
         $wpdb->reset_tables();
@@ -911,7 +911,7 @@ class ModerationTest extends TestCase {
         // "{$e}", both of which stringify the message and the whole stack trace,
         // so every use of the caught $e inside the catch block is enumerated and
         // only getFile()/getLine() are allowed.
-        $source = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/includes/class-moderation.php' );
+        $source = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-moderation.php' );
         $this->assertIsString( $source );
 
         $needle = 'catch ( \Throwable $e ) {';

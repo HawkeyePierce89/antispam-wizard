@@ -24,12 +24,12 @@ class ANTISPAMWIZARD_Links_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['links_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'links', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'links', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'links', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'links', __( 'empty comment', 'char-oday-antispam-wizard' ) );
         }
 
         $max_links  = (int) $settings['links_max'];
@@ -41,7 +41,7 @@ class ANTISPAMWIZARD_Links_Check implements ANTISPAMWIZARD_Check {
                 true,
                 'links',
                 // translators: 1: Number of links found, 2: Configured maximum.
-                sprintf( __( 'too many links %1$d/%2$d', 'antispam-wizard' ), $count, $max_links )
+                sprintf( __( 'too many links %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $max_links )
             );
         }
 
@@ -49,7 +49,7 @@ class ANTISPAMWIZARD_Links_Check implements ANTISPAMWIZARD_Check {
             false,
             'links',
             // translators: 1: Number of links found, 2: Configured maximum.
-            sprintf( __( 'links %1$d/%2$d', 'antispam-wizard' ), $count, $max_links )
+            sprintf( __( 'links %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $max_links )
         );
     }
 }

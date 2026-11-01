@@ -28,12 +28,12 @@ class ANTISPAMWIZARD_Admin_Page {
     const IMPORT_MAX_ENTRIES = 10000;
 
     const SUBMENU_SLUGS = array(
-        'main'            => 'antispam-wizard-main',
-        'general'         => 'antispam-wizard',
-        'stop-words'      => 'antispam-wizard-stop-words',
-        'excluded-tokens' => 'antispam-wizard-excluded-tokens',
-        'log'             => 'antispam-wizard-log',
-        'stats'           => 'antispam-wizard-stats',
+        'main'            => 'char-oday-antispam-wizard-main',
+        'general'         => 'char-oday-antispam-wizard',
+        'stop-words'      => 'char-oday-antispam-wizard-stop-words',
+        'excluded-tokens' => 'char-oday-antispam-wizard-excluded-tokens',
+        'log'             => 'char-oday-antispam-wizard-log',
+        'stats'           => 'char-oday-antispam-wizard-stats',
     );
 
     /**
@@ -75,8 +75,8 @@ class ANTISPAMWIZARD_Admin_Page {
         $this->page_hooks = array();
 
         $hook = add_menu_page(
-            __( 'AntiSpam Wizard', 'antispam-wizard' ),
-            __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
+            __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             'manage_options',
             self::SUBMENU_SLUGS['main'],
             array( $this, 'render_page' ),
@@ -89,19 +89,19 @@ class ANTISPAMWIZARD_Admin_Page {
         }
 
         $submenus = array(
-            'main'            => __( 'Main', 'antispam-wizard' ),
-            'general'         => __( 'General', 'antispam-wizard' ),
-            'stop-words'      => __( 'Stop Words', 'antispam-wizard' ),
-            'excluded-tokens' => __( 'Excluded Tokens', 'antispam-wizard' ),
-            'log'             => __( 'Spam Log', 'antispam-wizard' ),
-            'stats'           => __( 'Statistics', 'antispam-wizard' ),
+            'main'            => __( 'Main', 'char-oday-antispam-wizard' ),
+            'general'         => __( 'General', 'char-oday-antispam-wizard' ),
+            'stop-words'      => __( 'Stop Words', 'char-oday-antispam-wizard' ),
+            'excluded-tokens' => __( 'Excluded Tokens', 'char-oday-antispam-wizard' ),
+            'log'             => __( 'Spam Log', 'char-oday-antispam-wizard' ),
+            'stats'           => __( 'Statistics', 'char-oday-antispam-wizard' ),
         );
 
         foreach ( $submenus as $tab => $label ) {
             $hook = add_submenu_page(
                 self::SUBMENU_SLUGS['main'],
                 // translators: %s: Submenu page label.
-                sprintf( __( 'AntiSpam Wizard - %s', 'antispam-wizard' ), $label ),
+                sprintf( __( 'AntiSpam Wizard - %s', 'char-oday-antispam-wizard' ), $label ),
                 $label,
                 'manage_options',
                 self::SUBMENU_SLUGS[ $tab ],
@@ -141,11 +141,11 @@ class ANTISPAMWIZARD_Admin_Page {
             'nonce'                => wp_create_nonce( self::AJAX_NONCE ),
             'excluded_tokens_nonce' => wp_create_nonce( self::EXCLUDED_TOKENS_NONCE ),
             'mark_nonce'           => wp_create_nonce( self::MARK_NONCE ),
-            'remove_text'          => __( 'Remove', 'antispam-wizard' ),
-            'no_words_text'        => __( 'No stop-words configured.', 'antispam-wizard' ),
-            'no_tokens_text'       => __( 'No excluded tokens configured.', 'antispam-wizard' ),
-            'error_text'           => __( 'An error occurred.', 'antispam-wizard' ),
-            'trained_as_text'      => __( 'Trained as ', 'antispam-wizard' ),
+            'remove_text'          => __( 'Remove', 'char-oday-antispam-wizard' ),
+            'no_words_text'        => __( 'No stop-words configured.', 'char-oday-antispam-wizard' ),
+            'no_tokens_text'       => __( 'No excluded tokens configured.', 'char-oday-antispam-wizard' ),
+            'error_text'           => __( 'An error occurred.', 'char-oday-antispam-wizard' ),
+            'trained_as_text'      => __( 'Trained as ', 'char-oday-antispam-wizard' ),
         ) );
     }
 
@@ -187,7 +187,7 @@ class ANTISPAMWIZARD_Admin_Page {
             return $links;
         }
 
-        $links[] = '<a href="' . esc_url( self::SOURCE_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'Source code', 'antispam-wizard' ) . '</a>';
+        $links[] = '<a href="' . esc_url( self::SOURCE_URL ) . '" target="_blank" rel="noopener">' . esc_html__( 'Source code', 'char-oday-antispam-wizard' ) . '</a>';
 
         return $links;
     }
@@ -207,7 +207,7 @@ class ANTISPAMWIZARD_Admin_Page {
         echo '<div class="wrap antispamwizard-admin">';
         echo '<header class="antispamwizard-header"><div class="antispamwizard-brand">';
         echo '<span class="antispamwizard-brand-icon">' . $brand_icon . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $brand_icon is the hard-coded inline SVG literal defined above with no dynamic input; escaping would render the markup as visible text.
-        echo '<h1 class="antispamwizard-brand-title">' . esc_html__( 'AntiSpam Wizard Settings', 'antispam-wizard' ) . '</h1>';
+        echo '<h1 class="antispamwizard-brand-title">' . esc_html__( 'AntiSpam Wizard Settings', 'char-oday-antispam-wizard' ) . '</h1>';
         echo '<span class="antispamwizard-version">v' . esc_html( ANTISPAMWIZARD_VERSION ) . '</span>';
         echo '</div></header>';
 
@@ -327,23 +327,23 @@ class ANTISPAMWIZARD_Admin_Page {
      */
     public function ajax_add_stop_word(): void {
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::AJAX_NONCE ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $word = isset( $_POST['word'] ) ? sanitize_text_field( wp_unslash( $_POST['word'] ) ) : '';
         if ( '' === $word ) {
-            wp_send_json_error( array( 'message' => __( 'Word cannot be empty.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Word cannot be empty.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( mb_strlen( $word, 'UTF-8' ) > 64 ) {
-            wp_send_json_error( array( 'message' => __( 'Word must be 64 characters or fewer.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Word must be 64 characters or fewer.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
@@ -351,28 +351,28 @@ class ANTISPAMWIZARD_Admin_Page {
         if ( 0 === strpos( $word, '=' ) ) {
             $phrase = substr( $word, 1 );
             if ( '' === $phrase ) {
-                wp_send_json_error( array( 'message' => __( 'Exact-match phrase cannot be empty.', 'antispam-wizard' ) ) );
+                wp_send_json_error( array( 'message' => __( 'Exact-match phrase cannot be empty.', 'char-oday-antispam-wizard' ) ) );
                 return;
             }
             if ( preg_match( '/[^\p{L}\p{N}\s]/u', $phrase ) ) {
-                wp_send_json_error( array( 'message' => __( 'Exact-match phrase must contain only letters, numbers, and spaces.', 'antispam-wizard' ) ) );
+                wp_send_json_error( array( 'message' => __( 'Exact-match phrase must contain only letters, numbers, and spaces.', 'char-oday-antispam-wizard' ) ) );
                 return;
             }
         } elseif ( preg_match( '/[^\p{L}\p{N}]/u', $word ) ) {
-            wp_send_json_error( array( 'message' => __( 'Word must contain only letters and numbers.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Word must contain only letters and numbers.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $list = ANTISPAMWIZARD_Settings::get( 'stop_words_list', array() );
         if ( in_array( $word, $list, true ) ) {
-            wp_send_json_error( array( 'message' => __( 'Word already exists.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Word already exists.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $list[] = $word;
         ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => $list ) );
 
-        wp_send_json_success( array( 'message' => __( 'Word added.', 'antispam-wizard' ) ) );
+        wp_send_json_success( array( 'message' => __( 'Word added.', 'char-oday-antispam-wizard' ) ) );
     }
 
     /**
@@ -380,12 +380,12 @@ class ANTISPAMWIZARD_Admin_Page {
      */
     public function ajax_remove_stop_word(): void {
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::AJAX_NONCE ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
@@ -394,14 +394,14 @@ class ANTISPAMWIZARD_Admin_Page {
         $key  = array_search( $word, $list, true );
 
         if ( false === $key ) {
-            wp_send_json_error( array( 'message' => __( 'Word not found.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Word not found.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         array_splice( $list, $key, 1 );
         ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => $list ) );
 
-        wp_send_json_success( array( 'message' => __( 'Word removed.', 'antispam-wizard' ) ) );
+        wp_send_json_success( array( 'message' => __( 'Word removed.', 'char-oday-antispam-wizard' ) ) );
     }
 
     /**
@@ -409,37 +409,37 @@ class ANTISPAMWIZARD_Admin_Page {
      */
     public function ajax_add_excluded_token(): void {
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::EXCLUDED_TOKENS_NONCE ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $token = isset( $_POST['token'] ) ? sanitize_text_field( wp_unslash( $_POST['token'] ) ) : '';
         $token = mb_strtolower( $token, 'UTF-8' );
         if ( '' === $token ) {
-            wp_send_json_error( array( 'message' => __( 'Token cannot be empty.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Token cannot be empty.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( preg_match( '/[^\p{L}\p{N}]/u', $token ) ) {
-            wp_send_json_error( array( 'message' => __( 'Token must be a single word (letters and numbers only).', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Token must be a single word (letters and numbers only).', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $list = ANTISPAMWIZARD_Settings::get( 'excluded_tokens_list', array() );
         if ( in_array( $token, $list, true ) ) {
-            wp_send_json_error( array( 'message' => __( 'Token already exists.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Token already exists.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $list[] = $token;
         ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => $list ) );
 
-        wp_send_json_success( array( 'message' => __( 'Token added.', 'antispam-wizard' ) ) );
+        wp_send_json_success( array( 'message' => __( 'Token added.', 'char-oday-antispam-wizard' ) ) );
     }
 
     /**
@@ -447,12 +447,12 @@ class ANTISPAMWIZARD_Admin_Page {
      */
     public function ajax_remove_excluded_token(): void {
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::EXCLUDED_TOKENS_NONCE ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
@@ -462,14 +462,14 @@ class ANTISPAMWIZARD_Admin_Page {
         $key   = array_search( $token, $list, true );
 
         if ( false === $key ) {
-            wp_send_json_error( array( 'message' => __( 'Token not found.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Token not found.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         array_splice( $list, $key, 1 );
         ANTISPAMWIZARD_Settings::update( array( 'excluded_tokens_list' => $list ) );
 
-        wp_send_json_success( array( 'message' => __( 'Token removed.', 'antispam-wizard' ) ) );
+        wp_send_json_success( array( 'message' => __( 'Token removed.', 'char-oday-antispam-wizard' ) ) );
     }
 
     /**
@@ -477,12 +477,12 @@ class ANTISPAMWIZARD_Admin_Page {
      */
     public function ajax_mark_comment(): void {
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::MARK_NONCE ) ) {
-            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Security check failed.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
@@ -490,18 +490,18 @@ class ANTISPAMWIZARD_Admin_Page {
         $category   = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
 
         if ( 0 === $comment_id ) {
-            wp_send_json_error( array( 'message' => __( 'Invalid comment ID.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid comment ID.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         if ( ! in_array( $category, array( 'spam', 'ham' ), true ) ) {
-            wp_send_json_error( array( 'message' => __( 'Invalid category.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Invalid category.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $comment = get_comment( $comment_id );
         if ( ! $comment ) {
-            wp_send_json_error( array( 'message' => __( 'Comment not found.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Comment not found.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
@@ -577,18 +577,18 @@ class ANTISPAMWIZARD_Admin_Page {
             }
 
             if ( 'no_repository' === $claim ) {
-                wp_send_json_error( array( 'message' => __( 'Plugin not fully initialized.', 'antispam-wizard' ) ) );
+                wp_send_json_error( array( 'message' => __( 'Plugin not fully initialized.', 'char-oday-antispam-wizard' ) ) );
                 return;
             }
 
             if ( 'insert_failed' === $claim ) {
-                wp_send_json_error( array( 'message' => __( 'Failed to save training data.', 'antispam-wizard' ) ) );
+                wp_send_json_error( array( 'message' => __( 'Failed to save training data.', 'char-oday-antispam-wizard' ) ) );
                 return;
             }
 
             $msg = 'already_trained' === $claim
-                ? __( 'This comment has already been used for training.', 'antispam-wizard' )
-                : __( 'Comment not found in spam log. It may have been removed.', 'antispam-wizard' );
+                ? __( 'This comment has already been used for training.', 'char-oday-antispam-wizard' )
+                : __( 'Comment not found in spam log. It may have been removed.', 'char-oday-antispam-wizard' );
             wp_send_json_error( array( 'message' => $msg ) );
             return;
         }
@@ -714,14 +714,14 @@ class ANTISPAMWIZARD_Admin_Page {
 
         if ( 'status_failed' === $outcome ) {
             wp_send_json_error( array(
-                'message' => __( 'Comment status could not be changed. Please try again.', 'antispam-wizard' ),
+                'message' => __( 'Comment status could not be changed. Please try again.', 'char-oday-antispam-wizard' ),
             ) );
             return;
         }
 
         if ( 'status_rollback_failed' === $outcome ) {
             wp_send_json_error( array(
-                'message' => __( 'Comment status could not be changed and rollback failed. Please check training data manually.', 'antispam-wizard' ),
+                'message' => __( 'Comment status could not be changed and rollback failed. Please check training data manually.', 'char-oday-antispam-wizard' ),
             ) );
             return;
         }
@@ -732,24 +732,24 @@ class ANTISPAMWIZARD_Admin_Page {
         }
 
         if ( 'flip_failed' === $outcome ) {
-            wp_send_json_error( array( 'message' => __( 'Failed to save training data.', 'antispam-wizard' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Failed to save training data.', 'char-oday-antispam-wizard' ) ) );
             return;
         }
 
         $script_label = ( 'unknown' !== $script && isset( ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS[ $script ] ) )
             ? ANTISPAMWIZARD_Script_Detector::SCRIPT_GROUPS[ $script ]
-            : __( 'Legacy', 'antispam-wizard' );
+            : __( 'Legacy', 'char-oday-antispam-wizard' );
 
         wp_send_json_success( array(
             'message' => sprintf(
                 // translators: %s: Training category the comment was saved as (spam or ham).
-                __( 'Comment marked as %s. Training data updated.', 'antispam-wizard' ),
+                __( 'Comment marked as %s. Training data updated.', 'char-oday-antispam-wizard' ),
                 $category
             ),
             'script'       => $script,
             'script_label' => sprintf(
                 // translators: %s: Human-readable name of the script model the sample was saved to.
-                __( 'Saved to: %s model', 'antispam-wizard' ),
+                __( 'Saved to: %s model', 'char-oday-antispam-wizard' ),
                 $script_label
             ),
         ) );
@@ -849,7 +849,7 @@ class ANTISPAMWIZARD_Admin_Page {
      * @return string
      */
     private static function training_inconsistent_message(): string {
-        return __( 'Training data may be inconsistent. Please check training data manually.', 'antispam-wizard' );
+        return __( 'Training data may be inconsistent. Please check training data manually.', 'char-oday-antispam-wizard' );
     }
 
     /**
@@ -909,7 +909,7 @@ class ANTISPAMWIZARD_Admin_Page {
                 echo esc_html(
                     sprintf(
                         // translators: %d: Maximum number of stop-word entries kept on import.
-                        __( 'Import truncated: stop-words list capped at %d entries.', 'antispam-wizard' ),
+                        __( 'Import truncated: stop-words list capped at %d entries.', 'char-oday-antispam-wizard' ),
                         self::IMPORT_MAX_ENTRIES
                     )
                 );
@@ -1019,7 +1019,7 @@ class ANTISPAMWIZARD_Admin_Page {
                 echo esc_html(
                     sprintf(
                         // translators: %d: Maximum number of excluded-token entries kept on import.
-                        __( 'Import truncated: excluded tokens list capped at %d entries.', 'antispam-wizard' ),
+                        __( 'Import truncated: excluded tokens list capped at %d entries.', 'char-oday-antispam-wizard' ),
                         self::IMPORT_MAX_ENTRIES
                     )
                 );

@@ -128,9 +128,9 @@ guard test lists every item with a one-line reason.
 - Modify: `dev/smoke.sh`, `dev/plugin-check.sh`, `dev/setup.sh`, `dev/reset.sh`, `dev/bench.php`,
   `docker-compose.yml`, `composer.json`
 
-- [ ] `git mv` the directory, then the main file, then each of the 19 language files
+- [x] `git mv` the directory, then the main file, then each of the 19 language files
   (`char-oday-antispam-wizard.pot` and `char-oday-antispam-wizard-<locale>.po/.mo`).
-- [ ] Run the protected literal replacement over the code, test, dev and config files, which are
+- [x] Run the protected literal replacement over the code, test, dev and config files, which are
   everything outside `docs/`, `CLAUDE.md`, `README.md` and `CONTRIBUTING.md`. This covers:
   - the gettext domain in all 266 calls and `load_plugin_textdomain()` (its `phpcs:ignore` line stays
     untouched);
@@ -143,22 +143,22 @@ guard test lists every item with a one-line reason.
   - `PLUGIN_PATH_NEEDLE`, `wpcli plugin activate` and the messages in `dev/smoke.sh`;
   - `wp plugin activate` and `git checkout HEAD -- …/data/` in `dev/reset.sh`; `dev/setup.sh`;
   - the messages in `dev/bench.php` and `tests/smoke/*.php`.
-- [ ] Set the header by hand to `Plugin Name: Char O'Day – AntiSpam Wizard` (straight apostrophe, en
+- [x] Set the header by hand to `Plugin Name: Char O'Day – AntiSpam Wizard` (straight apostrophe, en
   dash). Check that `Text Domain: char-oday-antispam-wizard` came out of the pass.
-- [ ] Set the readme title to `=== Char O'Day – AntiSpam Wizard ===`. Installation step 1 should now
+- [x] Set the readme title to `=== Char O'Day – AntiSpam Wizard ===`. Installation step 1 should now
   name the `char-oday-antispam-wizard` folder. Leave all other readme prose unchanged.
-- [ ] Hand-check the residues the pass must keep:
+- [x] Hand-check the residues the pass must keep:
   - `SOURCE_URL` and the readme's GitHub line;
   - `includes/class-antispam-wizard.php` and its `require_once` sites;
   - the `antispam-wizard_page_` hook-suffix prefixes in `AdminPageTest`/`StopWordsTabTest`;
   - the `antispam-wizard_*` dev-project comments in `dev/smoke.sh`, `dev/plugin-check.sh` and
     `PluginCheckHarnessTest`;
   - the `composer.json` package name.
-- [ ] Fix the `AdminPageTest` docblock that explains the prefix (`"AntiSpam Wizard" =>
+- [x] Fix the `AdminPageTest` docblock that explains the prefix (`"AntiSpam Wizard" =>
   "antispam-wizard"`) so it still describes the menu-title derivation correctly. Update the
   "slug-derived prefix" regression row to
   `char-oday-antispam-wizard-main_page_char-oday-antispam-wizard-log`.
-- [ ] Update the existing tests that hard-code paths, slugs or the domain. Do not delete any of them:
+- [x] Update the existing tests that hard-code paths, slugs or the domain. Do not delete any of them:
   - `I18nTest`: the language dir and `char-oday-antispam-wizard.pot`;
   - `AntiSpamWizardTest`: the loaded text domain;
   - `CF7IntegrationTest`: `agent`;
@@ -166,10 +166,10 @@ guard test lists every item with a one-line reason.
     `char-oday-antispam-wizard.php`;
   - `PluginMetadataTest`: `plugin_file`, `readme_file`, the `git ls-files` path and the `substr`
     prefix, the retired-prefix guard's scan dir and `char-oday-antispam-wizard/data/` exclusion.
-- [ ] Add a pin to `PluginCheckHarnessTest`: `dev/plugin-check.sh` declares
+- [x] Add a pin to `PluginCheckHarnessTest`: `dev/plugin-check.sh` declares
   `PLUGIN_SLUG="char-oday-antispam-wizard"` and mounts at
   `/var/www/html/wp-content/plugins/${PLUGIN_SLUG}`.
-- [ ] Run `docker compose run --rm test`. It must be green, including `I18nTest`,
+- [x] Run `docker compose run --rm test`. It must be green, including `I18nTest`,
   `PluginMetadataTest` (with the retired-prefix guard) and `PluginCheckHarnessTest`, before Task 2.
 
 ### Task 2: Rename the slug in the documentation

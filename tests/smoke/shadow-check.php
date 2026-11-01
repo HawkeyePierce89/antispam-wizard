@@ -52,7 +52,7 @@ ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
 if ( ! class_exists( 'ANTISPAMWIZARD_Shadow_Display' ) || false === has_filter( 'comments_clauses' ) ) {
-	fwrite( STDERR, "shadow-check: FAIL ANTISPAMWIZARD_Shadow_Display missing or not hooked — is antispam-wizard active?\n" );
+	fwrite( STDERR, "shadow-check: FAIL ANTISPAMWIZARD_Shadow_Display missing or not hooked — is char-oday-antispam-wizard active?\n" );
 	exit( 1 );
 }
 

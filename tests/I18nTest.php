@@ -58,8 +58,8 @@ class I18nTest extends TestCase {
 
     public function setUp(): void {
         parent::setUp();
-        $lang_dir = dirname( __DIR__ ) . '/antispam-wizard/languages';
-        $this->pot_file = $lang_dir . '/antispam-wizard.pot';
+        $lang_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard/languages';
+        $this->pot_file = $lang_dir . '/char-oday-antispam-wizard.pot';
         $this->po_files = glob( $lang_dir . '/*.po' );
         $this->mo_files = glob( $lang_dir . '/*.mo' );
     }
@@ -114,7 +114,7 @@ class I18nTest extends TestCase {
      * Every plugin PHP file, so the POT can be checked against the real source.
      */
     private function plugin_php_files() {
-        $root  = dirname( __DIR__ ) . '/antispam-wizard';
+        $root  = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $files = array();
         $it    = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root, FilesystemIterator::SKIP_DOTS ) );
         foreach ( $it as $file ) {

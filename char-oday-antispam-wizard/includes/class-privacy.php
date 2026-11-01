@@ -29,7 +29,7 @@ class ANTISPAMWIZARD_Privacy {
     /**
      * Unique key for the exporter/eraser registration and data groups.
      */
-    const PRIVACY_KEY = 'antispam-wizard';
+    const PRIVACY_KEY = 'char-oday-antispam-wizard';
 
     /**
      * Number of comments processed per pagination page.
@@ -62,7 +62,7 @@ class ANTISPAMWIZARD_Privacy {
      */
     public function register_exporter( array $exporters ): array {
         $exporters[ self::PRIVACY_KEY ] = array(
-            'exporter_friendly_name' => __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            'exporter_friendly_name' => __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             'callback'               => array( $this, 'export' ),
         );
         return $exporters;
@@ -76,7 +76,7 @@ class ANTISPAMWIZARD_Privacy {
      */
     public function register_eraser( array $erasers ): array {
         $erasers[ self::PRIVACY_KEY ] = array(
-            'eraser_friendly_name' => __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            'eraser_friendly_name' => __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             'callback'             => array( $this, 'erase' ),
         );
         return $erasers;
@@ -298,31 +298,31 @@ class ANTISPAMWIZARD_Privacy {
 
         if ( ! empty( $entry['date'] ) ) {
             $data[] = array(
-                'name'  => __( 'Date flagged', 'antispam-wizard' ),
+                'name'  => __( 'Date flagged', 'char-oday-antispam-wizard' ),
                 'value' => $entry['date'],
             );
         }
         if ( ! empty( $entry['text_excerpt'] ) ) {
             $data[] = array(
-                'name'  => __( 'Comment fragment', 'antispam-wizard' ),
+                'name'  => __( 'Comment fragment', 'char-oday-antispam-wizard' ),
                 'value' => $entry['text_excerpt'],
             );
         }
         if ( ! empty( $entry['ip_hash'] ) ) {
             $data[] = array(
-                'name'  => __( 'IP address (SHA-256 hash)', 'antispam-wizard' ),
+                'name'  => __( 'IP address (SHA-256 hash)', 'char-oday-antispam-wizard' ),
                 'value' => $entry['ip_hash'],
             );
         }
         if ( ! empty( $entry['checks_triggered'] ) && is_array( $entry['checks_triggered'] ) ) {
             $data[] = array(
-                'name'  => __( 'Triggered checks', 'antispam-wizard' ),
+                'name'  => __( 'Triggered checks', 'char-oday-antispam-wizard' ),
                 'value' => implode( ', ', $entry['checks_triggered'] ),
             );
         }
         if ( '' !== $reason ) {
             $data[] = array(
-                'name'  => __( 'Reason flagged', 'antispam-wizard' ),
+                'name'  => __( 'Reason flagged', 'char-oday-antispam-wizard' ),
                 'value' => $reason,
             );
         }
@@ -330,7 +330,7 @@ class ANTISPAMWIZARD_Privacy {
         $suffix = ! empty( $entry['entry_id'] ) ? '-' . $entry['entry_id'] : '';
         return array(
             'group_id'    => self::PRIVACY_KEY,
-            'group_label' => __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            'group_label' => __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             'item_id'     => self::PRIVACY_KEY . '-comment-' . $comment_id . $suffix,
             'data'        => $data,
         );
@@ -347,32 +347,32 @@ class ANTISPAMWIZARD_Privacy {
 
         if ( ! empty( $entry['date'] ) ) {
             $data[] = array(
-                'name'  => __( 'Date flagged', 'antispam-wizard' ),
+                'name'  => __( 'Date flagged', 'char-oday-antispam-wizard' ),
                 'value' => $entry['date'],
             );
         }
         if ( ! empty( $entry['text_excerpt'] ) ) {
             $data[] = array(
-                'name'  => __( 'Submission fragment', 'antispam-wizard' ),
+                'name'  => __( 'Submission fragment', 'char-oday-antispam-wizard' ),
                 'value' => $entry['text_excerpt'],
             );
         }
         if ( ! empty( $entry['ip_hash'] ) ) {
             $data[] = array(
-                'name'  => __( 'IP address (SHA-256 hash)', 'antispam-wizard' ),
+                'name'  => __( 'IP address (SHA-256 hash)', 'char-oday-antispam-wizard' ),
                 'value' => $entry['ip_hash'],
             );
         }
         if ( ! empty( $entry['checks_triggered'] ) && is_array( $entry['checks_triggered'] ) ) {
             $data[] = array(
-                'name'  => __( 'Triggered checks', 'antispam-wizard' ),
+                'name'  => __( 'Triggered checks', 'char-oday-antispam-wizard' ),
                 'value' => implode( ', ', $entry['checks_triggered'] ),
             );
         }
 
         return array(
             'group_id'    => self::PRIVACY_KEY,
-            'group_label' => __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            'group_label' => __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             'item_id'     => self::PRIVACY_KEY . '-form-' . $entry['entry_id'],
             'data'        => $data,
         );
@@ -392,7 +392,7 @@ class ANTISPAMWIZARD_Privacy {
 
         if ( ! empty( $sample['created_at'] ) ) {
             $data[] = array(
-                'name'  => __( 'Date added to training data', 'antispam-wizard' ),
+                'name'  => __( 'Date added to training data', 'char-oday-antispam-wizard' ),
                 'value' => $sample['created_at'],
             );
         }
@@ -400,27 +400,27 @@ class ANTISPAMWIZARD_Privacy {
         $category = isset( $sample['category'] ) ? (string) $sample['category'] : '';
         if ( 'spam' === $category ) {
             $data[] = array(
-                'name'  => __( 'Training category', 'antispam-wizard' ),
-                'value' => __( 'Spam', 'antispam-wizard' ),
+                'name'  => __( 'Training category', 'char-oday-antispam-wizard' ),
+                'value' => __( 'Spam', 'char-oday-antispam-wizard' ),
             );
         } elseif ( 'ham' === $category ) {
             $data[] = array(
-                'name'  => __( 'Training category', 'antispam-wizard' ),
-                'value' => __( 'Ham', 'antispam-wizard' ),
+                'name'  => __( 'Training category', 'char-oday-antispam-wizard' ),
+                'value' => __( 'Ham', 'char-oday-antispam-wizard' ),
             );
         }
 
         $content = isset( $sample['content'] ) ? (string) $sample['content'] : '';
         if ( '' !== $content ) {
             $data[] = array(
-                'name'  => __( 'Training sample text', 'antispam-wizard' ),
+                'name'  => __( 'Training sample text', 'char-oday-antispam-wizard' ),
                 'value' => $content,
             );
         }
 
         return array(
             'group_id'    => self::PRIVACY_KEY,
-            'group_label' => __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            'group_label' => __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             'item_id'     => self::PRIVACY_KEY . '-sample-' . (int) ( $sample['id'] ?? 0 ),
             'data'        => $data,
         );
@@ -538,10 +538,10 @@ class ANTISPAMWIZARD_Privacy {
 
         $messages = array();
         if ( $items_removed ) {
-            $messages[] = __( 'AntiSpam Wizard spam-log entries, flagging reasons, form submissions, and training samples were removed.', 'antispam-wizard' );
+            $messages[] = __( 'AntiSpam Wizard spam-log entries, flagging reasons, form submissions, and training samples were removed.', 'char-oday-antispam-wizard' );
         }
         if ( $items_retained ) {
-            $messages[] = __( 'AntiSpam Wizard training samples could not be removed because of a database error. Please retry this erasure request.', 'antispam-wizard' );
+            $messages[] = __( 'AntiSpam Wizard training samples could not be removed because of a database error. Please retry this erasure request.', 'char-oday-antispam-wizard' );
         }
 
         return array(
@@ -563,12 +563,12 @@ class ANTISPAMWIZARD_Privacy {
         $content = wp_kses_post(
             __(
                 'AntiSpam Wizard analyzes comments and contact-form submissions to detect spam. When a comment is flagged, either by one of the plugin\'s checks or by a spam decision you make while moderating, the plugin stores a short fragment of the comment text, a SHA-256 hash of the commenter\'s IP address (the raw IP is never stored), and the reason the comment was flagged. When a contact-form submission is flagged, the plugin stores a short fragment of the submitted text, a SHA-256 hash of the submitter\'s IP address, and a SHA-256 hash of the submitter\'s email address (raw values are never stored). When a comment is used to train the spam filter, either from the plugin\'s Spam Log or by any Spam / Not Spam moderation decision made elsewhere in WordPress, the full text of that comment is stored as a training sample, together with a SHA-256 hash of the commenter\'s email address, until it is erased through a personal-data erasure request or the plugin is uninstalled, and it is included in personal-data exports. This data is used solely for spam detection and statistics. It is removed in response to a personal-data erasure request and when the plugin is uninstalled.',
-                'antispam-wizard'
+                'char-oday-antispam-wizard'
             )
         );
 
         wp_add_privacy_policy_content(
-            __( 'AntiSpam Wizard', 'antispam-wizard' ),
+            __( 'AntiSpam Wizard', 'char-oday-antispam-wizard' ),
             wpautop( $content )
         );
     }

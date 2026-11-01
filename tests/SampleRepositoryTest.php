@@ -967,7 +967,7 @@ class SampleRepositoryTest extends TestCase {
     }
 
     public function test_source_uses_identifier_placeholders_not_interpolation(): void {
-        $source = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/includes/class-sample-repository.php' );
+        $source = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-sample-repository.php' );
 
         // Fifteen prepared queries name their table with a %i identifier placeholder.
         // Matching the SQL keyword that precedes it, rather than counting a bare
@@ -991,7 +991,7 @@ class SampleRepositoryTest extends TestCase {
      * one of these lines would be silently unchecked by PHPCS. Enforce it here.
      */
     public function test_every_prepared_sql_suppression_wraps_a_prepare_call(): void {
-        $path  = dirname( __DIR__ ) . '/antispam-wizard/includes/class-sample-repository.php';
+        $path  = dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-sample-repository.php';
         $lines = file( $path, FILE_IGNORE_NEW_LINES );
 
         $checked = 0;

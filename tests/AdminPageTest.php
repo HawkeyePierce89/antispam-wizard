@@ -23,10 +23,10 @@ class AdminPageTest extends TestCase {
         $_GET               = array();
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
         if ( ! defined( 'ANTISPAMWIZARD_URL' ) ) {
-            define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/char-oday-antispam-wizard/' );
         }
         if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
             define( 'ANTISPAMWIZARD_VERSION', '1.0.0' );
@@ -56,13 +56,13 @@ class AdminPageTest extends TestCase {
 
         $this->admin_page->add_menu_page();
 
-        $this->assertArrayHasKey( 'antispam-wizard-main', $wp_menu_pages );
-        $this->assertSame( 'manage_options', $wp_menu_pages['antispam-wizard-main']['capability'] );
-        $this->assertSame( 'AntiSpam Wizard', $wp_menu_pages['antispam-wizard-main']['page_title'] );
-        $this->assertSame( 'AntiSpam Wizard', $wp_menu_pages['antispam-wizard-main']['menu_title'] );
-        $this->assertSame( 'dashicons-shield-alt', $wp_menu_pages['antispam-wizard-main']['icon_url'] );
-        $this->assertSame( 80, $wp_menu_pages['antispam-wizard-main']['position'] );
-        $this->assertSame( 'menu', $wp_menu_pages['antispam-wizard-main']['type'] );
+        $this->assertArrayHasKey( 'char-oday-antispam-wizard-main', $wp_menu_pages );
+        $this->assertSame( 'manage_options', $wp_menu_pages['char-oday-antispam-wizard-main']['capability'] );
+        $this->assertSame( 'AntiSpam Wizard', $wp_menu_pages['char-oday-antispam-wizard-main']['page_title'] );
+        $this->assertSame( 'AntiSpam Wizard', $wp_menu_pages['char-oday-antispam-wizard-main']['menu_title'] );
+        $this->assertSame( 'dashicons-shield-alt', $wp_menu_pages['char-oday-antispam-wizard-main']['icon_url'] );
+        $this->assertSame( 80, $wp_menu_pages['char-oday-antispam-wizard-main']['position'] );
+        $this->assertSame( 'menu', $wp_menu_pages['char-oday-antispam-wizard-main']['type'] );
     }
 
     public function test_submenu_slugs_has_main_first() {
@@ -76,17 +76,17 @@ class AdminPageTest extends TestCase {
         $this->admin_page->add_menu_page();
 
         $expected_slugs = array(
-            'antispam-wizard-main',
-            'antispam-wizard',
-            'antispam-wizard-stop-words',
-            'antispam-wizard-excluded-tokens',
-            'antispam-wizard-log',
-            'antispam-wizard-stats',
+            'char-oday-antispam-wizard-main',
+            'char-oday-antispam-wizard',
+            'char-oday-antispam-wizard-stop-words',
+            'char-oday-antispam-wizard-excluded-tokens',
+            'char-oday-antispam-wizard-log',
+            'char-oday-antispam-wizard-stats',
         );
 
         foreach ( $expected_slugs as $slug ) {
             $this->assertArrayHasKey( $slug, $wp_submenu_pages, "Missing submenu: $slug" );
-            $this->assertSame( 'antispam-wizard-main', $wp_submenu_pages[ $slug ]['parent_slug'] );
+            $this->assertSame( 'char-oday-antispam-wizard-main', $wp_submenu_pages[ $slug ]['parent_slug'] );
             $this->assertSame( 'manage_options', $wp_submenu_pages[ $slug ]['capability'] );
         }
     }
@@ -94,22 +94,22 @@ class AdminPageTest extends TestCase {
     public function test_get_submenu_url_returns_admin_php_urls() {
         $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'general' );
         $this->assertStringContainsString( 'admin.php', $url );
-        $this->assertStringContainsString( 'page=antispam-wizard', $url );
+        $this->assertStringContainsString( 'page=char-oday-antispam-wizard', $url );
 
         $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'stop-words' );
-        $this->assertStringContainsString( 'page=antispam-wizard-stop-words', $url );
+        $this->assertStringContainsString( 'page=char-oday-antispam-wizard-stop-words', $url );
 
         $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'log' );
-        $this->assertStringContainsString( 'page=antispam-wizard-log', $url );
+        $this->assertStringContainsString( 'page=char-oday-antispam-wizard-log', $url );
     }
 
     public function test_get_submenu_url_falls_back_for_unknown_tab() {
         $url = ANTISPAMWIZARD_Admin_Page::get_submenu_url( 'nonexistent' );
-        $this->assertStringContainsString( 'page=antispam-wizard-main', $url );
+        $this->assertStringContainsString( 'page=char-oday-antispam-wizard-main', $url );
     }
 
     public function test_render_page_detects_tab_from_page_param() {
-        $_GET['page'] = 'antispam-wizard-stats';
+        $_GET['page'] = 'char-oday-antispam-wizard-stats';
 
         ob_start();
         $this->admin_page->render_page();
@@ -119,7 +119,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_page_defaults_to_main_for_unknown_page() {
-        $_GET['page'] = 'antispam-wizard-unknown';
+        $_GET['page'] = 'char-oday-antispam-wizard-unknown';
 
         ob_start();
         $this->admin_page->render_page();
@@ -132,7 +132,7 @@ class AdminPageTest extends TestCase {
         global $wp_enqueued_styles;
 
         $this->admin_page->add_menu_page();
-        $this->admin_page->enqueue_assets( 'toplevel_page_antispam-wizard-main' );
+        $this->admin_page->enqueue_assets( 'toplevel_page_char-oday-antispam-wizard-main' );
 
         $this->assertArrayHasKey( 'antispamwizard-admin', $wp_enqueued_styles );
         $this->assertStringContainsString( 'admin/css/admin.css', $wp_enqueued_styles['antispamwizard-admin']['src'] );
@@ -163,23 +163,23 @@ class AdminPageTest extends TestCase {
      */
     public function provide_submenu_hook_suffixes(): array {
         return array(
-            'main'            => array( 'antispam-wizard_page_antispam-wizard-main' ),
-            'general'         => array( 'antispam-wizard_page_antispam-wizard' ),
-            'stop-words'      => array( 'antispam-wizard_page_antispam-wizard-stop-words' ),
-            'excluded-tokens' => array( 'antispam-wizard_page_antispam-wizard-excluded-tokens' ),
-            'log'             => array( 'antispam-wizard_page_antispam-wizard-log' ),
-            'stats'           => array( 'antispam-wizard_page_antispam-wizard-stats' ),
+            'main'            => array( 'antispam-wizard_page_char-oday-antispam-wizard-main' ),
+            'general'         => array( 'antispam-wizard_page_char-oday-antispam-wizard' ),
+            'stop-words'      => array( 'antispam-wizard_page_char-oday-antispam-wizard-stop-words' ),
+            'excluded-tokens' => array( 'antispam-wizard_page_char-oday-antispam-wizard-excluded-tokens' ),
+            'log'             => array( 'antispam-wizard_page_char-oday-antispam-wizard-log' ),
+            'stats'           => array( 'antispam-wizard_page_char-oday-antispam-wizard-stats' ),
         );
     }
 
     public function test_add_menu_page_returns_expected_hook_suffixes() {
         $this->assertSame(
-            'toplevel_page_antispam-wizard-main',
-            add_menu_page( 'AntiSpam Wizard', 'AntiSpam Wizard', 'manage_options', 'antispam-wizard-main' )
+            'toplevel_page_char-oday-antispam-wizard-main',
+            add_menu_page( 'AntiSpam Wizard', 'AntiSpam Wizard', 'manage_options', 'char-oday-antispam-wizard-main' )
         );
         $this->assertSame(
-            'antispam-wizard_page_antispam-wizard-log',
-            add_submenu_page( 'antispam-wizard-main', 'Spam Log', 'Spam Log', 'manage_options', 'antispam-wizard-log' )
+            'antispam-wizard_page_char-oday-antispam-wizard-log',
+            add_submenu_page( 'char-oday-antispam-wizard-main', 'Spam Log', 'Spam Log', 'manage_options', 'char-oday-antispam-wizard-log' )
         );
     }
 
@@ -207,13 +207,13 @@ class AdminPageTest extends TestCase {
             'index.php'            => array( 'index.php' ),
             'other plugin page'    => array( 'toplevel_page_other-plugin' ),
             // The slug-derived prefix WordPress never generates (regression guard).
-            'slug-derived prefix'  => array( 'antispam-wizard-main_page_antispam-wizard-log' ),
+            'slug-derived prefix'  => array( 'char-oday-antispam-wizard-main_page_char-oday-antispam-wizard-log' ),
         );
     }
 
     public function test_handle_save_with_valid_nonce() {
         global $wp_nonces;
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
@@ -242,7 +242,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_handle_save_saves_enabled_toggle() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['enabled'] = '1';
@@ -259,7 +259,7 @@ class AdminPageTest extends TestCase {
             'bayesian_threshold' => 0.85,
         ) );
 
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['enabled'] = '1';
@@ -275,7 +275,7 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_from_main_page_disables_enabled() {
         ANTISPAMWIZARD_Settings::update( array( 'enabled' => true, 'links_enabled' => true ) );
 
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
 
@@ -367,7 +367,7 @@ class AdminPageTest extends TestCase {
         $this->assertSame( 'https://antispamwizard.com/', ANTISPAMWIZARD_Admin_Page::WEBSITE_URL );
         $this->assertSame( 'https://github.com/HawkeyePierce89/antispam-wizard', ANTISPAMWIZARD_Admin_Page::SOURCE_URL );
 
-        $header = file_get_contents( ANTISPAMWIZARD_PATH . 'antispam-wizard.php' );
+        $header = file_get_contents( ANTISPAMWIZARD_PATH . 'char-oday-antispam-wizard.php' );
         $this->assertMatchesRegularExpression( '/^ \* Plugin URI:\s+' . preg_quote( ANTISPAMWIZARD_Admin_Page::WEBSITE_URL, '/' ) . '$/m', $header );
         $this->assertMatchesRegularExpression( '/^ \* Author:\s+Anton Karmanov$/m', $header );
         $this->assertMatchesRegularExpression( '/^ \* Author URI:\s+https:\/\/karmanov\.ws\/$/m', $header );
@@ -439,7 +439,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_page_general_tab_has_form() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -454,7 +454,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_handle_save_persists_bot_checks() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
 
@@ -494,7 +494,7 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_save_bayesian_enabled_and_threshold() {
         global $wp_nonces;
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
@@ -521,7 +521,7 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_save_bayesian_threshold_clamped_to_range() {
         global $wp_nonces;
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
@@ -544,7 +544,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_page_general_tab_has_bayesian_fields() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -557,7 +557,7 @@ class AdminPageTest extends TestCase {
     // --- Excluded Tokens tab tests ---
 
     public function test_render_page_outputs_excluded_tokens_page() {
-        $_GET['page'] = 'antispam-wizard-excluded-tokens';
+        $_GET['page'] = 'char-oday-antispam-wizard-excluded-tokens';
 
         ob_start();
         $this->admin_page->render_page();
@@ -568,7 +568,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_page_stop_words_page() {
-        $_GET['page'] = 'antispam-wizard-stop-words';
+        $_GET['page'] = 'char-oday-antispam-wizard-stop-words';
 
         ob_start();
         $this->admin_page->render_page();
@@ -718,7 +718,7 @@ class AdminPageTest extends TestCase {
         global $wp_localized_scripts;
 
         $this->admin_page->add_menu_page();
-        $this->admin_page->enqueue_assets( 'toplevel_page_antispam-wizard-main' );
+        $this->admin_page->enqueue_assets( 'toplevel_page_char-oday-antispam-wizard-main' );
 
         $this->assertArrayHasKey( 'antispamwizard-admin', $wp_localized_scripts );
         $data = $wp_localized_scripts['antispamwizard-admin']['data'];
@@ -816,7 +816,7 @@ class AdminPageTest extends TestCase {
 
 
     public function test_render_page_general_tab_has_help_descriptions() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -857,7 +857,7 @@ class AdminPageTest extends TestCase {
     public function test_handle_save_redirects_with_settings_updated() {
         global $wp_redirects;
 
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '2';
@@ -875,7 +875,7 @@ class AdminPageTest extends TestCase {
 
         $this->assertCount( 1, $wp_redirects );
         $this->assertStringContainsString( 'settings-updated=true', $wp_redirects[0]['location'] );
-        $this->assertStringContainsString( 'page=antispam-wizard', $wp_redirects[0]['location'] );
+        $this->assertStringContainsString( 'page=char-oday-antispam-wizard', $wp_redirects[0]['location'] );
         $this->assertStringContainsString( 'admin.php', $wp_redirects[0]['location'] );
     }
 
@@ -890,7 +890,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_general_tab_shows_settings_saved_notice() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $_GET['settings-updated'] = 'true';
 
         ob_start();
@@ -902,7 +902,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_general_tab_no_notice_without_parameter() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -913,7 +913,7 @@ class AdminPageTest extends TestCase {
     // --- Main page view tests ---
 
     public function test_render_main_page_contains_toggle_input() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
 
         ob_start();
         $this->admin_page->render_page();
@@ -924,7 +924,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_main_page_contains_nonce_field() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
 
         ob_start();
         $this->admin_page->render_page();
@@ -934,7 +934,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_main_page_contains_intro_text() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
 
         ob_start();
         $this->admin_page->render_page();
@@ -945,7 +945,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_main_page_contains_form_and_submit() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
 
         ob_start();
         $this->admin_page->render_page();
@@ -956,7 +956,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_main_page_shows_saved_notice() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         $_GET['settings-updated'] = 'true';
 
         ob_start();
@@ -973,7 +973,7 @@ class AdminPageTest extends TestCase {
      * view unslashes and sanitizes it before the strict comparison.
      */
     public function test_render_main_page_hostile_settings_updated_shows_no_notice() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         $_GET['settings-updated'] = '"><script>alert(1)</script>';
 
         ob_start();
@@ -986,7 +986,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_general_page_shows_saved_notice() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $_GET['settings-updated'] = 'true';
 
         ob_start();
@@ -998,7 +998,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_general_page_hostile_settings_updated_shows_no_notice() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $_GET['settings-updated'] = '"><script>alert(1)</script>';
 
         ob_start();
@@ -1015,7 +1015,7 @@ class AdminPageTest extends TestCase {
      * so a slashed flag value still fails the strict 'true' comparison.
      */
     public function test_render_main_page_slashed_settings_updated_shows_no_notice() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         $_GET['settings-updated'] = "\\'true\\'";
 
         ob_start();
@@ -1026,7 +1026,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_main_page_toggle_checked_when_enabled() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         ANTISPAMWIZARD_Settings::update( array( 'enabled' => true ) );
 
         ob_start();
@@ -1037,7 +1037,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_render_main_page_toggle_unchecked_when_disabled() {
-        $_GET['page'] = 'antispam-wizard-main';
+        $_GET['page'] = 'char-oday-antispam-wizard-main';
         ANTISPAMWIZARD_Settings::update( array( 'enabled' => false ) );
 
         ob_start();
@@ -1171,7 +1171,7 @@ class AdminPageTest extends TestCase {
 
     public function test_handle_save_clamps_duplicate_ttl_to_minimum_60() {
         global $wp_nonces;
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
@@ -1193,7 +1193,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_handle_save_with_slashed_nonce_succeeds() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $slashed_nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
 
         $this->assertStringContainsString( '\\', $slashed_nonce );
@@ -1265,7 +1265,7 @@ class AdminPageTest extends TestCase {
     }
 
     public function test_handle_save_clamps_negative_to_min() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '-5';
@@ -1464,7 +1464,7 @@ class AdminPageTest extends TestCase {
     // --- End export handler tests ---
 
     public function test_handle_save_clamps_oversized_to_max() {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['links_max']     = '99999';
@@ -1492,7 +1492,7 @@ class AdminPageTest extends TestCase {
         unset( $GLOBALS['wp_cf7_is_available'] );
         $this->assertTrue( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
         $_POST['cf7_enabled'] = '1';
@@ -1511,7 +1511,7 @@ class AdminPageTest extends TestCase {
         $this->assertTrue( ANTISPAMWIZARD_Settings::get( 'cf7_enabled' ) );
 
         // Unchecked should become false.
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST = array();
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
@@ -1536,7 +1536,7 @@ class AdminPageTest extends TestCase {
         $GLOBALS['wp_cf7_is_available'] = false;
         $this->assertFalse( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $nonce = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $_POST = array();
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = $nonce;
@@ -1572,7 +1572,7 @@ class AdminPageTest extends TestCase {
         $GLOBALS['wp_cf7_is_available'] = false;
         $this->assertFalse( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -1587,7 +1587,7 @@ class AdminPageTest extends TestCase {
         unset( $GLOBALS['wp_cf7_is_available'] );
         $this->assertTrue( ANTISPAMWIZARD_CF7_Integration::is_available() );
 
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -1601,7 +1601,7 @@ class AdminPageTest extends TestCase {
     // --- Shadow display toggle ---
 
     public function test_general_view_renders_shadow_display_toggle_checked_by_default(): void {
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -1616,7 +1616,7 @@ class AdminPageTest extends TestCase {
     public function test_general_view_renders_shadow_display_toggle_unchecked_when_off(): void {
         ANTISPAMWIZARD_Settings::update( array( 'shadow_display_enabled' => false ) );
 
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         ob_start();
         $this->admin_page->render_page();
         $output = ob_get_clean();
@@ -1642,14 +1642,14 @@ class AdminPageTest extends TestCase {
         );
 
         // A save without the field (checkbox unticked) stores false.
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $_POST        = $post;
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );
         $this->admin_page->handle_save();
         $this->assertFalse( ANTISPAMWIZARD_Settings::get( 'shadow_display_enabled' ) );
 
         // A save with it stores true.
-        $_GET['page'] = 'antispam-wizard';
+        $_GET['page'] = 'char-oday-antispam-wizard';
         $_POST        = $post;
         $_POST['shadow_display_enabled']      = '1';
         $_POST[ ANTISPAMWIZARD_Admin_Page::NONCE_FIELD ] = wp_create_nonce( ANTISPAMWIZARD_Admin_Page::NONCE_ACTION );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: AntiSpam Wizard
+ * Plugin Name: Char O'Day – AntiSpam Wizard
  * Plugin URI:  https://antispamwizard.com/
  * Description: Offline-first comment spam protection for WordPress with multiple configurable detection checks.
  * Version:     1.0.0
@@ -8,7 +8,7 @@
  * Author URI:  https://karmanov.ws/
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: antispam-wizard
+ * Text Domain: char-oday-antispam-wizard
  * Domain Path: /languages
  * Requires PHP: 8.1
  * Requires at least: 6.4

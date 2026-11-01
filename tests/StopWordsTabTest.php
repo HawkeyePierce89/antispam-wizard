@@ -26,10 +26,10 @@ class StopWordsTabTest extends TestCase {
         $_FILES                = array();
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
         if ( ! defined( 'ANTISPAMWIZARD_URL' ) ) {
-            define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/char-oday-antispam-wizard/' );
         }
         if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
             define( 'ANTISPAMWIZARD_VERSION', '1.0.0' );
@@ -311,7 +311,7 @@ class StopWordsTabTest extends TestCase {
         global $wp_enqueued_scripts, $wp_localized_scripts;
 
         $this->admin_page->add_menu_page();
-        $this->admin_page->enqueue_assets( 'antispam-wizard_page_antispam-wizard-stop-words' );
+        $this->admin_page->enqueue_assets( 'antispam-wizard_page_char-oday-antispam-wizard-stop-words' );
 
         $this->assertArrayHasKey( 'antispamwizard-admin', $wp_enqueued_scripts );
         $this->assertStringContainsString( 'admin/js/admin.js', $wp_enqueued_scripts['antispamwizard-admin']['src'] );
@@ -344,7 +344,7 @@ class StopWordsTabTest extends TestCase {
     // --- Stop-words view renders ---
 
     public function test_stop_words_tab_renders() {
-        $_GET['page'] = 'antispam-wizard-stop-words';
+        $_GET['page'] = 'char-oday-antispam-wizard-stop-words';
 
         ob_start();
         $this->admin_page->render_page();
@@ -427,7 +427,7 @@ class StopWordsTabTest extends TestCase {
 
     public function test_stop_words_tab_renders_existing_words() {
         ANTISPAMWIZARD_Settings::update( array( 'stop_words_list' => array( 'spam', '=exact' ) ) );
-        $_GET['page'] = 'antispam-wizard-stop-words';
+        $_GET['page'] = 'char-oday-antispam-wizard-stop-words';
 
         ob_start();
         $this->admin_page->render_page();

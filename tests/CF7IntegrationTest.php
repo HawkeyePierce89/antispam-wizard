@@ -113,7 +113,7 @@ class CF7IntegrationTest extends TestCase {
         $this->assertSame( ANTISPAMWIZARD_Detector::hash_email( 'spam@example.com' ), $entries[0]['email_hash'] );
         global $wp_cf7_spam_log;
         $this->assertNotEmpty( $wp_cf7_spam_log );
-        $this->assertSame( 'antispam-wizard', $wp_cf7_spam_log[0]['agent'] );
+        $this->assertSame( 'char-oday-antispam-wizard', $wp_cf7_spam_log[0]['agent'] );
     }
 
     public function test_ham_content_returns_false(): void {
@@ -619,7 +619,7 @@ class CF7IntegrationTest extends TestCase {
         // debug.log is web-readable on misconfigured hosts. Forcing a throw past
         // the inner fail-open catches is not reachable through the stubs, so the
         // rule is pinned structurally instead of vacuously.
-        $source = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/includes/class-cf7-integration.php' );
+        $source = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-cf7-integration.php' );
         $this->assertIsString( $source );
 
         $start = strpos( $source, 'public function filter_spam(' );

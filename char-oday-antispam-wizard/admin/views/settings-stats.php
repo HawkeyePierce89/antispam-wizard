@@ -12,16 +12,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 $stats = ANTISPAMWIZARD_Stats::get_all();
 
 $check_meta = array(
-    'honeypot'   => __( 'Honeypot', 'antispam-wizard' ),
-    'submit_time'=> __( 'Submit Time', 'antispam-wizard' ),
-    'stop_words' => __( 'Stop Words', 'antispam-wizard' ),
-    'links'      => __( 'Links', 'antispam-wizard' ),
-    'emoji'      => __( 'Emoji', 'antispam-wizard' ),
-    'spacing'    => __( 'Spacing', 'antispam-wizard' ),
-    'multi_lang' => __( 'Mixed Scripts', 'antispam-wizard' ),
-    'duplicate'  => __( 'Duplicates', 'antispam-wizard' ),
-    'bayesian'   => __( 'Bayesian', 'antispam-wizard' ),
-    'similarity' => __( 'Similarity', 'antispam-wizard' ),
+    'honeypot'   => __( 'Honeypot', 'char-oday-antispam-wizard' ),
+    'submit_time'=> __( 'Submit Time', 'char-oday-antispam-wizard' ),
+    'stop_words' => __( 'Stop Words', 'char-oday-antispam-wizard' ),
+    'links'      => __( 'Links', 'char-oday-antispam-wizard' ),
+    'emoji'      => __( 'Emoji', 'char-oday-antispam-wizard' ),
+    'spacing'    => __( 'Spacing', 'char-oday-antispam-wizard' ),
+    'multi_lang' => __( 'Mixed Scripts', 'char-oday-antispam-wizard' ),
+    'duplicate'  => __( 'Duplicates', 'char-oday-antispam-wizard' ),
+    'bayesian'   => __( 'Bayesian', 'char-oday-antispam-wizard' ),
+    'similarity' => __( 'Similarity', 'char-oday-antispam-wizard' ),
 );
 
 $settings  = ANTISPAMWIZARD_Settings::get_all();
@@ -44,7 +44,7 @@ $total_check = array_sum( $per_check );
         <div class="antispamwizard-kpi-icon" aria-hidden="true">⊘</div>
         <div>
             <div class="antispamwizard-kpi-value"><?php echo esc_html( number_format_i18n( (int) ( $stats['total_blocked'] ?? 0 ) ) ); ?></div>
-            <div class="antispamwizard-kpi-label"><?php esc_html_e( 'Total Blocked', 'antispam-wizard' ); ?></div>
+            <div class="antispamwizard-kpi-label"><?php esc_html_e( 'Total Blocked', 'char-oday-antispam-wizard' ); ?></div>
         </div>
     </div>
     <div class="antispamwizard-card antispamwizard-kpi">
@@ -55,18 +55,18 @@ $total_check = array_sum( $per_check );
                 if ( ! empty( $stats['last_blocked_date'] ) ) {
                     echo esc_html( $stats['last_blocked_date'] );
                 } else {
-                    esc_html_e( 'Never', 'antispam-wizard' );
+                    esc_html_e( 'Never', 'char-oday-antispam-wizard' );
                 }
                 ?>
             </div>
-            <div class="antispamwizard-kpi-label"><?php esc_html_e( 'Last Blocked', 'antispam-wizard' ); ?></div>
+            <div class="antispamwizard-kpi-label"><?php esc_html_e( 'Last Blocked', 'char-oday-antispam-wizard' ); ?></div>
         </div>
     </div>
 </div>
 
 <div class="antispamwizard-card">
-    <h3 class="antispamwizard-card-title"><?php esc_html_e( 'Per-Check Breakdown', 'antispam-wizard' ); ?></h3>
-    <p class="antispamwizard-stats-note"><?php esc_html_e( 'Each blocked comment can trigger multiple checks. These counts show individual check matches, so the sum may exceed Total Blocked.', 'antispam-wizard' ); ?></p>
+    <h3 class="antispamwizard-card-title"><?php esc_html_e( 'Per-Check Breakdown', 'char-oday-antispam-wizard' ); ?></h3>
+    <p class="antispamwizard-stats-note"><?php esc_html_e( 'Each blocked comment can trigger multiple checks. These counts show individual check matches, so the sum may exceed Total Blocked.', 'char-oday-antispam-wizard' ); ?></p>
     <?php if ( ! empty( $per_check ) ) : ?>
         <div class="antispamwizard-bar-list">
             <?php foreach ( $per_check as $check_name => $count ) :
@@ -88,6 +88,6 @@ $total_check = array_sum( $per_check );
             <?php endforeach; ?>
         </div>
     <?php else : ?>
-        <p class="antispamwizard-empty"><?php esc_html_e( 'No check-level statistics recorded yet.', 'antispam-wizard' ); ?></p>
+        <p class="antispamwizard-empty"><?php esc_html_e( 'No check-level statistics recorded yet.', 'char-oday-antispam-wizard' ); ?></p>
     <?php endif; ?>
 </div>

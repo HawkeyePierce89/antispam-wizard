@@ -6,10 +6,10 @@
 # the official `plugin-check` plugin from WordPress.org, activates AntiSpam
 # Wizard and runs:
 #
-#   wp plugin check antispam-wizard --categories=plugin_repo --format=csv
+#   wp plugin check char-oday-antispam-wizard --categories=plugin_repo --format=csv
 #
 # against a *tracked-files-only export* of the plugin. The export is built from
-# `git ls-files antispam-wizard`, so untracked junk in the working tree
+# `git ls-files char-oday-antispam-wizard`, so untracked junk in the working tree
 # (.DS_Store, editor backups, a locally built zip) can never produce a finding —
 # what is checked is exactly what would be shipped.
 #
@@ -49,7 +49,7 @@ PROJECT="antispamwizard-pc-${PROJECT_SLUG}-$$"
 EXPECTED_WP_TOKEN="${WORDPRESS_IMAGE%%-*}"
 EXPECTED_WP_VERSION="$(printf '%s' "$EXPECTED_WP_TOKEN" | cut -d. -f1,2)"
 SERVICE="wordpress"
-PLUGIN_SLUG="antispam-wizard"
+PLUGIN_SLUG="char-oday-antispam-wizard"
 PLUGIN_MOUNT="/var/www/html/wp-content/plugins/${PLUGIN_SLUG}"
 # Plugin Check parses large files through PHPCS; the container's default PHP
 # memory limit is not enough for a full plugin_repo run.
@@ -96,7 +96,7 @@ echo "Exporting tracked plugin files to ${EXPORT_ROOT}..."
 mkdir -p "$EXPORT_ROOT"
 EXPORTED=0
 while IFS= read -r -d '' tracked; do
-  # $tracked is repo-relative and always begins with "antispam-wizard/".
+  # $tracked is repo-relative and always begins with "char-oday-antispam-wizard/".
   # A tracked file missing from the working tree would silently shrink the
   # checked tree below the shipped tree, so it is a hard failure, not a skip.
   [ -f "$tracked" ] || fail "tracked file ${tracked} is missing from the working tree — the export would not match the shipped tree."
@@ -111,7 +111,7 @@ done < <(git ls-files -z "$PLUGIN_SLUG")
 echo "  - exported ${EXPORTED} tracked files"
 
 # Inline override: drop published ports (exec-only access) and replace the base
-# `./antispam-wizard` bind mount with the read-only tracked-files export. The
+# `./char-oday-antispam-wizard` bind mount with the read-only tracked-files export. The
 # base docker-compose.yml is never mutated.
 cat > "$OVERRIDE" <<YAML
 services:

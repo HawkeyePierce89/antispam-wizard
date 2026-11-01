@@ -79,7 +79,7 @@ class ANTISPAMWIZARD_Duplicate_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['duplicate_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'duplicate', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'duplicate', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $content = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
@@ -98,7 +98,7 @@ class ANTISPAMWIZARD_Duplicate_Check implements ANTISPAMWIZARD_Check {
                 : '' );
 
         if ( '' === $content || '' === $ip_hash ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'duplicate', __( 'missing data', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'duplicate', __( 'missing data', 'char-oday-antispam-wizard' ) );
         }
 
         // A /u pattern returns null on a malformed subject and the comment body is
@@ -135,7 +135,7 @@ class ANTISPAMWIZARD_Duplicate_Check implements ANTISPAMWIZARD_Check {
                 true,
                 'duplicate',
                 // translators: 1: Number of identical submissions seen, 2: Configured threshold.
-                sprintf( __( 'duplicate comment %1$d/%2$d', 'antispam-wizard' ), $count, $threshold )
+                sprintf( __( 'duplicate comment %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $threshold )
             );
         }
 
@@ -143,7 +143,7 @@ class ANTISPAMWIZARD_Duplicate_Check implements ANTISPAMWIZARD_Check {
             false,
             'duplicate',
             // translators: 1: Number of identical submissions seen, 2: Configured threshold.
-            sprintf( __( 'duplicate count %1$d/%2$d', 'antispam-wizard' ), $count, $threshold )
+            sprintf( __( 'duplicate count %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $threshold )
         );
     }
 

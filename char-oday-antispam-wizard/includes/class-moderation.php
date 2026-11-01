@@ -465,7 +465,7 @@ class ANTISPAMWIZARD_Moderation {
         );
 
         return $text . '<p class="antispamwizard-moderate"><a class="antispamwizard-moderate-link" href="' . esc_url( $url ) . '">'
-            . esc_html__( 'Mark as spam', 'antispam-wizard' ) . '</a></p>';
+            . esc_html__( 'Mark as spam', 'char-oday-antispam-wizard' ) . '</a></p>';
     }
 
     /**
@@ -497,7 +497,7 @@ class ANTISPAMWIZARD_Moderation {
      */
     public function handle_mark_spam(): void {
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'You do not have permission to moderate comments.', 'antispam-wizard' ), '', array( 'response' => 403 ) );
+            wp_die( esc_html__( 'You do not have permission to moderate comments.', 'char-oday-antispam-wizard' ), '', array( 'response' => 403 ) );
         }
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The comment id is what the nonce action is built from, so it necessarily precedes the check_admin_referer() call on the next line; it is cast to int before any use.
@@ -507,7 +507,7 @@ class ANTISPAMWIZARD_Moderation {
 
         $comment = get_comment( $comment_id );
         if ( ! $comment ) {
-            wp_die( esc_html__( 'Comment not found.', 'antispam-wizard' ), '', array( 'response' => 404 ) );
+            wp_die( esc_html__( 'Comment not found.', 'char-oday-antispam-wizard' ), '', array( 'response' => 404 ) );
         }
 
         if ( 'spam' !== (string) $comment->comment_approved && ! wp_spam_comment( $comment_id ) ) {
@@ -516,7 +516,7 @@ class ANTISPAMWIZARD_Moderation {
             // the click did nothing. The msgid is the one ANTISPAMWIZARD_Admin_Page already
             // ships for the same failure on the Spam Log pill, so this adds no POT
             // entry.
-            wp_die( esc_html__( 'Comment status could not be changed. Please try again.', 'antispam-wizard' ), '', array( 'response' => 500 ) );
+            wp_die( esc_html__( 'Comment status could not be changed. Please try again.', 'char-oday-antispam-wizard' ), '', array( 'response' => 500 ) );
         }
 
         $permalink = get_permalink( (int) $comment->comment_post_ID );

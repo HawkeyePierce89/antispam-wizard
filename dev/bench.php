@@ -69,7 +69,7 @@ ini_set( 'log_errors', '1' );
 ini_set( 'error_log', WP_CONTENT_DIR . '/debug.log' );
 
 if ( ! class_exists( 'ANTISPAMWIZARD' ) || ! class_exists( 'ANTISPAMWIZARD_Settings' ) || ! class_exists( 'ANTISPAMWIZARD_Detector' ) ) {
-	fwrite( STDERR, "bench: FAIL antispam-wizard is not active\n" );
+	fwrite( STDERR, "bench: FAIL char-oday-antispam-wizard is not active\n" );
 	exit( 1 );
 }
 

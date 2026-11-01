@@ -39,7 +39,7 @@ class AntiSpamWizardTest extends TestCase {
         $wpdb->reset_tables();
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
 
         // Reset singleton for each test.
@@ -692,7 +692,7 @@ class AntiSpamWizardTest extends TestCase {
         // callback, which delegates to load_plugin_textdomain().
         do_action( 'init' );
 
-        $this->assertContains( 'antispam-wizard', $antispamwizard_loaded_textdomains,
+        $this->assertContains( 'char-oday-antispam-wizard', $antispamwizard_loaded_textdomains,
             'do_action( init ) should trigger load_plugin_textdomain for the text domain' );
     }
 }

@@ -119,12 +119,12 @@ class ANTISPAMWIZARD_Similarity_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['similarity_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'empty comment', 'char-oday-antispam-wizard' ) );
         }
 
         $min_length = isset( $settings['min_message_length'] ) ? (int) $settings['min_message_length'] : 50;
@@ -137,7 +137,7 @@ class ANTISPAMWIZARD_Similarity_Check implements ANTISPAMWIZARD_Check {
             $min_length = min( $min_length, self::DENSE_SCRIPT_MIN_LENGTH );
         }
         if ( mb_strlen( $text, 'UTF-8' ) < $min_length ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'comment too short for similarity', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'similarity', __( 'comment too short for similarity', 'char-oday-antispam-wizard' ) );
         }
 
         $threshold = isset( $settings['similarity_threshold'] ) ? (float) $settings['similarity_threshold'] : 0.6;
