@@ -246,18 +246,18 @@ guard test lists every item with a one-line reason.
 
 ### Task 4: Verify acceptance criteria
 
-- [ ] Run `docker compose run --rm test`. It must be fully green, including `I18nTest`,
+- [x] Run `docker compose run --rm test`. It must be fully green, including `I18nTest`,
   `PluginMetadataTest` and `PluginCheckHarnessTest`.
-- [ ] Run `git grep -nP '(?<!char-oday-)antispam-wizard' -- ':!docs/plans'`. Every hit must belong to
+- [x] Run `git grep -nP '(?<!char-oday-)antispam-wizard' -- ':!docs/plans'`. Every hit must belong to
   the residue set.
-- [ ] Run `git ls-files char-oday-antispam-wizard/languages`. It must list
+- [x] Run `git ls-files char-oday-antispam-wizard/languages`. It must list
   `char-oday-antispam-wizard.pot` and nine `char-oday-antispam-wizard-<locale>.po` + `.mo` pairs, and
   nothing named `antispam-wizard-*`. Run `git ls-files antispam-wizard`. It must be empty.
-- [ ] Run `git diff --stat -M master`. The language files, `data/*.txt` and every file whose content
+- [x] Run `git diff --stat -M master`. The language files, `data/*.txt` and every file whose content
   did not change must show as pure renames (100% similarity).
-- [ ] Run `php -l` on every changed PHP file inside the test container. There is no separate linter
+- [x] Run `php -l` on every changed PHP file inside the test container. There is no separate linter
   beyond the PHPUnit suite and Plugin Check, which the acceptance reviewer runs.
-- [ ] Confirm that no `phpcs:ignore` or `// translators:` line moved: the diff of every PHP file under
+- [x] Confirm that no `phpcs:ignore` or `// translators:` line moved: the diff of every PHP file under
   the plugin dir changes only the literal on existing lines.
 
 ### Task 5: Update documentation
