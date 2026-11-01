@@ -134,6 +134,40 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
   the AJAX actions `admin.js` posts equal the registered `wp_ajax_*` hooks, every `antispamwizardAdmin.*` key it reads
   is localized, every `antispamwizard-*` name it touches exists in the admin views, `class-admin-page.php` or
   `admin.css`, and the comment form's honeypot wrapper class is a selector in `comment-form.css`.
+- The plugin slug is `char-oday-antispam-wizard`: the plugin directory, the main file
+  `char-oday-antispam-wizard/char-oday-antispam-wizard.php`, the gettext text domain, the POT and the nine
+  `char-oday-antispam-wizard-<locale>.{po,mo}` catalogues, the admin menu and submenu slugs, the Privacy API
+  exporter/eraser key and the CF7 spam-log `agent` value. The WordPress.org review moved the submission to that slug
+  and required the text domain to equal it (the 2026-11-01 slug-rename plan in `docs/plans/`). The display name is
+  `Char O'Day – AntiSpam Wizard` in the `Plugin Name` header and the readme title only; "AntiSpam Wizard" stays the
+  brand everywhere else, and the code prefix `antispamwizard` / `ANTISPAMWIZARD` is untouched. There was no installed
+  base, so there is no migration, alias or `DB_VERSION` bump.
+  `PluginMetadataTest::test_no_file_carries_the_retired_slug_outside_the_allowed_residues()` scans exactly the tracked
+  set the prefix guard scans (both share one path helper) and fails on the retired slug, not preceded by
+  `char-oday-`, in any line or path name, reporting `path:line: text`. First it strips the residue set, one commented
+  regex per entry in `retired_slug_residues()`:
+  1. the GitHub URL `https://github.com/HawkeyePierce89/antispam-wizard`, because the repository is not renamed;
+  2. the bootstrap file name `includes/class-antispam-wizard.php`, kept by decision;
+  3. `docs/plans/`, which is excluded from the scan rather than stripped;
+  4. names that come from the unrenamed repository, not from the plugin: the checkout directory `../antispam-wizard/`
+     (the site repository's mount source), the release-zip directory `~/git/antispam-wizard-release/`, the site
+     repository `HawkeyePierce89/antispam-wizard-site`, and the dev compose project `antispam-wizard_*`, which Docker
+     derives from the checkout directory name. Renaming any of these means renaming the repository or a sibling, which
+     is out of scope;
+  5. the composer package name `antispamwizard/antispam-wizard-tests`, out of scope for the rename;
+  6. the WordPress screen-ID prefix `antispam-wizard_page_`. WordPress builds a submenu's hook suffix as
+     `sanitize_title()` of the top-level menu **title** (the brand "AntiSpam Wizard") plus `_page_` plus the submenu
+     slug, so the real suffixes are `antispam-wizard_page_char-oday-antispam-wizard-log` and so on. Spelling the slug
+     there would make `AdminPageTest` pin a hook WordPress never fires; the test keeps a regression row for that
+     slug-derived form. The `AdminPageTest` docblock that spells out the derivation is allowed by the same entry.
+
+  The guard also fails when a residue pattern matches nothing any more, so a stale exception cannot linger, and it
+  builds the retired needle by concatenation so the test file does not trip itself.
+  `PluginMetadataTest::test_slug_agrees_across_header_readme_and_file_names()` pins the slug against itself: the
+  `Text Domain` header, the `Plugin Name` header and readme title, the main file path, the POT, nine `.po` and nine
+  `.mo` files named `<slug>-<locale>` with no old-named file left, the `docker-compose.yml` mount, `dev/smoke.sh`'s
+  activation and `PLUGIN_PATH_NEEDLE`, the `wp plugin activate` lines in `dev/setup.sh` and `dev/reset.sh`, and
+  `load_plugin_textdomain()`. `PluginCheckHarnessTest` pins `PLUGIN_SLUG` in `dev/plugin-check.sh`.
 - Every Plugin Check deviation that is not fixed outright is carried as a `phpcs:ignore <exact
   sniff code>` with a one-line reason on the same line — bare suppressions are not allowed
   (`grep -rn "phpcs:ignore" char-oday-antispam-wizard` should show a reason on every hit)

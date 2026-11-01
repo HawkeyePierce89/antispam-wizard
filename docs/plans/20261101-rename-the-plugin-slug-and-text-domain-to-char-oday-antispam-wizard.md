@@ -262,11 +262,11 @@ guard test lists every item with a one-line reason.
 
 ### Task 5: Update documentation
 
-- [ ] Add one line to `CLAUDE.md` Conventions naming the new slug guard:
+- [x] Add one line to `CLAUDE.md` Conventions naming the new slug guard:
   `PluginMetadataTest::test_no_file_carries_the_retired_slug_outside_the_allowed_residues()` and its
   residue set. Add the same to `docs/conventions.md` with the reasoning, in particular why
   `antispam-wizard_page_` and the repository-derived names are allowed.
-- [ ] `README.md`: only the path changes made in Task 2. No user-facing behaviour changes.
+- [x] `README.md`: only the path changes made in Task 2. No user-facing behaviour changes.
 
 ## Post-Completion
 

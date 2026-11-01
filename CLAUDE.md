@@ -180,6 +180,15 @@ Honeypot, Submit Time, Stop Words, Links, Emoji, Spacing, Multi-Language, Duplic
   tracked text file and path outside `char-oday-antispam-wizard/data/` and `docs/plans/`, and
   `…::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins the AJAX actions, `antispamwizardAdmin`
   keys and DOM names `admin.js` shares with PHP, plus the honeypot selector in `comment-form.css`
+- Slug: the plugin directory, main file, text domain, language files, admin menu slugs, Privacy key and CF7 `agent`
+  are all `char-oday-antispam-wizard` (WordPress.org review, 2026-11-01).
+  `PluginMetadataTest::test_no_file_carries_the_retired_slug_outside_the_allowed_residues()` scans the same tracked
+  set as the prefix guard and allows the retired slug only in the residue set: the GitHub URL, `class-antispam-wizard.php`,
+  the repository-derived names (`../antispam-wizard/`, `~/git/antispam-wizard-release/`, `HawkeyePierce89/antispam-wizard-site`,
+  the `antispam-wizard_*` dev project), the composer package `antispamwizard/antispam-wizard-tests` and the screen-ID
+  prefix `antispam-wizard_page_` (derived from the brand menu title). It fails on an unused residue pattern too.
+  `…::test_slug_agrees_across_header_readme_and_file_names()` pins header, readme title, file names and harnesses
+  against the slug; `PluginCheckHarnessTest` pins `PLUGIN_SLUG` in `dev/plugin-check.sh`. Detail: `docs/conventions.md`
 - File naming: `class-{name}.php`, `interface-{name}.php`
 - PHP 8.1+ with strict typing
 - WordPress 6.4+ (tested up to 7.1)
