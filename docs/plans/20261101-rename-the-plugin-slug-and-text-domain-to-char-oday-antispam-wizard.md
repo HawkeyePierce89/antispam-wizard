@@ -178,35 +178,35 @@ guard test lists every item with a one-line reason.
 - Modify: `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, `docs/conventions.md`, `docs/data-storage.md`,
   `docs/samples-and-privacy.md`, `docs/shadow-display.md`, `docs/test-stubs.md`
 
-- [ ] Run the same protected replacement over these files. Then read every changed line by hand:
+- [x] Run the same protected replacement over these files. Then read every changed line by hand:
   prose may name the repository checkout rather than the plugin directory.
-- [ ] `CLAUDE.md` Commands:
+- [x] `CLAUDE.md` Commands:
   - the dev mount path `/var/www/html/wp-content/plugins/char-oday-antispam-wizard`;
   - `wp plugin check char-oday-antispam-wizard`;
   - the smoke text that says the plugin is activated as `char-oday-antispam-wizard`;
   - a new short "Release zip" subsection with
     `git archive --format=zip --prefix=char-oday-antispam-wizard/ -o ~/git/antispam-wizard-release/char-oday-antispam-wizard-1.0.0.zip master:char-oday-antispam-wizard`.
-- [ ] `CLAUDE.md` Website: the site repository's mount source and export path now point at
+- [x] `CLAUDE.md` Website: the site repository's mount source and export path now point at
   `../antispam-wizard/char-oday-antispam-wizard` and `char-oday-antispam-wizard.php`, and this
   two-line change in `HawkeyePierce89/antispam-wizard-site` is pending. Also point the readme
   reference at `char-oday-antispam-wizard/readme.txt`.
-- [ ] `CLAUDE.md` Key classes: the entry point is
+- [x] `CLAUDE.md` Key classes: the entry point is
   `char-oday-antispam-wizard/char-oday-antispam-wizard.php`, with the bootstrap still in
   `includes/class-antispam-wizard.php`.
-- [ ] `CLAUDE.md` Conventions: the retired-prefix guard's excluded path becomes
+- [x] `CLAUDE.md` Conventions: the retired-prefix guard's excluded path becomes
   `char-oday-antispam-wizard/data/`.
-- [ ] `CLAUDE.md` Internationalization:
+- [x] `CLAUDE.md` Internationalization:
   - the text domain is `char-oday-antispam-wizard`;
   - the POT is `char-oday-antispam-wizard/languages/char-oday-antispam-wizard.pot`;
   - catalogues are `char-oday-antispam-wizard-<locale>.{po,mo}`, because WordPress resolves
     `{domain}-{locale}.mo`;
   - the extraction path is `char-oday-antispam-wizard/**/*.php`.
-- [ ] `README.md`: the translation dir, the mounted directory, `wp plugin check
+- [x] `README.md`: the translation dir, the mounted directory, `wp plugin check
   char-oday-antispam-wizard`, and `git ls-files char-oday-antispam-wizard`. `CONTRIBUTING.md`: the
   corpus path. `docs/*.md`: the directory paths, including `grep -rn "phpcs:ignore"
   char-oday-antispam-wizard` in `docs/conventions.md`.
-- [ ] Check that `CLAUDE.md` stays under 150 000 characters (`wc -c`).
-- [ ] Run `docker compose run --rm test`. It must stay green, and the retired-prefix guard must still
+- [x] Check that `CLAUDE.md` stays under 150 000 characters (`wc -c`).
+- [x] Run `docker compose run --rm test`. It must stay green, and the retired-prefix guard must still
   pass over the edited docs.
 
 ### Task 3: Guard the slug in `PluginMetadataTest`

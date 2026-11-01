@@ -2,7 +2,7 @@
 
 A comment the plugin flags is shown to its own author as "awaiting moderation" and to nobody
 else. This file explains why each rule exists and names the test that pins it. The class is
-`antispam-wizard/includes/class-shadow-display.php`; its unit tests are `tests/ShadowDisplayTest.php`.
+`char-oday-antispam-wizard/includes/class-shadow-display.php`; its unit tests are `tests/ShadowDisplayTest.php`.
 
 ## Motivation
 

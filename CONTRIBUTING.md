@@ -26,7 +26,7 @@ three on every push and pull request, the smoke harness across WordPress 6.4, 7.
 - Every rule has a test. A behaviour change comes with the test that would have caught it.
 - Translatable strings are a multi-file change (POT, nine `.po` files, compiled `.mo` files);
   `tests/I18nTest.php` explains what it expects.
-- Corpus edits (`antispam-wizard/data/*.txt`) must keep `tests/CorpusQualityTest.php` green;
+- Corpus edits (`char-oday-antispam-wizard/data/*.txt`) must keep `tests/CorpusQualityTest.php` green;
   run `docker compose run --rm test php dev/corpus-eval.php` afterwards.
 
 ## Code style

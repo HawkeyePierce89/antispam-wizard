@@ -128,7 +128,7 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
   `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()` matches the old token after any
   non-alphanumeric character (so `_x_reason` and `wp_ajax_x_*` forms are caught) in every tracked text file and path
   name of the plugin, `dev/`, `tests/`, `docs/`, `.github/` and the root config. The seed corpus
-  (`antispam-wizard/data/`, whose Thai file carries made-up Line IDs that are text, not identifiers) and
+  (`char-oday-antispam-wizard/data/`, whose Thai file carries made-up Line IDs that are text, not identifiers) and
   `docs/plans/` are exempt. Because the rename edited the PHP and JS/CSS sides of each shared name independently,
   `PluginMetadataTest::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins them against each other:
   the AJAX actions `admin.js` posts equal the registered `wp_ajax_*` hooks, every `antispamwizardAdmin.*` key it reads
@@ -136,7 +136,7 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
   `admin.css`, and the comment form's honeypot wrapper class is a selector in `comment-form.css`.
 - Every Plugin Check deviation that is not fixed outright is carried as a `phpcs:ignore <exact
   sniff code>` with a one-line reason on the same line — bare suppressions are not allowed
-  (`grep -rn "phpcs:ignore" antispam-wizard` should show a reason on every hit)
+  (`grep -rn "phpcs:ignore" char-oday-antispam-wizard` should show a reason on every hit)
 - A `phpcs:ignore` naming `WordPress.DB.PreparedSQL.NotPrepared` or
   `PluginCheck.Security.DirectDB.UnescapedDBParameter` must sit on the line **directly above a
   single-line statement**: both sniffs report at the `$wpdb->query( … )` call, and a
