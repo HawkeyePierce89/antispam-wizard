@@ -70,7 +70,7 @@ class ModerationLinkTest extends TestCase {
         $GLOBALS['wp_comment_status_change_fails'] = false;
 
         if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+            define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
         }
 
         $wpdb->reset_tables();

@@ -351,7 +351,7 @@ class ANTISPAMWIZARD_CF7_Integration {
                 try {
                     $submission->add_spam_log(
                         array(
-                            'agent'  => 'antispam-wizard',
+                            'agent'  => 'char-oday-antispam-wizard',
                             'reason' => implode( '; ', $sanitized_reasons ),
                         )
                     );

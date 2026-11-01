@@ -68,8 +68,8 @@ else
     --skip-email
 fi
 
-echo "Activating antispam-wizard plugin..."
-wp plugin activate antispam-wizard
+echo "Activating char-oday-antispam-wizard plugin..."
+wp plugin activate char-oday-antispam-wizard
 
 echo "Enabling comments on the default post..."
 POST_ID=$(wp post list --post_type=post --posts_per_page=1 --format=ids 2>/dev/null)

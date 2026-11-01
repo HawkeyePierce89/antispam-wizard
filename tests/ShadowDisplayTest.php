@@ -1335,7 +1335,7 @@ class ShadowDisplayTest extends TestCase {
         // SQL with the visitor's email) or the full path. Enumerate every use of
         // the caught $e inside each catch block; a name-only grep for
         // getMessage() would miss `. $e`, which stringifies the whole exception.
-        $source = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/includes/class-shadow-display.php' );
+        $source = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-shadow-display.php' );
         $this->assertIsString( $source );
 
         preg_match_all( '/catch \( \\\\Throwable \$e \) \{(.*?)\n        \}/s', $source, $blocks );

@@ -17,7 +17,7 @@ class SpamLogDisplayTest extends TestCase {
 
     private function render_log_view(): string {
         ob_start();
-        include dirname( __DIR__ ) . '/antispam-wizard/admin/views/settings-log.php';
+        include dirname( __DIR__ ) . '/char-oday-antispam-wizard/admin/views/settings-log.php';
         return ob_get_clean();
     }
 
@@ -210,7 +210,7 @@ class SpamLogDisplayTest extends TestCase {
     }
 
     public function test_log_css_contains_source_rule(): void {
-        $css = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/admin/css/admin.css' );
+        $css = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/admin/css/admin.css' );
         $this->assertStringContainsString( '.antispamwizard-log-source', $css );
     }
 }

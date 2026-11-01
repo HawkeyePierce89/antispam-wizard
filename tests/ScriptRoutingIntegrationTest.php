@@ -86,7 +86,7 @@ class ScriptRoutingIntegrationTest extends TestCase {
         // fallback assertion below describe a configuration that cannot occur
         // at runtime.
         $combined_sample_tokens = array();
-        $data_dir    = dirname( __DIR__ ) . '/antispam-wizard/data/';
+        $data_dir    = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/';
         $legacy_spam = $training_data->load_samples( $data_dir . 'spam-samples.txt' );
         foreach ( $legacy_spam as $sample ) {
             $tokens = $tokenizer->tokenize_for_script( $sample, ANTISPAMWIZARD_Script_Detector::detect( $sample ) );

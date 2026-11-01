@@ -54,7 +54,7 @@ EXPECTED_WP_VERSION="$(printf '%s' "$EXPECTED_WP_TOKEN" | cut -d. -f1,2)"
 SERVICE="wordpress"
 DEBUG_LOG="/var/www/html/wp-content/debug.log"
 TESTS_MOUNT="/antispamwizard-smoke-tests"
-PLUGIN_PATH_NEEDLE="wp-content/plugins/antispam-wizard"
+PLUGIN_PATH_NEEDLE="wp-content/plugins/char-oday-antispam-wizard"
 
 # Inline override: enable debug logging, drop published ports (exec-only access),
 # and mount the smoke test scripts into the container. The base docker-compose.yml
@@ -188,8 +188,8 @@ if [ "$ACTUAL_WP_MAJOR_MINOR" != "$EXPECTED_WP_VERSION" ]; then
 fi
 echo "  - core version ${ACTUAL_WP_VERSION} matches ${EXPECTED_WP_VERSION}"
 
-echo "Activating antispam-wizard plugin..."
-if ! wpcli plugin activate antispam-wizard; then
+echo "Activating char-oday-antispam-wizard plugin..."
+if ! wpcli plugin activate char-oday-antispam-wizard; then
   fail "plugin activation returned non-zero (activation fataled)."
 fi
 echo "  - activation exit 0"

@@ -105,11 +105,11 @@ wp comment create \
 echo "Restoring training data to git baseline..."
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-git -C "$REPO_DIR" checkout HEAD -- antispam-wizard/data/
+git -C "$REPO_DIR" checkout HEAD -- char-oday-antispam-wizard/data/
 
-# Activate the antispam-wizard plugin (triggers fresh activation with defaults).
-echo "Activating antispam-wizard plugin..."
-wp plugin activate antispam-wizard
+# Activate the char-oday-antispam-wizard plugin (triggers fresh activation with defaults).
+echo "Activating char-oday-antispam-wizard plugin..."
+wp plugin activate char-oday-antispam-wizard
 
 echo ""
 echo "=== Reset complete! ==="

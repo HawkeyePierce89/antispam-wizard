@@ -220,7 +220,7 @@ class ANTISPAMWIZARD {
      */
     public function load_textdomain(): void {
         // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Kept deliberately: WordPress.org's automatic loading only covers directory-hosted installs, and the bundled .mo files in languages/ are the only translation source for self-hosted copies and for the dev smoke harness. Removing this call would silently drop all nine shipped translations there.
-        load_plugin_textdomain( 'antispam-wizard', false, dirname( plugin_basename( ANTISPAMWIZARD_FILE ) ) . '/languages' );
+        load_plugin_textdomain( 'char-oday-antispam-wizard', false, dirname( plugin_basename( ANTISPAMWIZARD_FILE ) ) . '/languages' );
     }
 
     /**

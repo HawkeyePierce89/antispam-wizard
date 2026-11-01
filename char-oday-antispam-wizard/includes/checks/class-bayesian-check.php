@@ -106,12 +106,12 @@ class ANTISPAMWIZARD_Bayesian_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['bayesian_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'empty comment', 'char-oday-antispam-wizard' ) );
         }
 
         $min_length = isset( $settings['min_message_length'] ) ? (int) $settings['min_message_length'] : 50;
@@ -124,13 +124,13 @@ class ANTISPAMWIZARD_Bayesian_Check implements ANTISPAMWIZARD_Check {
             $min_length = min( $min_length, self::DENSE_SCRIPT_MIN_LENGTH );
         }
         if ( mb_strlen( $text, 'UTF-8' ) < $min_length ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'comment too short for bayesian', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'comment too short for bayesian', 'char-oday-antispam-wizard' ) );
         }
 
         $classifier = $this->resolve_classifier_for_script( $script );
 
         if ( ! $this->is_sufficiently_trained( $classifier ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'insufficient training data', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'bayesian', __( 'insufficient training data', 'char-oday-antispam-wizard' ) );
         }
 
         $threshold     = isset( $settings['bayesian_threshold'] ) ? (float) $settings['bayesian_threshold'] : 0.7;

@@ -51,7 +51,7 @@ The admin interface is fully translated into 10 languages:
 - Dutch (nl_NL)
 - Turkish (tr_TR)
 
-Translation files are in `antispam-wizard/languages/`.
+Translation files are in `char-oday-antispam-wizard/languages/`.
 
 ## Privacy
 
@@ -80,7 +80,7 @@ are protected by the plugin itself.
 docker compose up -d wordpress
 ```
 
-This starts WordPress (on port 8080) and a MySQL database. The `antispam-wizard/` directory is mounted directly into the WordPress container, so any code changes are reflected immediately.
+This starts WordPress (on port 8080) and a MySQL database. The `char-oday-antispam-wizard/` directory is mounted directly into the WordPress container, so any code changes are reflected immediately.
 
 ### Initial Setup
 
@@ -174,9 +174,9 @@ WORDPRESS_IMAGE=6.4-php8.1-apache bash dev/plugin-check.sh # WP 6.4 control
 
 The harness boots a throwaway WordPress, installs the official `plugin-check`
 plugin from WordPress.org, activates AntiSpam Wizard and runs
-`wp plugin check antispam-wizard --categories=plugin_repo`. It checks a
+`wp plugin check char-oday-antispam-wizard --categories=plugin_repo`. It checks a
 **tracked-files-only export** of the plugin, built from `git ls-files
-antispam-wizard`, so untracked junk in the working tree (`.DS_Store`, editor
+char-oday-antispam-wizard`, so untracked junk in the working tree (`.DS_Store`, editor
 backups, a locally built zip) can never produce a finding — what is checked is
 exactly what would be shipped. Every result row is printed; warnings are
 informational, and the run **exits non-zero if any row is an `ERROR`**. Before

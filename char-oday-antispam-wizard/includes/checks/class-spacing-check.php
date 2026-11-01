@@ -24,13 +24,13 @@ class ANTISPAMWIZARD_Spacing_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['spacing_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'spacing', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'spacing', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
 
         if ( mb_strlen( $text, 'UTF-8' ) < 10 ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'spacing', __( 'too short', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'spacing', __( 'too short', 'char-oday-antispam-wizard' ) );
         }
 
         $text = mb_strtoupper( $text, 'UTF-8' );
@@ -45,7 +45,7 @@ class ANTISPAMWIZARD_Spacing_Check implements ANTISPAMWIZARD_Check {
                 false,
                 'spacing',
                 // translators: %d: Number of words found in the comment.
-                sprintf( __( 'too few words (%d)', 'antispam-wizard' ), count( $words ) )
+                sprintf( __( 'too few words (%d)', 'char-oday-antispam-wizard' ), count( $words ) )
             );
         }
 
@@ -54,7 +54,7 @@ class ANTISPAMWIZARD_Spacing_Check implements ANTISPAMWIZARD_Check {
         $spaces  = preg_match_all( '/(*UCP)\s/u', $text );
 
         if ( false === $spaces || false === $letters || 0 === $spaces || 0 === $letters ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'spacing', __( 'no spaces or letters', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'spacing', __( 'no spaces or letters', 'char-oday-antispam-wizard' ) );
         }
 
         $short_word_len = (int) $settings['spacing_short_word_len'];
@@ -80,7 +80,7 @@ class ANTISPAMWIZARD_Spacing_Check implements ANTISPAMWIZARD_Check {
                 true,
                 'spacing',
                 // translators: 1: Whitespace-to-length ratio, 2: Percentage of short words.
-                sprintf( __( 'abnormal (ratio: %1$.2f, short: %2$.0f%%)', 'antispam-wizard' ), $space_ratio, $short_word_ratio * 100 )
+                sprintf( __( 'abnormal (ratio: %1$.2f, short: %2$.0f%%)', 'char-oday-antispam-wizard' ), $space_ratio, $short_word_ratio * 100 )
             );
         }
 
@@ -88,7 +88,7 @@ class ANTISPAMWIZARD_Spacing_Check implements ANTISPAMWIZARD_Check {
             false,
             'spacing',
             // translators: 1: Whitespace-to-length ratio, 2: Percentage of short words.
-            sprintf( __( 'normal (ratio: %1$.2f, short: %2$.0f%%)', 'antispam-wizard' ), $space_ratio, $short_word_ratio * 100 )
+            sprintf( __( 'normal (ratio: %1$.2f, short: %2$.0f%%)', 'char-oday-antispam-wizard' ), $space_ratio, $short_word_ratio * 100 )
         );
     }
 }

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'WP_PLUGIN_DIR' ) ) {
-    define( 'WP_PLUGIN_DIR', ABSPATH . 'antispam-wizard/' );
+    define( 'WP_PLUGIN_DIR', ABSPATH . 'char-oday-antispam-wizard/' );
 }
 
 if ( ! defined( 'AUTH_SALT' ) ) {
@@ -23,7 +23,7 @@ if ( ! defined( 'ANTISPAMWIZARD_TESTING' ) ) {
 }
 
 if ( ! defined( 'ANTISPAMWIZARD_PATH' ) ) {
-    define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/antispam-wizard/' );
+    define( 'ANTISPAMWIZARD_PATH', dirname( __DIR__ ) . '/char-oday-antispam-wizard/' );
 }
 
 if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
@@ -31,11 +31,11 @@ if ( ! defined( 'ANTISPAMWIZARD_VERSION' ) ) {
 }
 
 if ( ! defined( 'ANTISPAMWIZARD_URL' ) ) {
-    define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/antispam-wizard/' );
+    define( 'ANTISPAMWIZARD_URL', 'http://example.com/wp-content/plugins/char-oday-antispam-wizard/' );
 }
 
 if ( ! defined( 'ANTISPAMWIZARD_FILE' ) ) {
-    define( 'ANTISPAMWIZARD_FILE', ANTISPAMWIZARD_PATH . 'antispam-wizard.php' );
+    define( 'ANTISPAMWIZARD_FILE', ANTISPAMWIZARD_PATH . 'char-oday-antispam-wizard.php' );
 }
 
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
@@ -2903,29 +2903,29 @@ if ( ! class_exists( 'WP_Error' ) ) {
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 // Load plugin files.
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/interface-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-check-result.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-settings.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-detector.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-spam-log.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-stats.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-tokenizer.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-cosine-similarity.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-naive-bayes.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-training-data.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-sample-repository.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-script-detector.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-model-store.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-antispam-wizard.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-privacy.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-moderation.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/class-shadow-display.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-stop-words-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-links-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-emoji-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-spacing-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-multi-lang-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-duplicate-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-bayesian-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/includes/checks/class-similarity-check.php';
-require_once dirname( __DIR__ ) . '/antispam-wizard/admin/class-admin-page.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/interface-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-check-result.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-settings.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-detector.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-spam-log.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-stats.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-tokenizer.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-cosine-similarity.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-naive-bayes.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-training-data.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-sample-repository.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-script-detector.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-model-store.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-antispam-wizard.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-privacy.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-moderation.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-shadow-display.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-stop-words-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-links-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-emoji-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-spacing-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-multi-lang-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-duplicate-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-bayesian-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/checks/class-similarity-check.php';
+require_once dirname( __DIR__ ) . '/char-oday-antispam-wizard/admin/class-admin-page.php';

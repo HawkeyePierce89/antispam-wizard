@@ -44,7 +44,7 @@ class ANTISPAMWIZARD_Stop_Words_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['stop_words_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $stop_words = $settings['stop_words_list'];
@@ -54,7 +54,7 @@ class ANTISPAMWIZARD_Stop_Words_Check implements ANTISPAMWIZARD_Check {
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'empty comment', 'char-oday-antispam-wizard' ) );
         }
 
         if ( $this->script_aware ) {
@@ -66,7 +66,7 @@ class ANTISPAMWIZARD_Stop_Words_Check implements ANTISPAMWIZARD_Check {
         }
 
         if ( empty( $stop_words ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'no stop words configured', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'no stop words configured', 'char-oday-antispam-wizard' ) );
         }
 
         $clean_text = self::normalize( self::clean_emoji( mb_strtolower( $text, 'UTF-8' ) ) );
@@ -82,7 +82,7 @@ class ANTISPAMWIZARD_Stop_Words_Check implements ANTISPAMWIZARD_Check {
             }
         }
 
-        return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'not found', 'antispam-wizard' ) );
+        return new ANTISPAMWIZARD_Check_Result( false, 'stop_words', __( 'not found', 'char-oday-antispam-wizard' ) );
     }
 
     /**

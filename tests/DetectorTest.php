@@ -596,7 +596,7 @@ class DetectorTest extends TestCase {
         // PHP version if they are swapped, so the ordering that keeps
         // MAX_COMMENT_LENGTH meaningful on the plugin's declared floor stays
         // guarded where CI can see it.
-        $source = file_get_contents( dirname( __DIR__ ) . '/antispam-wizard/includes/class-detector.php' );
+        $source = file_get_contents( dirname( __DIR__ ) . '/char-oday-antispam-wizard/includes/class-detector.php' );
         $this->assertIsString( $source );
 
         $start = strpos( $source, 'public function evaluate(' );

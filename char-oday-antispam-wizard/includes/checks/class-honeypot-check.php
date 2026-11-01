@@ -38,13 +38,13 @@ class ANTISPAMWIZARD_Honeypot_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['honeypot_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         // Pass if not a standard comment (e.g. pingback, trackback).
         $comment_type = isset( $comment_data['comment_type'] ) ? $comment_data['comment_type'] : '';
         if ( '' !== $comment_type && 'comment' !== $comment_type ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'skipped non-comment type', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'skipped non-comment type', 'char-oday-antispam-wizard' ) );
         }
 
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WordPress issues no nonce on the pre_comment_approved path, and adding one to the comment form would flag legitimate visitors on cached pages. The single field read below is individually wp_unslash()-ed and the check fails open on anything missing or malformed. Deliberately not sanitize_text_field()-ed: a honeypot filled with only HTML tags would sanitize to empty and pass.
@@ -53,23 +53,23 @@ class ANTISPAMWIZARD_Honeypot_Check implements ANTISPAMWIZARD_Check {
         $field_name = ANTISPAMWIZARD_Comment_Form::HONEYPOT_FIELD;
 
         if ( ! isset( $request_data[ $field_name ] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'field absent', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'field absent', 'char-oday-antispam-wizard' ) );
         }
 
         if ( is_array( $request_data[ $field_name ] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( true, 'honeypot', __( 'honeypot filled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( true, 'honeypot', __( 'honeypot filled', 'char-oday-antispam-wizard' ) );
         }
 
         $value = trim( wp_unslash( (string) $request_data[ $field_name ] ) );
 
         if ( '' === $value ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'field empty', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'honeypot', __( 'field empty', 'char-oday-antispam-wizard' ) );
         }
 
         return new ANTISPAMWIZARD_Check_Result(
             true,
             'honeypot',
-            __( 'honeypot filled', 'antispam-wizard' )
+            __( 'honeypot filled', 'char-oday-antispam-wizard' )
         );
     }
 }

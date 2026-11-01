@@ -10,10 +10,108 @@ class PluginMetadataTest extends TestCase {
     private string $plugin_file;
     private string $readme_file;
 
+    /**
+     * The WordPress.org slug, which is also the text domain, the plugin
+     * directory, the main file's base name and the language files' prefix.
+     */
+    private const SLUG = 'char-oday-antispam-wizard';
+
+    /**
+     * The display name carried by the Plugin Name header and the readme title
+     * (straight apostrophe, en dash).
+     */
+    private const DISPLAY_NAME = "Char O'Day \u{2013} AntiSpam Wizard";
+
+    /**
+     * Every tracked path (relative to the repository root) the tree-wide guards
+     * scan — `git ls-files`, so an untracked local file can neither fail them
+     * nor a newly tracked root file or directory escape them — minus the seed
+     * corpus (data/) and docs/plans/ (a historical record that quotes the
+     * retired names on purpose). Both the retired-prefix guard and the
+     * retired-slug guard read this one set, so neither can drift to a narrower
+     * one.
+     *
+     * @return string[]
+     */
+    private function scanned_tree_paths(): array {
+        $root     = dirname( __DIR__ );
+        $excluded = array( self::SLUG . '/data/', 'docs/plans/' );
+
+        // `-c safe.directory=*` for the same reason as test_no_hidden_files_are_shipped();
+        // `-z` so a non-ASCII path is not quoted.
+        $output = array();
+        $status = 1;
+        exec(
+            'git -c ' . escapeshellarg( 'safe.directory=*' )
+                . ' -C ' . escapeshellarg( $root ) . ' ls-files -z 2>/dev/null',
+            $output,
+            $status
+        );
+        $this->assertSame( 0, $status, 'git ls-files failed — the scanned file set cannot be determined.' );
+
+        return array_values(
+            array_filter(
+                explode( "\0", implode( "\n", $output ) ),
+                static function ( string $relative ) use ( $root, $excluded ): bool {
+                    if ( '' === $relative || ! is_file( $root . '/' . $relative ) ) {
+                        return false;
+                    }
+                    foreach ( $excluded as $prefix ) {
+                        if ( str_starts_with( $relative, $prefix ) ) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            )
+        );
+    }
+
+    /**
+     * Whether a scanned path's contents are read line by line (text files);
+     * every path is still checked by name.
+     */
+    private function is_scanned_text_file( string $relative ): bool {
+        $text_ext = array( 'php', 'js', 'css', 'md', 'txt', 'po', 'pot', 'sh', 'yml', 'json', 'xml' );
+        return '.gitignore' === basename( $relative )
+            || in_array( strtolower( pathinfo( $relative, PATHINFO_EXTENSION ) ), $text_ext, true );
+    }
+
+    /**
+     * The places the retired slug may still appear, one regex per entry of the
+     * residue set in the 2026-11-01 slug-rename plan. Each is built from the
+     * concatenated needle so this file never spells the retired literal itself.
+     *
+     * @return string[]
+     */
+    private function retired_slug_residues( string $old ): array {
+        $q = preg_quote( $old, '/' );
+        return array(
+            // 1. The GitHub repository URL: the repository itself is not renamed.
+            '/https:\/\/github\.com\/HawkeyePierce89\/' . $q . '(?![\w-])/i',
+            // 2. The bootstrap class file name (and so its includes/ path), kept by decision.
+            '/class-' . $q . '\.php/i',
+            // 3. docs/plans/ is excluded from scanned_tree_paths() rather than stripped here.
+            // 4a. The site repository, named after the unrenamed repository.
+            '/HawkeyePierce89\/' . $q . '-site(?![\w-])/i',
+            // 4b. The checkout directory of this unrenamed repository (../<repo>/).
+            '/\.\.\/' . $q . '\//i',
+            // 4c. The release-zip output directory beside the checkout (~/git/<repo>-release/).
+            '/~\/git\/' . $q . '-release\//i',
+            // 4d. The dev compose project, which Docker derives from the checkout directory name.
+            '/' . $q . '_\*/i',
+            // 5. The composer.json package name of the test harness, out of scope for the rename.
+            '/antispamwizard\/' . $q . '-tests/i',
+            // 6. The WordPress screen-ID prefix: sanitize_title() of the menu title
+            //    "AntiSpam Wizard", which is the brand and stays.
+            '/' . $q . '_page_/i',
+        );
+    }
+
     protected function setUp(): void {
         parent::setUp();
-        $this->plugin_file = dirname( __DIR__ ) . '/antispam-wizard/antispam-wizard.php';
-        $this->readme_file = dirname( __DIR__ ) . '/antispam-wizard/readme.txt';
+        $this->plugin_file = dirname( __DIR__ ) . '/' . self::SLUG . '/' . self::SLUG . '.php';
+        $this->readme_file = dirname( __DIR__ ) . '/' . self::SLUG . '/readme.txt';
     }
 
     /**
@@ -30,6 +128,7 @@ class PluginMetadataTest extends TestCase {
             'Requires at least' => '/\*\s*Requires at least:\s*(.+)/',
             'Tested up to'   => '/\*\s*Tested up to:\s*(.+)/',
             'License'        => '/\*\s*License:\s*(.+)/',
+            'Text Domain'    => '/\*\s*Text Domain:\s*(.+)/',
         );
 
         foreach ( $patterns as $key => $pattern ) {
@@ -157,11 +256,11 @@ class PluginMetadataTest extends TestCase {
      * The training-data directory is guarded by index.php instead.
      */
     public function test_no_hidden_files_are_shipped(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
 
         $this->assertFileDoesNotExist(
             $plugin_dir . '/data/.htaccess',
-            'antispam-wizard/data/.htaccess must not ship: Plugin Check flags hidden files'
+            'char-oday-antispam-wizard/data/.htaccess must not ship: Plugin Check flags hidden files'
         );
 
         // Assert over the tracked set, not the working tree: dev/plugin-check.sh
@@ -179,7 +278,7 @@ class PluginMetadataTest extends TestCase {
         // config for safe.directory in git >= 2.38.
         exec(
             'git -c ' . escapeshellarg( 'safe.directory=*' )
-                . ' -C ' . escapeshellarg( dirname( __DIR__ ) ) . ' ls-files antispam-wizard 2>/dev/null',
+                . ' -C ' . escapeshellarg( dirname( __DIR__ ) ) . ' ls-files char-oday-antispam-wizard 2>/dev/null',
             $tracked,
             $status
         );
@@ -188,7 +287,7 @@ class PluginMetadataTest extends TestCase {
 
         $hidden = array();
         foreach ( $tracked as $file ) {
-            $relative = substr( $file, strlen( 'antispam-wizard/' ) );
+            $relative = substr( $file, strlen( 'char-oday-antispam-wizard/' ) );
             foreach ( explode( '/', $relative ) as $segment ) {
                 if ( str_starts_with( $segment, '.' ) ) {
                     $hidden[] = $relative;
@@ -205,16 +304,16 @@ class PluginMetadataTest extends TestCase {
     }
 
     public function test_data_directory_has_silence_guard(): void {
-        $index = dirname( __DIR__ ) . '/antispam-wizard/data/index.php';
+        $index = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/index.php';
 
         $this->assertFileExists(
             $index,
-            'antispam-wizard/data/index.php must exist to keep the training corpus unlistable'
+            'char-oday-antispam-wizard/data/index.php must exist to keep the training corpus unlistable'
         );
         $this->assertStringContainsString(
             'Silence is golden.',
             file_get_contents( $index ),
-            'antispam-wizard/data/index.php must carry the silence guard'
+            'char-oday-antispam-wizard/data/index.php must carry the silence guard'
         );
     }
 
@@ -408,7 +507,7 @@ class PluginMetadataTest extends TestCase {
      * closes a `phpcs:disable` whose reason was already stated.
      */
     public function test_every_phpcs_suppression_carries_a_reason(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -459,7 +558,7 @@ class PluginMetadataTest extends TestCase {
      * would break the invariant that every deviation is narrowly scoped.
      */
     public function test_every_phpcs_disable_is_closed_by_a_matching_enable(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -522,7 +621,7 @@ class PluginMetadataTest extends TestCase {
      * anchored above a multi-line `prepare()` and must not be caught here.
      */
     public function test_not_prepared_suppressions_are_anchored_on_a_single_line_statement(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -622,7 +721,7 @@ class PluginMetadataTest extends TestCase {
      * patterns cannot see turns into a count mismatch rather than a pass.
      */
     public function test_lock_file_failures_never_log_an_absolute_path(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -713,7 +812,7 @@ class PluginMetadataTest extends TestCase {
      * source text, per acquisition, for every lock site the plugin has.
      */
     public function test_every_exclusive_lock_is_released_in_a_finally_block(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $iter       = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator( $plugin_dir, FilesystemIterator::SKIP_DOTS )
         );
@@ -804,36 +903,16 @@ class PluginMetadataTest extends TestCase {
      */
     public function test_no_plugin_file_carries_the_retired_three_letter_prefix(): void {
         $root       = dirname( __DIR__ );
-        $plugin_dir = $root . '/antispam-wizard';
+        $plugin_dir = $root . '/' . self::SLUG;
         $pattern    = '/(?<![A-Za-z0-9])a[s]w/i';
-        $text_ext   = array( 'php', 'js', 'css', 'md', 'txt', 'po', 'pot', 'sh', 'yml', 'json', 'xml' );
-        $excluded   = array( 'antispam-wizard/data/', 'docs/plans/' );
-
-        $paths = array();
-        foreach ( array( 'antispam-wizard', 'dev', 'tests', 'docs', '.github' ) as $dir ) {
-            $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator( $root . '/' . $dir, FilesystemIterator::SKIP_DOTS )
-            );
-            foreach ( $iterator as $file ) {
-                $paths[] = substr( $file->getPathname(), strlen( $root ) + 1 );
-            }
-        }
-        foreach ( array( 'CLAUDE.md', 'README.md', 'CONTRIBUTING.md', 'composer.json', 'docker-compose.yml', 'phpunit.xml', '.gitignore' ) as $file ) {
-            $paths[] = $file;
-        }
 
         $scanned  = 0;
         $offences = array();
-        foreach ( $paths as $relative ) {
-            foreach ( $excluded as $prefix ) {
-                if ( str_starts_with( $relative, $prefix ) ) {
-                    continue 2;
-                }
-            }
+        foreach ( $this->scanned_tree_paths() as $relative ) {
             if ( preg_match( $pattern, $relative ) ) {
                 $offences[] = $relative . ' (path)';
             }
-            if ( '.gitignore' !== basename( $relative ) && ! in_array( strtolower( pathinfo( $relative, PATHINFO_EXTENSION ) ), $text_ext, true ) ) {
+            if ( ! $this->is_scanned_text_file( $relative ) ) {
                 continue;
             }
             ++$scanned;
@@ -856,6 +935,114 @@ class PluginMetadataTest extends TestCase {
     }
 
     /**
+     * The WordPress.org review moved the submission to the slug
+     * char-oday-antispam-wizard and requires the text domain to equal it. The
+     * retired slug may survive only in the residue set
+     * (retired_slug_residues()); anywhere else — a path, a gettext domain, a
+     * mount, a doc — it is a half-done rename. The needle is concatenated so
+     * this file does not trip itself.
+     */
+    public function test_no_file_carries_the_retired_slug_outside_the_allowed_residues(): void {
+        $root     = dirname( __DIR__ );
+        $old      = 'antispam' . '-wizard';
+        $needle   = '/(?<!char-oday-)' . preg_quote( $old, '/' ) . '/i';
+        $residues = $this->retired_slug_residues( $old );
+        $used     = array();
+        $strip    = static function ( string $text ) use ( $residues, &$used ): string {
+            foreach ( $residues as $residue ) {
+                $text = (string) preg_replace( $residue, ' ', $text, -1, $count );
+                if ( $count > 0 ) {
+                    $used[ $residue ] = true;
+                }
+            }
+            return $text;
+        };
+
+        $scanned  = 0;
+        $offences = array();
+        foreach ( $this->scanned_tree_paths() as $relative ) {
+            if ( preg_match( $needle, $strip( $relative ) ) ) {
+                $offences[] = $relative . ' (path)';
+            }
+            if ( ! $this->is_scanned_text_file( $relative ) ) {
+                continue;
+            }
+            ++$scanned;
+            foreach ( file( $root . '/' . $relative ) as $index => $line ) {
+                if ( preg_match( $needle, $strip( $line ) ) ) {
+                    $offences[] = $relative . ':' . ( $index + 1 ) . ': ' . trim( $line );
+                }
+            }
+        }
+
+        $this->assertGreaterThan( 100, $scanned, 'Expected the plugin, dev, test and doc files to be scanned' );
+        $this->assertSame( array(), $offences, 'The retired slug is back outside the allowed residues' );
+
+        // Every residue pattern must still be needed somewhere, or it is a
+        // loophole nothing exercises.
+        foreach ( $residues as $residue ) {
+            $this->assertArrayHasKey( $residue, $used, 'Residue pattern matches nothing any more: ' . $residue );
+        }
+    }
+
+    /**
+     * The slug is one name in many places: the Text Domain header, the plugin
+     * directory, the main file, the POT and the nine catalogues WordPress
+     * resolves as {domain}-{locale}.mo, the dev mount, the smoke/setup/reset
+     * activations and load_plugin_textdomain(). Any one of them drifting
+     * breaks loading or translation without a PHP error.
+     */
+    public function test_slug_agrees_across_header_readme_and_file_names(): void {
+        $root       = dirname( __DIR__ );
+        $plugin_dir = $root . '/' . self::SLUG;
+        $main_file  = $plugin_dir . '/' . self::SLUG . '.php';
+
+        $this->assertFileExists( $main_file, 'The main file must be <slug>/<slug>.php' );
+        $this->assertSame( self::SLUG, $this->parse_plugin_header()['Text Domain'] ?? null, 'Text Domain must equal the slug' );
+        $this->assertSame( self::SLUG, ANTISPAMWIZARD_Privacy::PRIVACY_KEY, 'The Privacy exporter/eraser key must equal the slug' );
+        $this->assertSame( self::DISPLAY_NAME, $this->parse_plugin_header()['Plugin Name'] ?? null );
+        $this->assertSame( self::DISPLAY_NAME, $this->parse_readme()['Plugin Name'] ?? null );
+
+        $languages = $plugin_dir . '/languages';
+        $this->assertFileExists( $languages . '/' . self::SLUG . '.pot' );
+        $catalogue = '/^' . preg_quote( self::SLUG, '/' ) . '-[a-z]{2,3}(_[A-Z]{2})?\.(po|mo)$/';
+        $counts    = array( 'po' => 0, 'mo' => 0 );
+        foreach ( scandir( $languages ) as $name ) {
+            if ( '.' === $name || '..' === $name ) {
+                continue;
+            }
+            $this->assertStringStartsNotWith( 'antispam' . '-wizard', $name, 'A language file still carries the retired slug' );
+            $ext = pathinfo( $name, PATHINFO_EXTENSION );
+            if ( 'po' === $ext || 'mo' === $ext ) {
+                $this->assertMatchesRegularExpression( $catalogue, $name );
+                ++$counts[ $ext ];
+            }
+        }
+        $this->assertSame( array( 'po' => 9, 'mo' => 9 ), $counts );
+
+        $slug = preg_quote( self::SLUG, '/' );
+        $this->assertMatchesRegularExpression(
+            '/^\s*-\s*\.\/' . $slug . ':\/var\/www\/html\/wp-content\/plugins\/' . $slug . '\s*$/m',
+            file_get_contents( $root . '/docker-compose.yml' ),
+            'docker-compose.yml must mount ./<slug> at wp-content/plugins/<slug>'
+        );
+        $smoke = file_get_contents( $root . '/dev/smoke.sh' );
+        $this->assertMatchesRegularExpression( '/^PLUGIN_PATH_NEEDLE="wp-content\/plugins\/' . $slug . '"$/m', $smoke );
+        $this->assertMatchesRegularExpression( '/wpcli plugin activate ' . $slug . '(?![\w-])/', $smoke );
+        foreach ( array( 'dev/setup.sh', 'dev/reset.sh' ) as $script ) {
+            $this->assertMatchesRegularExpression(
+                '/^\s*wp plugin activate ' . $slug . '\s*$/m',
+                file_get_contents( $root . '/' . $script ),
+                $script . ' must activate the plugin by its slug'
+            );
+        }
+        $this->assertStringContainsString(
+            "load_plugin_textdomain( '" . self::SLUG . "'",
+            file_get_contents( $plugin_dir . '/includes/class-' . 'antispam' . '-wizard.php' )
+        );
+    }
+
+    /**
      * The names shared between PHP and the shipped JS/CSS are string contracts
      * no PHP test exercises end to end: the smoke run renders the admin pages
      * but never executes admin.js. Pin both sides statically — every AJAX
@@ -867,7 +1054,7 @@ class PluginMetadataTest extends TestCase {
      * renders is the selector its stylesheet hides.
      */
     public function test_admin_js_and_comment_form_css_names_match_the_php_side(): void {
-        $plugin_dir = dirname( __DIR__ ) . '/antispam-wizard';
+        $plugin_dir = dirname( __DIR__ ) . '/char-oday-antispam-wizard';
         $js         = file_get_contents( $plugin_dir . '/admin/js/admin.js' );
         $admin_page = file_get_contents( $plugin_dir . '/admin/class-admin-page.php' );
 

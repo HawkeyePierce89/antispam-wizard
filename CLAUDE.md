@@ -50,12 +50,17 @@ docker compose down              # Stop
 docker compose down -v           # Stop and wipe data (required after image version changes)
 ```
 
+> **Note:** The plugin directory moved to `char-oday-antispam-wizard/` on 2026-11-01. A dev volume created
+> before that still records the old main file as the active plugin, which no longer exists, so the plugin
+> silently ends up inactive; run `docker compose up -d wordpress && bash dev/reset.sh` once to reactivate it
+> under the new slug.
+
 > **Note:** The WordPress image is pinned to `6.4-php8.1-apache`. If you previously ran
 > with a different image (e.g. `wordpress:latest`), you must run `docker compose down -v`
 > once to destroy existing volumes — the WordPress entrypoint does not downgrade core files
 > in a populated volume.
 
-The plugin is mounted at `/var/www/html/wp-content/plugins/antispam-wizard` inside the container.
+The plugin is mounted at `/var/www/html/wp-content/plugins/char-oday-antispam-wizard` inside the container.
 
 ### Runtime smoke test
 ```bash
@@ -63,7 +68,7 @@ bash dev/smoke.sh                                   # WP 7.1 (default)
 WORDPRESS_IMAGE=6.4-php8.1-apache bash dev/smoke.sh # WP 6.4 floor (control)
 ANTISPAMWIZARD_SMOKE_SKIP_CF7=1 bash dev/smoke.sh   # force the CF7 inert path
 ```
-Boots a real, throwaway WordPress, activates the plugin, and asserts it **loads** (no
+Boots a real, throwaway WordPress, activates the plugin as `char-oday-antispam-wizard`, and asserts it **loads** (no
 plugin-attributable PHP problems in `debug.log`; all 6 admin pages render), **detects**
 (spam/ham verdicts through `pre_comment_approved` and, when Contact Form 7 is present, through
 `wpcf7_spam` via `tests/smoke/cf7-check.php`), **shadows** (`tests/smoke/shadow-check.php`: a
@@ -93,7 +98,7 @@ bash dev/plugin-check.sh                                   # WP 7.1 (default)
 WORDPRESS_IMAGE=6.4-php8.1-apache bash dev/plugin-check.sh # WP 6.4 control
 ```
 Boots a throwaway WordPress, installs the official `plugin-check` plugin (a failed install is a
-**hard** failure, never a SKIP) and runs `wp plugin check antispam-wizard --categories=plugin_repo
+**hard** failure, never a SKIP) and runs `wp plugin check char-oday-antispam-wizard --categories=plugin_repo
 --format=csv` against a **tracked-files-only export** (`git ls-files` into a temp dir, bind-mounted
 read-only), so untracked junk can never produce a finding. WARNING rows are informational; the
 script exits non-zero only on `type == ERROR`. Because that verdict is a row count, the harness
@@ -108,15 +113,28 @@ invariants statically. Exercised in CI on the default image.
 
 ### Website
 The marketing site antispamwizard.com lives in the private sibling repository
-`HawkeyePierce89/antispam-wizard-site`, which bind-mounts this plugin from `../antispam-wizard/antispam-wizard`
-and runs its own tests, build/verify and deployment. Its content states only facts present in
-`antispam-wizard/readme.txt`, so a readme change that adds or removes a user-facing claim needs a
+`HawkeyePierce89/antispam-wizard-site`, which bind-mounts this plugin from `../antispam-wizard/char-oday-antispam-wizard`
+into `wp-content/plugins/char-oday-antispam-wizard` (main file `char-oday-antispam-wizard.php`) and runs its own tests,
+build/verify and deployment. The slug change there is **pending** and is more than the mount source: the
+`docker-compose.yml` mount source and target, the activation slug in `build.sh`, the active-plugin check and the
+`debug.log` path filter in `verify.sh`, the WordPress.org download URL (now
+`https://wordpress.org/plugins/char-oday-antispam-wizard/`) in `content/home.html`, `content/release-1-0-0.html`,
+`README.md` and the assertions pinning it in `tests/SiteThemeTest.php` and `verify.sh`, and the default plugin path in
+its `CLAUDE.md`, `docs/site.md` and `README.md`. Its content states only facts present in
+`char-oday-antispam-wizard/readme.txt`, so a readme change that adds or removes a user-facing claim needs a
 matching change there; its `verify.sh` posts real flagged comments through `wp-comments-post.php`
 as a live shadow-display check (`docs/shadow-display.md`). It also names plugin identifiers directly —
 `checks/detect.php` and `checks/waitlist.php` (`ANTISPAMWIZARD_Settings`, the `ANTISPAMWIZARD_Comment_Form` field
 constants and `mint_token()`), `verify.sh` and `tests/SiteThemeTest.php` (`_antispamwizard_reason`), and its waitlist
 plugin (`ANTISPAMWIZARD_Detector::hash_ip()`, behind a `class_exists` guard that silently falls back) — so renaming
 any of them needs a matching change there.
+
+### Release zip
+```bash
+git archive --format=zip --prefix=char-oday-antispam-wizard/ -o ~/git/antispam-wizard-release/char-oday-antispam-wizard-1.0.0.zip master:char-oday-antispam-wizard
+```
+Builds the WordPress.org upload from the committed `master` tree only, so the zip's top-level directory
+is the slug `char-oday-antispam-wizard/` and untracked files can never ship.
 
 ### Model-loading benchmark
 ```bash
@@ -142,7 +160,7 @@ so only the cold memory figure is meaningful there (`WORDPRESS_IMAGE=7.1-php8.3-
 5. Shadow display: front-end `WP_Comment_Query` (`pre_get_comments` → `comments_clauses` → `the_comments`) → `ANTISPAMWIZARD_Shadow_Display` widens the visitor's own listing with their plugin-flagged `spam` comments → a lazy `get_comment` filter presents them as `'0'` (awaiting moderation) for that request only
 
 ### Key classes
-- `ANTISPAMWIZARD` — singleton bootstrap, hook registration (entry point: `antispam-wizard/antispam-wizard.php`). `activate()` runs `dbDelta()` and `maybe_upgrade_schema()` (on `admin_init`, gated on `manage_options`) re-runs it whenever `antispamwizard_samples_db_version` differs — both stamp the version **only after `schema_is_current()` confirms the DDL landed** and after `delete_unattributed()` succeeded
+- `ANTISPAMWIZARD` — singleton bootstrap, hook registration (entry point: `char-oday-antispam-wizard/char-oday-antispam-wizard.php`; the class itself stays in `includes/class-antispam-wizard.php`). `activate()` runs `dbDelta()` and `maybe_upgrade_schema()` (on `admin_init`, gated on `manage_options`) re-runs it whenever `antispamwizard_samples_db_version` differs — both stamp the version **only after `schema_is_current()` confirms the DDL landed** and after `delete_unattributed()` succeeded
 - `ANTISPAMWIZARD_Detector` — orchestrates all 10 checks, hooks into `pre_comment_approved`; fail-open design (exceptions in individual checks are logged and skipped); respects upstream `spam`/`trash`/`WP_Error` status; short-circuits after first spam match; skips all checks when global `enabled` setting is false. `evaluate()` sanitizes `comment_content` through `sanitize_utf8()` **before** the `MAX_COMMENT_LENGTH` (65 536) truncation
 - `ANTISPAMWIZARD_Comment_Form` — renders bot-check fields into the comment form, handles token HMAC mint/verify, and enqueues CSS. Employs a CSP-safe hiding trade-off (off-screen positioning via external stylesheet and inline fallback, leaving fallback label readable if CSS drops) and follows fail-open rules (missing/malformed/stale data passes).
 - `ANTISPAMWIZARD_Settings` — manages config in `wp_options['antispamwizard_settings']` with defaults; includes global `enabled` toggle (default: true) and `cf7_enabled` (default: true, rendered/saved only when `ANTISPAMWIZARD_CF7_Integration::is_available()`)
@@ -169,9 +187,18 @@ Honeypot, Submit Time, Stop Words, Links, Emoji, Spacing, Multi-Language, Duplic
   every option, transient, meta key, table, hook and action name, CSS class, `data-` attribute, JS object and lock
   path (WordPress style, no PHP namespaces). The WordPress.org review rejected the old three-letter prefix; it must
   not come back. `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()` scans every
-  tracked text file and path outside `antispam-wizard/data/` and `docs/plans/`, and
+  tracked (`git ls-files`) text file and path outside `char-oday-antispam-wizard/data/` and `docs/plans/`, and
   `…::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins the AJAX actions, `antispamwizardAdmin`
   keys and DOM names `admin.js` shares with PHP, plus the honeypot selector in `comment-form.css`
+- Slug: the plugin directory, main file, text domain, language files, admin menu slugs, Privacy key and CF7 `agent`
+  are all `char-oday-antispam-wizard` (WordPress.org review, 2026-11-01).
+  `PluginMetadataTest::test_no_file_carries_the_retired_slug_outside_the_allowed_residues()` scans the same tracked
+  set as the prefix guard and allows the retired slug only in the residue set: the GitHub URL, `class-antispam-wizard.php`,
+  the repository-derived names (`../antispam-wizard/`, `~/git/antispam-wizard-release/`, `HawkeyePierce89/antispam-wizard-site`,
+  the `antispam-wizard_*` dev project), the composer package `antispamwizard/antispam-wizard-tests` and the screen-ID
+  prefix `antispam-wizard_page_` (derived from the brand menu title). It fails on an unused residue pattern too.
+  `…::test_slug_agrees_across_header_readme_and_file_names()` pins header, readme title, file names and harnesses
+  against the slug; `PluginCheckHarnessTest` pins `PLUGIN_SLUG` in `dev/plugin-check.sh`. Detail: `docs/conventions.md`
 - File naming: `class-{name}.php`, `interface-{name}.php`
 - PHP 8.1+ with strict typing
 - WordPress 6.4+ (tested up to 7.1)
@@ -218,11 +245,11 @@ Honeypot, Submit Time, Stop Words, Links, Emoji, Spacing, Multi-Language, Duplic
 - The full reasoning and the tests behind each of these rules: **`docs/conventions.md`**.
 
 ### Internationalization
-All admin UI strings use `__()` / `esc_html__()` with text domain `antispam-wizard`. POT template at `antispam-wizard/languages/antispam-wizard.pot`. Nine translations shipped: es_ES, de_DE, fr_FR, pt_BR, it_IT, ja, ru_RU, nl_NL, tr_TR. To add a language: copy the .pot to a new .po, translate all msgstr entries, compile with `msgfmt`.
+All admin UI strings use `__()` / `esc_html__()` with text domain `char-oday-antispam-wizard`. POT template at `char-oday-antispam-wizard/languages/char-oday-antispam-wizard.pot`. Nine translations shipped as `char-oday-antispam-wizard-<locale>.{po,mo}` (WordPress resolves `{domain}-{locale}.mo`): es_ES, de_DE, fr_FR, pt_BR, it_IT, ja, ru_RU, nl_NL, tr_TR. To add a language: copy the .pot to a new .po, translate all msgstr entries, compile with `msgfmt`.
 
 `tests/I18nTest.php` enforces the i18n contract, so adding, changing or removing any
 translatable string is a multi-file change: regenerate the POT (its msgid set must equal the
-set extracted from `antispam-wizard/**/*.php` **in both directions** — a new string without a
+set extracted from `char-oday-antispam-wizard/**/*.php` **in both directions** — a new string without a
 POT regen fails, and so does a stale POT msgid), `msgmerge` all nine `.po` files to zero
 untranslated / zero `#, fuzzy` / zero obsolete `#~` entries, and recompile the `.mo`s.
 Each `.po`'s msgid set must equal the POT's in both directions (an omitted entry has no

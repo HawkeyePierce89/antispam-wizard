@@ -15,7 +15,7 @@ class StatsDisplayTest extends TestCase {
 
     private function render_stats_view(): string {
         ob_start();
-        include dirname( __DIR__ ) . '/antispam-wizard/admin/views/settings-stats.php';
+        include dirname( __DIR__ ) . '/char-oday-antispam-wizard/admin/views/settings-stats.php';
         return ob_get_clean();
     }
 

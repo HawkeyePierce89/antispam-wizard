@@ -6,8 +6,8 @@
     },
     "autoload": {
         "classmap": [
-            "antispam-wizard/includes/",
-            "antispam-wizard/admin/"
+            "char-oday-antispam-wizard/includes/",
+            "char-oday-antispam-wizard/admin/"
         ]
     }
 }

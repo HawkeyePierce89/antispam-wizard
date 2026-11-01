@@ -106,12 +106,12 @@ class ANTISPAMWIZARD_Multi_Lang_Check implements ANTISPAMWIZARD_Check {
         $settings = ANTISPAMWIZARD_Settings::get_all();
 
         if ( empty( $settings['multi_lang_enabled'] ) ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'multi_lang', __( 'check disabled', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'multi_lang', __( 'check disabled', 'char-oday-antispam-wizard' ) );
         }
 
         $text = isset( $comment_data['comment_content'] ) ? $comment_data['comment_content'] : '';
         if ( '' === $text ) {
-            return new ANTISPAMWIZARD_Check_Result( false, 'multi_lang', __( 'empty comment', 'antispam-wizard' ) );
+            return new ANTISPAMWIZARD_Check_Result( false, 'multi_lang', __( 'empty comment', 'char-oday-antispam-wizard' ) );
         }
 
         $threshold = (int) $settings['multi_lang_threshold'];
@@ -122,7 +122,7 @@ class ANTISPAMWIZARD_Multi_Lang_Check implements ANTISPAMWIZARD_Check {
                 true,
                 'multi_lang',
                 // translators: 1: Number of distinct scripts detected, 2: Configured threshold.
-                sprintf( __( 'mixed scripts %1$d/%2$d', 'antispam-wizard' ), $count, $threshold )
+                sprintf( __( 'mixed scripts %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $threshold )
             );
         }
 
@@ -130,7 +130,7 @@ class ANTISPAMWIZARD_Multi_Lang_Check implements ANTISPAMWIZARD_Check {
             false,
             'multi_lang',
             // translators: 1: Number of distinct scripts detected, 2: Configured threshold.
-            sprintf( __( 'mixed scripts %1$d/%2$d', 'antispam-wizard' ), $count, $threshold )
+            sprintf( __( 'mixed scripts %1$d/%2$d', 'char-oday-antispam-wizard' ), $count, $threshold )
         );
     }
 

@@ -1,4 +1,4 @@
-=== AntiSpam Wizard ===
+=== Char O'Day – AntiSpam Wizard ===
 Contributors: hawkeyepierce89
 Tags: spam, comments, antispam, security, moderation
 Requires at least: 6.4
@@ -72,7 +72,7 @@ No new storage location is introduced for Contact Form 7; form entries live in t
 
 == Installation ==
 
-1. Upload the `antispam-wizard` folder to the `/wp-content/plugins/` directory
+1. Upload the `char-oday-antispam-wizard` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Configure detection settings under the AntiSpam Wizard menu in the admin sidebar
 

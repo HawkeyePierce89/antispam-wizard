@@ -70,7 +70,7 @@ class ANTISPAMWIZARD_Comment_Form {
         ?>
             <div class="antispamwizard-hp-field" aria-hidden="true" style="position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden;">
                 <?php if ( ! empty( $settings['honeypot_enabled'] ) ) : ?>
-                    <label for="<?php echo esc_attr( self::HONEYPOT_FIELD . '_' . $unique_id ); ?>"><?php esc_html_e( 'Leave this field empty', 'antispam-wizard' ); ?></label>
+                    <label for="<?php echo esc_attr( self::HONEYPOT_FIELD . '_' . $unique_id ); ?>"><?php esc_html_e( 'Leave this field empty', 'char-oday-antispam-wizard' ); ?></label>
                     <input type="text" name="<?php echo esc_attr( self::HONEYPOT_FIELD ); ?>" id="<?php echo esc_attr( self::HONEYPOT_FIELD . '_' . $unique_id ); ?>" value="" tabindex="-1" autocomplete="off" />
                 <?php endif; ?>
                 <?php if ( ! empty( $settings['submit_time_enabled'] ) ) : ?>

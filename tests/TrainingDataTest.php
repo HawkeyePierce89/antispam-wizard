@@ -286,7 +286,7 @@ class TrainingDataTest extends TestCase {
         $state = $classifier->get_state();
 
         // Count expected total by loading all files manually.
-        $data_dir       = dirname( __DIR__ ) . '/antispam-wizard/data/';
+        $data_dir       = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/';
         $expected_spam  = count( $this->training_data->load_samples( $data_dir . 'spam-samples.txt' ) );
         $expected_ham   = count( $this->training_data->load_samples( $data_dir . 'ham-samples.txt' ) );
         $script_groups  = array(
@@ -306,7 +306,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_load_bundled_spam_samples(): void {
-        $spam_file = dirname( __DIR__ ) . '/antispam-wizard/data/spam-samples.txt';
+        $spam_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/spam-samples.txt';
         $samples   = $this->training_data->load_samples( $spam_file );
 
         $this->assertGreaterThanOrEqual( 20, count( $samples ) );
@@ -316,7 +316,7 @@ class TrainingDataTest extends TestCase {
     }
 
     public function test_load_bundled_ham_samples(): void {
-        $ham_file = dirname( __DIR__ ) . '/antispam-wizard/data/ham-samples.txt';
+        $ham_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/ham-samples.txt';
         $samples  = $this->training_data->load_samples( $ham_file );
 
         $this->assertGreaterThanOrEqual( 20, count( $samples ) );
@@ -327,7 +327,7 @@ class TrainingDataTest extends TestCase {
 
     public function test_train_classifier_with_bundled_data(): void {
         $classifier = new ANTISPAMWIZARD_Naive_Bayes();
-        $data_dir   = dirname( __DIR__ ) . '/antispam-wizard/data/';
+        $data_dir   = dirname( __DIR__ ) . '/char-oday-antispam-wizard/data/';
 
         $spam_samples = $this->training_data->load_samples( $data_dir . 'spam-samples.txt' );
         $ham_samples  = $this->training_data->load_samples( $data_dir . 'ham-samples.txt' );
