@@ -126,8 +126,9 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
   rejected as too short and generic, so the whole tree was renamed in one pass (the 2026-10-27
   prefix-rename plan in `docs/plans/`).
   `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()` matches the old token after any
-  non-alphanumeric character (so `_x_reason` and `wp_ajax_x_*` forms are caught) in every tracked text file and path
-  name of the plugin, `dev/`, `tests/`, `docs/`, `.github/` and the root config. The seed corpus
+  non-alphanumeric character (so `_x_reason` and `wp_ajax_x_*` forms are caught) in every text file and path name
+  `git ls-files` reports (the working tree is not walked, so untracked local files neither fail it nor escape it, and a
+  newly tracked root file or directory is covered without editing a list). The seed corpus
   (`char-oday-antispam-wizard/data/`, whose Thai file carries made-up Line IDs that are text, not identifiers) and
   `docs/plans/` are exempt. Because the rename edited the PHP and JS/CSS sides of each shared name independently,
   `PluginMetadataTest::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins them against each other:
@@ -159,7 +160,7 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
      `sanitize_title()` of the top-level menu **title** (the brand "AntiSpam Wizard") plus `_page_` plus the submenu
      slug, so the real suffixes are `antispam-wizard_page_char-oday-antispam-wizard-log` and so on. Spelling the slug
      there would make `AdminPageTest` pin a hook WordPress never fires; the test keeps a regression row for that
-     slug-derived form. The `AdminPageTest` docblock that spells out the derivation is allowed by the same entry.
+     slug-derived form.
 
   The guard also fails when a residue pattern matches nothing any more, so a stale exception cannot linger, and it
   builds the retired needle by concatenation so the test file does not trip itself.
@@ -167,7 +168,7 @@ Reference moved out of `CLAUDE.md`. The full reasoning behind the attacker-contr
   `Text Domain` header, the `Plugin Name` header and readme title, the main file path, the POT, nine `.po` and nine
   `.mo` files named `<slug>-<locale>` with no old-named file left, the `docker-compose.yml` mount, `dev/smoke.sh`'s
   activation and `PLUGIN_PATH_NEEDLE`, the `wp plugin activate` lines in `dev/setup.sh` and `dev/reset.sh`, and
-  `load_plugin_textdomain()`. `PluginCheckHarnessTest` pins `PLUGIN_SLUG` in `dev/plugin-check.sh`.
+  `load_plugin_textdomain()` and `ANTISPAMWIZARD_Privacy::PRIVACY_KEY`. `PluginCheckHarnessTest` pins `PLUGIN_SLUG` in `dev/plugin-check.sh`.
 - Every Plugin Check deviation that is not fixed outright is carried as a `phpcs:ignore <exact
   sniff code>` with a one-line reason on the same line — bare suppressions are not allowed
   (`grep -rn "phpcs:ignore" char-oday-antispam-wizard` should show a reason on every hit)

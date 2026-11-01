@@ -140,7 +140,7 @@ class AdminPageTest extends TestCase {
 
     /**
      * The submenu hook suffix prefix is sanitize_title() of the top-level MENU
-     * TITLE ("AntiSpam Wizard" => "antispam-wizard"), not the parent slug.
+     * TITLE ("AntiSpam Wizard" => "antispam-wizard_page_*"), not the parent slug.
      *
      * @dataProvider provide_submenu_hook_suffixes
      *

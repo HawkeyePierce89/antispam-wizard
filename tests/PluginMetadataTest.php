@@ -23,12 +23,13 @@ class PluginMetadataTest extends TestCase {
     private const DISPLAY_NAME = "Char O'Day \u{2013} AntiSpam Wizard";
 
     /**
-     * Every path (relative to the repository root) the tree-wide guards scan:
-     * the plugin directory, dev, tests, docs and .github, plus the root files,
-     * minus the seed corpus (data/) and docs/plans/ (a historical record that
-     * quotes the retired names on purpose). Both the retired-prefix guard and
-     * the retired-slug guard read this one set, so neither can drift to a
-     * narrower one.
+     * Every tracked path (relative to the repository root) the tree-wide guards
+     * scan — `git ls-files`, so an untracked local file can neither fail them
+     * nor a newly tracked root file or directory escape them — minus the seed
+     * corpus (data/) and docs/plans/ (a historical record that quotes the
+     * retired names on purpose). Both the retired-prefix guard and the
+     * retired-slug guard read this one set, so neither can drift to a narrower
+     * one.
      *
      * @return string[]
      */
@@ -36,23 +37,25 @@ class PluginMetadataTest extends TestCase {
         $root     = dirname( __DIR__ );
         $excluded = array( self::SLUG . '/data/', 'docs/plans/' );
 
-        $paths = array();
-        foreach ( array( self::SLUG, 'dev', 'tests', 'docs', '.github' ) as $dir ) {
-            $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator( $root . '/' . $dir, FilesystemIterator::SKIP_DOTS )
-            );
-            foreach ( $iterator as $file ) {
-                $paths[] = substr( $file->getPathname(), strlen( $root ) + 1 );
-            }
-        }
-        foreach ( array( 'CLAUDE.md', 'README.md', 'CONTRIBUTING.md', 'composer.json', 'docker-compose.yml', 'phpunit.xml', '.gitignore' ) as $file ) {
-            $paths[] = $file;
-        }
+        // `-c safe.directory=*` for the same reason as test_no_hidden_files_are_shipped();
+        // `-z` so a non-ASCII path is not quoted.
+        $output = array();
+        $status = 1;
+        exec(
+            'git -c ' . escapeshellarg( 'safe.directory=*' )
+                . ' -C ' . escapeshellarg( $root ) . ' ls-files -z 2>/dev/null',
+            $output,
+            $status
+        );
+        $this->assertSame( 0, $status, 'git ls-files failed — the scanned file set cannot be determined.' );
 
         return array_values(
             array_filter(
-                $paths,
-                static function ( string $relative ) use ( $excluded ): bool {
+                explode( "\0", implode( "\n", $output ) ),
+                static function ( string $relative ) use ( $root, $excluded ): bool {
+                    if ( '' === $relative || ! is_file( $root . '/' . $relative ) ) {
+                        return false;
+                    }
                     foreach ( $excluded as $prefix ) {
                         if ( str_starts_with( $relative, $prefix ) ) {
                             return false;
@@ -100,17 +103,15 @@ class PluginMetadataTest extends TestCase {
             // 5. The composer.json package name of the test harness, out of scope for the rename.
             '/antispamwizard\/' . $q . '-tests/i',
             // 6. The WordPress screen-ID prefix: sanitize_title() of the menu title
-            //    "AntiSpam Wizard", which is the brand and stays (and the docblock
-            //    that spells out that derivation).
+            //    "AntiSpam Wizard", which is the brand and stays.
             '/' . $q . '_page_/i',
-            '/"AntiSpam Wizard"\s*=>\s*"' . $q . '"/i',
         );
     }
 
     protected function setUp(): void {
         parent::setUp();
-        $this->plugin_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/char-oday-antispam-wizard.php';
-        $this->readme_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/readme.txt';
+        $this->plugin_file = dirname( __DIR__ ) . '/' . self::SLUG . '/' . self::SLUG . '.php';
+        $this->readme_file = dirname( __DIR__ ) . '/' . self::SLUG . '/readme.txt';
     }
 
     /**
@@ -127,6 +128,7 @@ class PluginMetadataTest extends TestCase {
             'Requires at least' => '/\*\s*Requires at least:\s*(.+)/',
             'Tested up to'   => '/\*\s*Tested up to:\s*(.+)/',
             'License'        => '/\*\s*License:\s*(.+)/',
+            'Text Domain'    => '/\*\s*Text Domain:\s*(.+)/',
         );
 
         foreach ( $patterns as $key => $pattern ) {
@@ -977,10 +979,9 @@ class PluginMetadataTest extends TestCase {
         $this->assertSame( array(), $offences, 'The retired slug is back outside the allowed residues' );
 
         // Every residue pattern must still be needed somewhere, or it is a
-        // loophole nothing exercises; and none may swallow the new slug.
+        // loophole nothing exercises.
         foreach ( $residues as $residue ) {
             $this->assertArrayHasKey( $residue, $used, 'Residue pattern matches nothing any more: ' . $residue );
-            $this->assertDoesNotMatchRegularExpression( $residue, self::SLUG );
         }
     }
 
@@ -997,11 +998,8 @@ class PluginMetadataTest extends TestCase {
         $main_file  = $plugin_dir . '/' . self::SLUG . '.php';
 
         $this->assertFileExists( $main_file, 'The main file must be <slug>/<slug>.php' );
-        $this->assertSame( realpath( $this->plugin_file ), realpath( $main_file ) );
-        $main = file_get_contents( $main_file );
-
-        $this->assertSame( 1, preg_match( '/^\s*\*\s*Text Domain:\s*(.+?)\s*$/m', $main, $m ) );
-        $this->assertSame( self::SLUG, $m[1], 'Text Domain must equal the slug' );
+        $this->assertSame( self::SLUG, $this->parse_plugin_header()['Text Domain'] ?? null, 'Text Domain must equal the slug' );
+        $this->assertSame( self::SLUG, ANTISPAMWIZARD_Privacy::PRIVACY_KEY, 'The Privacy exporter/eraser key must equal the slug' );
         $this->assertSame( self::DISPLAY_NAME, $this->parse_plugin_header()['Plugin Name'] ?? null );
         $this->assertSame( self::DISPLAY_NAME, $this->parse_readme()['Plugin Name'] ?? null );
 

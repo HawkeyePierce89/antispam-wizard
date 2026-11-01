@@ -50,6 +50,11 @@ docker compose down              # Stop
 docker compose down -v           # Stop and wipe data (required after image version changes)
 ```
 
+> **Note:** The plugin directory moved to `char-oday-antispam-wizard/` on 2026-11-01. A dev volume created
+> before that still records the old main file as the active plugin, which no longer exists, so the plugin
+> silently ends up inactive; run `docker compose up -d wordpress && bash dev/reset.sh` once to reactivate it
+> under the new slug.
+
 > **Note:** The WordPress image is pinned to `6.4-php8.1-apache`. If you previously ran
 > with a different image (e.g. `wordpress:latest`), you must run `docker compose down -v`
 > once to destroy existing volumes — the WordPress entrypoint does not downgrade core files
@@ -177,7 +182,7 @@ Honeypot, Submit Time, Stop Words, Links, Emoji, Spacing, Multi-Language, Duplic
   every option, transient, meta key, table, hook and action name, CSS class, `data-` attribute, JS object and lock
   path (WordPress style, no PHP namespaces). The WordPress.org review rejected the old three-letter prefix; it must
   not come back. `PluginMetadataTest::test_no_plugin_file_carries_the_retired_three_letter_prefix()` scans every
-  tracked text file and path outside `char-oday-antispam-wizard/data/` and `docs/plans/`, and
+  tracked (`git ls-files`) text file and path outside `char-oday-antispam-wizard/data/` and `docs/plans/`, and
   `…::test_admin_js_and_comment_form_css_names_match_the_php_side()` pins the AJAX actions, `antispamwizardAdmin`
   keys and DOM names `admin.js` shares with PHP, plus the honeypot selector in `comment-form.css`
 - Slug: the plugin directory, main file, text domain, language files, admin menu slugs, Privacy key and CF7 `agent`
