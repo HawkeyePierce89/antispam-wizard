@@ -214,20 +214,20 @@ guard test lists every item with a one-line reason.
 **Files:**
 - Modify: `tests/PluginMetadataTest.php`
 
-- [ ] Extract the retired-prefix guard's path collection into a private helper, so both guards scan
+- [x] Extract the retired-prefix guard's path collection into a private helper, so both guards scan
   exactly the same tracked text set. The set is:
   - the plugin dir, `dev`, `tests`, `docs` and `.github`;
   - the root files;
   - excluding `char-oday-antispam-wizard/data/` and `docs/plans/`.
 
   The `> 100 files scanned` assertion stays.
-- [ ] Add `test_no_file_carries_the_retired_slug_outside_the_allowed_residues()`:
+- [x] Add `test_no_file_carries_the_retired_slug_outside_the_allowed_residues()`:
   - for each line and each path, strip the allowed residue patterns (the residue set in the Overview,
     one commented regex per entry);
   - fail on any remaining `(?<!char-oday-)antispam-wizard`;
   - report offences as `path:line: text`;
   - build the needle so that this test file does not trip itself.
-- [ ] Add `test_slug_agrees_across_header_readme_and_file_names()`. Against a
+- [x] Add `test_slug_agrees_across_header_readme_and_file_names()`. Against a
   `SLUG = 'char-oday-antispam-wizard'` constant, assert that:
   - the `Text Domain` header equals the slug;
   - the `Plugin Name` header and the readme title both equal `Char O'Day – AntiSpam Wizard`;
@@ -235,14 +235,14 @@ guard test lists every item with a one-line reason.
   - `languages/<slug>.pot` exists;
   - every `.po`/`.mo` under `languages/` is named `<slug>-<locale>.{po,mo}`, there are nine of each,
     and no `antispam-wizard*` file remains.
-- [ ] In the same test, pin that the harnesses address the slug:
+- [x] In the same test, pin that the harnesses address the slug:
   - `docker-compose.yml` mounts `./<slug>:/var/www/html/wp-content/plugins/<slug>`;
   - `dev/smoke.sh` activates `<slug>` and sets `PLUGIN_PATH_NEEDLE="wp-content/plugins/<slug>"`;
   - `dev/setup.sh` and `dev/reset.sh` run `wp plugin activate <slug>`;
   - `load_plugin_textdomain( '<slug>'` appears in `includes/class-antispam-wizard.php`.
-- [ ] Confirm the new guard is not vacuous: temporarily reintroduce one old literal (for example in a
+- [x] Confirm the new guard is not vacuous: temporarily reintroduce one old literal (for example in a
   doc), watch the test fail, then revert.
-- [ ] Run `docker compose run --rm test`. It must be green.
+- [x] Run `docker compose run --rm test`. It must be green.
 
 ### Task 4: Verify acceptance criteria
 

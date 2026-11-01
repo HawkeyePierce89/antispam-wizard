@@ -10,6 +10,103 @@ class PluginMetadataTest extends TestCase {
     private string $plugin_file;
     private string $readme_file;
 
+    /**
+     * The WordPress.org slug, which is also the text domain, the plugin
+     * directory, the main file's base name and the language files' prefix.
+     */
+    private const SLUG = 'char-oday-antispam-wizard';
+
+    /**
+     * The display name carried by the Plugin Name header and the readme title
+     * (straight apostrophe, en dash).
+     */
+    private const DISPLAY_NAME = "Char O'Day \u{2013} AntiSpam Wizard";
+
+    /**
+     * Every path (relative to the repository root) the tree-wide guards scan:
+     * the plugin directory, dev, tests, docs and .github, plus the root files,
+     * minus the seed corpus (data/) and docs/plans/ (a historical record that
+     * quotes the retired names on purpose). Both the retired-prefix guard and
+     * the retired-slug guard read this one set, so neither can drift to a
+     * narrower one.
+     *
+     * @return string[]
+     */
+    private function scanned_tree_paths(): array {
+        $root     = dirname( __DIR__ );
+        $excluded = array( self::SLUG . '/data/', 'docs/plans/' );
+
+        $paths = array();
+        foreach ( array( self::SLUG, 'dev', 'tests', 'docs', '.github' ) as $dir ) {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator( $root . '/' . $dir, FilesystemIterator::SKIP_DOTS )
+            );
+            foreach ( $iterator as $file ) {
+                $paths[] = substr( $file->getPathname(), strlen( $root ) + 1 );
+            }
+        }
+        foreach ( array( 'CLAUDE.md', 'README.md', 'CONTRIBUTING.md', 'composer.json', 'docker-compose.yml', 'phpunit.xml', '.gitignore' ) as $file ) {
+            $paths[] = $file;
+        }
+
+        return array_values(
+            array_filter(
+                $paths,
+                static function ( string $relative ) use ( $excluded ): bool {
+                    foreach ( $excluded as $prefix ) {
+                        if ( str_starts_with( $relative, $prefix ) ) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            )
+        );
+    }
+
+    /**
+     * Whether a scanned path's contents are read line by line (text files);
+     * every path is still checked by name.
+     */
+    private function is_scanned_text_file( string $relative ): bool {
+        $text_ext = array( 'php', 'js', 'css', 'md', 'txt', 'po', 'pot', 'sh', 'yml', 'json', 'xml' );
+        return '.gitignore' === basename( $relative )
+            || in_array( strtolower( pathinfo( $relative, PATHINFO_EXTENSION ) ), $text_ext, true );
+    }
+
+    /**
+     * The places the retired slug may still appear, one regex per entry of the
+     * residue set in the 2026-11-01 slug-rename plan. Each is built from the
+     * concatenated needle so this file never spells the retired literal itself.
+     *
+     * @return string[]
+     */
+    private function retired_slug_residues( string $old ): array {
+        $q = preg_quote( $old, '/' );
+        return array(
+            // 1. The GitHub repository URL: the repository itself is not renamed.
+            '/https:\/\/github\.com\/HawkeyePierce89\/' . $q . '(?![\w-])/i',
+            // 2. The bootstrap class file name (and so its includes/ path), kept by decision.
+            '/class-' . $q . '\.php/i',
+            // 3. docs/plans/ is excluded from scanned_tree_paths() rather than stripped here.
+            // 4a. The site repository, named after the unrenamed repository.
+            '/HawkeyePierce89\/' . $q . '-site(?![\w-])/i',
+            // 4b. The checkout directory of this unrenamed repository (../<repo>/).
+            '/\.\.\/' . $q . '\//i',
+            // 4c. The release-zip output directory beside the checkout (~/git/<repo>-release/).
+            '/~\/git\/' . $q . '-release\//i',
+            // 4d. The dev compose project, which Docker derives from the checkout directory name.
+            '/' . $q . '_\*/i',
+            // 5. The composer.json package name of the test harness, out of scope for the rename.
+            '/antispamwizard\/' . $q . '-tests/i',
+            // 6. The WordPress screen-ID prefix: sanitize_title() of the menu title
+            //    "AntiSpam Wizard", which is the brand and stays (and the docblock
+            //    that spells out that derivation).
+            '/' . $q . '_page_/i',
+            '/"AntiSpam Wizard"\s*=>\s*"' . $q . '"/i',
+        );
+    }
+
     protected function setUp(): void {
         parent::setUp();
         $this->plugin_file = dirname( __DIR__ ) . '/char-oday-antispam-wizard/char-oday-antispam-wizard.php';
@@ -804,36 +901,16 @@ class PluginMetadataTest extends TestCase {
      */
     public function test_no_plugin_file_carries_the_retired_three_letter_prefix(): void {
         $root       = dirname( __DIR__ );
-        $plugin_dir = $root . '/char-oday-antispam-wizard';
+        $plugin_dir = $root . '/' . self::SLUG;
         $pattern    = '/(?<![A-Za-z0-9])a[s]w/i';
-        $text_ext   = array( 'php', 'js', 'css', 'md', 'txt', 'po', 'pot', 'sh', 'yml', 'json', 'xml' );
-        $excluded   = array( 'char-oday-antispam-wizard/data/', 'docs/plans/' );
-
-        $paths = array();
-        foreach ( array( 'char-oday-antispam-wizard', 'dev', 'tests', 'docs', '.github' ) as $dir ) {
-            $iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator( $root . '/' . $dir, FilesystemIterator::SKIP_DOTS )
-            );
-            foreach ( $iterator as $file ) {
-                $paths[] = substr( $file->getPathname(), strlen( $root ) + 1 );
-            }
-        }
-        foreach ( array( 'CLAUDE.md', 'README.md', 'CONTRIBUTING.md', 'composer.json', 'docker-compose.yml', 'phpunit.xml', '.gitignore' ) as $file ) {
-            $paths[] = $file;
-        }
 
         $scanned  = 0;
         $offences = array();
-        foreach ( $paths as $relative ) {
-            foreach ( $excluded as $prefix ) {
-                if ( str_starts_with( $relative, $prefix ) ) {
-                    continue 2;
-                }
-            }
+        foreach ( $this->scanned_tree_paths() as $relative ) {
             if ( preg_match( $pattern, $relative ) ) {
                 $offences[] = $relative . ' (path)';
             }
-            if ( '.gitignore' !== basename( $relative ) && ! in_array( strtolower( pathinfo( $relative, PATHINFO_EXTENSION ) ), $text_ext, true ) ) {
+            if ( ! $this->is_scanned_text_file( $relative ) ) {
                 continue;
             }
             ++$scanned;
@@ -852,6 +929,118 @@ class PluginMetadataTest extends TestCase {
         $this->assertStringContainsString(
             'antispamwizardAdmin.',
             file_get_contents( $plugin_dir . '/admin/js/admin.js' )
+        );
+    }
+
+    /**
+     * The WordPress.org review moved the submission to the slug
+     * char-oday-antispam-wizard and requires the text domain to equal it. The
+     * retired slug may survive only in the residue set
+     * (retired_slug_residues()); anywhere else — a path, a gettext domain, a
+     * mount, a doc — it is a half-done rename. The needle is concatenated so
+     * this file does not trip itself.
+     */
+    public function test_no_file_carries_the_retired_slug_outside_the_allowed_residues(): void {
+        $root     = dirname( __DIR__ );
+        $old      = 'antispam' . '-wizard';
+        $needle   = '/(?<!char-oday-)' . preg_quote( $old, '/' ) . '/i';
+        $residues = $this->retired_slug_residues( $old );
+        $used     = array();
+        $strip    = static function ( string $text ) use ( $residues, &$used ): string {
+            foreach ( $residues as $residue ) {
+                $text = (string) preg_replace( $residue, ' ', $text, -1, $count );
+                if ( $count > 0 ) {
+                    $used[ $residue ] = true;
+                }
+            }
+            return $text;
+        };
+
+        $scanned  = 0;
+        $offences = array();
+        foreach ( $this->scanned_tree_paths() as $relative ) {
+            if ( preg_match( $needle, $strip( $relative ) ) ) {
+                $offences[] = $relative . ' (path)';
+            }
+            if ( ! $this->is_scanned_text_file( $relative ) ) {
+                continue;
+            }
+            ++$scanned;
+            foreach ( file( $root . '/' . $relative ) as $index => $line ) {
+                if ( preg_match( $needle, $strip( $line ) ) ) {
+                    $offences[] = $relative . ':' . ( $index + 1 ) . ': ' . trim( $line );
+                }
+            }
+        }
+
+        $this->assertGreaterThan( 100, $scanned, 'Expected the plugin, dev, test and doc files to be scanned' );
+        $this->assertSame( array(), $offences, 'The retired slug is back outside the allowed residues' );
+
+        // Every residue pattern must still be needed somewhere, or it is a
+        // loophole nothing exercises; and none may swallow the new slug.
+        foreach ( $residues as $residue ) {
+            $this->assertArrayHasKey( $residue, $used, 'Residue pattern matches nothing any more: ' . $residue );
+            $this->assertDoesNotMatchRegularExpression( $residue, self::SLUG );
+        }
+    }
+
+    /**
+     * The slug is one name in many places: the Text Domain header, the plugin
+     * directory, the main file, the POT and the nine catalogues WordPress
+     * resolves as {domain}-{locale}.mo, the dev mount, the smoke/setup/reset
+     * activations and load_plugin_textdomain(). Any one of them drifting
+     * breaks loading or translation without a PHP error.
+     */
+    public function test_slug_agrees_across_header_readme_and_file_names(): void {
+        $root       = dirname( __DIR__ );
+        $plugin_dir = $root . '/' . self::SLUG;
+        $main_file  = $plugin_dir . '/' . self::SLUG . '.php';
+
+        $this->assertFileExists( $main_file, 'The main file must be <slug>/<slug>.php' );
+        $this->assertSame( realpath( $this->plugin_file ), realpath( $main_file ) );
+        $main = file_get_contents( $main_file );
+
+        $this->assertSame( 1, preg_match( '/^\s*\*\s*Text Domain:\s*(.+?)\s*$/m', $main, $m ) );
+        $this->assertSame( self::SLUG, $m[1], 'Text Domain must equal the slug' );
+        $this->assertSame( self::DISPLAY_NAME, $this->parse_plugin_header()['Plugin Name'] ?? null );
+        $this->assertSame( self::DISPLAY_NAME, $this->parse_readme()['Plugin Name'] ?? null );
+
+        $languages = $plugin_dir . '/languages';
+        $this->assertFileExists( $languages . '/' . self::SLUG . '.pot' );
+        $catalogue = '/^' . preg_quote( self::SLUG, '/' ) . '-[a-z]{2,3}(_[A-Z]{2})?\.(po|mo)$/';
+        $counts    = array( 'po' => 0, 'mo' => 0 );
+        foreach ( scandir( $languages ) as $name ) {
+            if ( '.' === $name || '..' === $name ) {
+                continue;
+            }
+            $this->assertStringStartsNotWith( 'antispam' . '-wizard', $name, 'A language file still carries the retired slug' );
+            $ext = pathinfo( $name, PATHINFO_EXTENSION );
+            if ( 'po' === $ext || 'mo' === $ext ) {
+                $this->assertMatchesRegularExpression( $catalogue, $name );
+                ++$counts[ $ext ];
+            }
+        }
+        $this->assertSame( array( 'po' => 9, 'mo' => 9 ), $counts );
+
+        $slug = preg_quote( self::SLUG, '/' );
+        $this->assertMatchesRegularExpression(
+            '/^\s*-\s*\.\/' . $slug . ':\/var\/www\/html\/wp-content\/plugins\/' . $slug . '\s*$/m',
+            file_get_contents( $root . '/docker-compose.yml' ),
+            'docker-compose.yml must mount ./<slug> at wp-content/plugins/<slug>'
+        );
+        $smoke = file_get_contents( $root . '/dev/smoke.sh' );
+        $this->assertMatchesRegularExpression( '/^PLUGIN_PATH_NEEDLE="wp-content\/plugins\/' . $slug . '"$/m', $smoke );
+        $this->assertMatchesRegularExpression( '/wpcli plugin activate ' . $slug . '(?![\w-])/', $smoke );
+        foreach ( array( 'dev/setup.sh', 'dev/reset.sh' ) as $script ) {
+            $this->assertMatchesRegularExpression(
+                '/^\s*wp plugin activate ' . $slug . '\s*$/m',
+                file_get_contents( $root . '/' . $script ),
+                $script . ' must activate the plugin by its slug'
+            );
+        }
+        $this->assertStringContainsString(
+            "load_plugin_textdomain( '" . self::SLUG . "'",
+            file_get_contents( $plugin_dir . '/includes/class-' . 'antispam' . '-wizard.php' )
         );
     }
 
